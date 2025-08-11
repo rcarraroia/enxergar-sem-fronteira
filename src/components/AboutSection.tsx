@@ -55,7 +55,7 @@ const AboutSection = () => {
           {/* Story */}
           <div className="space-y-6 animate-slide-up">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-foreground">História </h3>
+              <h3 className="text-2xl font-bold text-foreground">Projeto Visão Itinerante</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Fundado em 2020, o Projeto Visão Itinerante surge como uma iniciativa do Instituto Coração Valente, 
                 com o objetivo de democratizar o acesso à saúde oftalmológica no Brasil.
