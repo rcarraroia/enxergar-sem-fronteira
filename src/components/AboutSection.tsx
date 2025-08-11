@@ -1,40 +1,41 @@
-
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, Users, Shield, Target, Award } from 'lucide-react';
-
 const AboutSection = () => {
-  const features = [
-    {
-      icon: Eye,
-      title: 'Atendimento Especializado',
-      description: 'Consultas oftalmológicas completas com equipamentos de última geração e profissionais qualificados.'
-    },
-    {
-      icon: Heart,
-      title: 'Cuidado Humanizado',
-      description: 'Tratamento acolhedor e personalizado, respeitando as necessidades de cada paciente.'
-    },
-    {
-      icon: Users,
-      title: 'Acesso Universal',
-      description: 'Atendimento gratuito para comunidades carentes, democratizando o acesso à saúde visual.'
-    },
-    {
-      icon: Shield,
-      title: 'Segurança e Qualidade',
-      description: 'Protocolos rigorosos de segurança e qualidade em todos os procedimentos médicos.'
-    }
-  ];
-
-  const achievements = [
-    { icon: Target, value: '95%', label: 'Eficácia no Diagnóstico' },
-    { icon: Award, value: '5 Anos', label: 'de Experiência' },
-    { icon: Users, value: '50+', label: 'Cidades Atendidas' },
-    { icon: Heart, value: '10k+', label: 'Vidas Impactadas' }
-  ];
-
-  return (
-    <section id="about" className="py-20">
+  const features = [{
+    icon: Eye,
+    title: 'Atendimento Especializado',
+    description: 'Consultas oftalmológicas completas com equipamentos de última geração e profissionais qualificados.'
+  }, {
+    icon: Heart,
+    title: 'Cuidado Humanizado',
+    description: 'Tratamento acolhedor e personalizado, respeitando as necessidades de cada paciente.'
+  }, {
+    icon: Users,
+    title: 'Acesso Universal',
+    description: 'Atendimento gratuito para comunidades carentes, democratizando o acesso à saúde visual.'
+  }, {
+    icon: Shield,
+    title: 'Segurança e Qualidade',
+    description: 'Protocolos rigorosos de segurança e qualidade em todos os procedimentos médicos.'
+  }];
+  const achievements = [{
+    icon: Target,
+    value: '95%',
+    label: 'Eficácia no Diagnóstico'
+  }, {
+    icon: Award,
+    value: '5 Anos',
+    label: 'de Experiência'
+  }, {
+    icon: Users,
+    value: '50+',
+    label: 'Cidades Atendidas'
+  }, {
+    icon: Heart,
+    value: '10k+',
+    label: 'Vidas Impactadas'
+  }];
+  return <section id="about" className="py-20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in">
@@ -46,10 +47,7 @@ const AboutSection = () => {
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Missão de Transformar Vidas
           </h2>
-          <p className="text-subtitle text-muted-foreground max-w-3xl mx-auto">
-            O Projeto Visão Itinerante nasceu da necessidade de levar cuidado oftalmológico de qualidade 
-            para comunidades que não têm acesso a serviços especializados de saúde visual.
-          </p>
+          <p className="text-subtitle text-muted-foreground max-w-3xl mx-auto">O Projeto Enxergar Sem Fronteira nasceu da necessidade de levar cuidado oftalmológico de qualidade para comunidades que não têm acesso a serviços especializados de saúde visual.</p>
         </div>
 
         {/* Main Content */}
@@ -57,7 +55,7 @@ const AboutSection = () => {
           {/* Story */}
           <div className="space-y-6 animate-slide-up">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-foreground">Nossa História</h3>
+              <h3 className="text-2xl font-bold text-foreground">História </h3>
               <p className="text-muted-foreground leading-relaxed">
                 Fundado em 2020, o Projeto Visão Itinerante surge como uma iniciativa do Instituto Coração Valente, 
                 com o objetivo de democratizar o acesso à saúde oftalmológica no Brasil.
@@ -70,13 +68,11 @@ const AboutSection = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {achievements.map((achievement, index) => (
-                <Card key={index} className="p-4 text-center medical-card">
+              {achievements.map((achievement, index) => <Card key={index} className="p-4 text-center medical-card">
                   <achievement.icon className="h-6 w-6 text-primary mx-auto mb-2 medical-icon" />
                   <div className="text-xl font-bold text-foreground">{achievement.value}</div>
                   <div className="text-xs text-muted-foreground">{achievement.label}</div>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
 
@@ -109,15 +105,13 @@ const AboutSection = () => {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className={`p-6 text-center medical-card animate-slide-up stagger-${index + 1} hover:shadow-medical transition-all duration-300`}>
+          {features.map((feature, index) => <Card key={index} className={`p-6 text-center medical-card animate-slide-up stagger-${index + 1} hover:shadow-medical transition-all duration-300`}>
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <feature.icon className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Partners Section */}
@@ -153,8 +147,6 @@ const AboutSection = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default AboutSection;

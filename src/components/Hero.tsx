@@ -1,18 +1,25 @@
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
-
 const Hero = () => {
-  const stats = [
-    { icon: Eye, value: '10.000+', label: 'Consultas Realizadas' },
-    { icon: Heart, value: '95%', label: 'Taxa de Satisfação' },
-    { icon: Users, value: '50+', label: 'Cidades Atendidas' },
-    { icon: Stethoscope, value: '24/7', label: 'Suporte Médico' }
-  ];
-
-  return (
-    <section id="home" className="relative min-h-screen pt-16">
+  const stats = [{
+    icon: Eye,
+    value: '10.000+',
+    label: 'Consultas Realizadas'
+  }, {
+    icon: Heart,
+    value: '95%',
+    label: 'Taxa de Satisfação'
+  }, {
+    icon: Users,
+    value: '50+',
+    label: 'Cidades Atendidas'
+  }, {
+    icon: Stethoscope,
+    value: '24/7',
+    label: 'Suporte Médico'
+  }];
+  return <section id="home" className="relative min-h-screen pt-16">
       {/* Background with gradient */}
       <div className="absolute inset-0 hero-gradient opacity-5"></div>
       
@@ -30,10 +37,7 @@ const Hero = () => {
                 Levamos cuidado oftalmológico até você
               </h1>
               
-              <p className="text-subtitle text-muted-foreground max-w-xl">
-                O Projeto Visão Itinerante oferece atendimento oftalmológico gratuito em comunidades carentes, 
-                levando saúde visual de qualidade onde mais se precisa.
-              </p>
+              <p className="text-subtitle text-muted-foreground max-w-xl">O Projeto Enxergar sem Fronteira e uma parceira de varias entidades com Projeto Visão Itinerante que visa oferece atendimento oftalmológico gratuito em comunidades carentes, levando saúde visual de qualidade onde mais se precisa.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -50,13 +54,11 @@ const Hero = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8">
-              {stats.map((stat, index) => (
-                <Card key={index} className={`p-4 text-center medical-card animate-slide-up stagger-${index + 1}`}>
+              {stats.map((stat, index) => <Card key={index} className={`p-4 text-center medical-card animate-slide-up stagger-${index + 1}`}>
                   <stat.icon className="h-6 w-6 text-primary mx-auto mb-2 medical-icon" />
                   <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                   <div className="text-xs text-muted-foreground">{stat.label}</div>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
 
@@ -114,8 +116,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
