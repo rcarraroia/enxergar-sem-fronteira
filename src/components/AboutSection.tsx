@@ -95,7 +95,7 @@ const AboutSection = () => {
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-center space-x-2 text-primary">
                     <Heart className="h-5 w-5" fill="currentColor" />
-                    <span className="font-semibold">Instituto Coração Valente</span>
+                    <span className="font-semibold">Projeto Enxergar Sem Fronteira</span>
                   </div>
                 </div>
               </div>
