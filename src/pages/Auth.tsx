@@ -12,17 +12,36 @@ const Auth = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
+    console.log('🔍 Auth page - Estado atual:', { 
+      user: user?.email || 'Nenhum', 
+      loading 
+    })
+    
     if (user && !loading) {
-      navigate('/admin')
+      console.log('✅ Usuário autenticado, redirecionando para /admin')
+      navigate('/admin', { replace: true })
     }
   }, [user, loading, navigate])
 
   if (loading) {
+    console.log('⏳ Auth page: Carregando...')
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span>Carregando...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Se usuário já está logado, não renderizar o formulário
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span>Redirecionando...</span>
         </div>
       </div>
     )
