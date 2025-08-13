@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🔍 AuthProvider: Inicializando verificação de sessão...')
     
-    // Configurar listener de mudanças de autenticação PRIMEIRO
+    // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          // Verificar se é admin baseado no email diretamente
+          // Verificar se é admin baseado no email
           const isUserAdmin = session.user.email?.includes('@admin.') || false
           console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
           setIsAdmin(isUserAdmin)
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
-    // Verificar sessão atual DEPOIS de configurar o listener
+    // Verificar sessão atual
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('❌ Erro ao verificar sessão:', error)
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        // Verificar se é admin baseado no email diretamente
+        // Verificar se é admin baseado no email
         const isUserAdmin = session.user.email?.includes('@admin.') || false
         console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
         setIsAdmin(isUserAdmin)
