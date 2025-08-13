@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +12,12 @@ import { useEvents } from '@/hooks/useEvents'
 import { toast } from 'sonner'
 import { Loader2, UserPlus, Calendar, MapPin } from 'lucide-react'
 
-export const PatientRegistrationForm = () => {
+interface Props {
+  selectedEventId?: string | null
+  onSuccess?: () => void
+}
+
+export const PatientRegistrationForm = ({ selectedEventId, onSuccess }: Props) => {
   const { data: events, isLoading: eventsLoading } = useEvents()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -22,9 +27,16 @@ export const PatientRegistrationForm = () => {
     telefone: '',
     data_nascimento: '',
     diagnostico: '',
-    event_id: '',
+    event_id: selectedEventId || '',
     consentimento_lgpd: false
   })
+
+  // Atualizar event_id quando selectedEventId mudar
+  useEffect(() => {
+    if (selectedEventId) {
+      setFormData(prev => ({ ...prev, event_id: selectedEventId }))
+    }
+  }, [selectedEventId])
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '')
@@ -143,9 +155,14 @@ export const PatientRegistrationForm = () => {
         telefone: '',
         data_nascimento: '',
         diagnostico: '',
-        event_id: '',
+        event_id: selectedEventId || '',
         consentimento_lgpd: false
       })
+
+      // Chamar callback de sucesso se fornecido
+      if (onSuccess) {
+        onSuccess()
+      }
 
       // Disparar processamento da fila (opcional - pode ser executado por cron)
       try {
@@ -244,10 +261,11 @@ export const PatientRegistrationForm = () => {
             </div>
 
             <div>
-              <Label htmlFor="event_id">Evento *</Label>
+              <Label htmlFor="event_id">Evento * {selectedEventId && '(Pré-selecionado)'}</Label>
               <Select 
                 value={formData.event_id} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}
+                disabled={!!selectedEventId}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um evento" />

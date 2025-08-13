@@ -1,97 +1,85 @@
 
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { navItems } from "./nav-items";
-import Registration from "./pages/Registration";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
+import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Registration from "./pages/Registration";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
+import LGPD from "./pages/LGPD";
+import Cookies from "./pages/Cookies";
 import Admin from "./pages/Admin";
-import AdminSync from "./pages/AdminSync";
-import AdminPatients from "./pages/AdminPatients";
-import AdminPayments from "./pages/AdminPayments";
 import AdminEvents from "./pages/AdminEvents";
-import AdminRegistrations from "./pages/AdminRegistrations";
 import AdminEventDetails from "./pages/AdminEventDetails";
+import AdminPatients from "./pages/AdminPatients";
+import AdminRegistrations from "./pages/AdminRegistrations";
+import AdminPayments from "./pages/AdminPayments";
+import AdminSync from "./pages/AdminSync";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
         <Toaster />
         <BrowserRouter>
           <Routes>
-            <Route path="/registration" element={<Registration />} />
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/events" 
-              element={
-                <ProtectedRoute>
-                  <AdminEvents />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/events/:eventId" 
-              element={
-                <ProtectedRoute>
-                  <AdminEventDetails />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/registrations" 
-              element={
-                <ProtectedRoute>
-                  <AdminRegistrations />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/sync" 
-              element={
-                <ProtectedRoute>
-                  <AdminSync />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/patients" 
-              element={
-                <ProtectedRoute>
-                  <AdminPatients />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/payments" 
-              element={
-                <ProtectedRoute>
-                  <AdminPayments />
-                </ProtectedRoute>
-              } 
-            />
-            {navItems.map(({ to, page }) => (
-              <Route key={to} path={to} element={page} />
-            ))}
-            <Route path="*" element={<Navigate to="/auth" replace />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/lgpd" element={<LGPD />} />
+            <Route path="/cookies" element={<Cookies />} />
+            
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/events" element={
+              <ProtectedRoute>
+                <AdminEvents />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/events/:eventId" element={
+              <ProtectedRoute>
+                <AdminEventDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/patients" element={
+              <ProtectedRoute>
+                <AdminPatients />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/registrations" element={
+              <ProtectedRoute>
+                <AdminRegistrations />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/payments" element={
+              <ProtectedRoute>
+                <AdminPayments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/sync" element={
+              <ProtectedRoute>
+                <AdminSync />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
