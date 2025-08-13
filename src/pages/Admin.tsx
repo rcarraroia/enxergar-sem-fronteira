@@ -1,10 +1,9 @@
-
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, Settings, Users, Calendar, BarChart3, CreditCard, Sync } from 'lucide-react'
+import { LogOut, Settings, Users, Calendar, BarChart3, CreditCard, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Admin = () => {
@@ -111,7 +110,7 @@ const Admin = () => {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sync className="h-5 w-5 text-primary" />
+                <RefreshCw className="h-5 w-5 text-primary" />
                 Sincronização
               </CardTitle>
               <CardDescription>
