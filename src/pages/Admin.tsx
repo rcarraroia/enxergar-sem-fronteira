@@ -63,7 +63,10 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin/events')}
+              >
                 Acessar Eventos
               </Button>
             </CardContent>

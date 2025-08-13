@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import AdminSync from "./pages/AdminSync";
 import AdminPatients from "./pages/AdminPatients";
 import AdminPayments from "./pages/AdminPayments";
+import AdminEvents from "./pages/AdminEvents";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events" 
+              element={
+                <ProtectedRoute>
+                  <AdminEvents />
                 </ProtectedRoute>
               } 
             />
