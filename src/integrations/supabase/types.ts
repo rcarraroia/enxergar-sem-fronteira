@@ -14,13 +14,285 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      asaas_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          event_id: string
+          id: string
+          payment_status: string
+          split_data: Json
+          transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          event_id: string
+          id?: string
+          payment_status?: string
+          split_data: Json
+          transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          payment_status?: string
+          split_data?: Json
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asaas_transactions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string
+          available_slots: number
+          created_at: string
+          date: string
+          description: string | null
+          end_time: string
+          id: string
+          location: string
+          organizer_id: string
+          start_time: string
+          status: string
+          title: string
+          total_slots: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          available_slots?: number
+          created_at?: string
+          date: string
+          description?: string | null
+          end_time: string
+          id?: string
+          location: string
+          organizer_id: string
+          start_time: string
+          status?: string
+          title: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          available_slots?: number
+          created_at?: string
+          date?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string
+          organizer_id?: string
+          start_time?: string
+          status?: string
+          title?: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instituto_integration_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          max_retries: number
+          patient_id: string
+          payload: Json
+          retries: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          max_retries?: number
+          patient_id: string
+          payload: Json
+          retries?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          max_retries?: number
+          patient_id?: string
+          payload?: Json
+          retries?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instituto_integration_queue_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizers: {
+        Row: {
+          asaas_api_key: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          updated_at: string
+          whatsapp_api_key: string | null
+        }
+        Insert: {
+          asaas_api_key?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          updated_at?: string
+          whatsapp_api_key?: string | null
+        }
+        Update: {
+          asaas_api_key?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          whatsapp_api_key?: string | null
+        }
+        Relationships: []
+      }
+      patients: {
+        Row: {
+          consentimento_lgpd: boolean
+          cpf: string
+          created_at: string
+          data_nascimento: string | null
+          diagnostico: string | null
+          email: string
+          id: string
+          nome: string
+          tags: Json | null
+          telefone: string
+          updated_at: string
+        }
+        Insert: {
+          consentimento_lgpd?: boolean
+          cpf: string
+          created_at?: string
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email: string
+          id?: string
+          nome: string
+          tags?: Json | null
+          telefone: string
+          updated_at?: string
+        }
+        Update: {
+          consentimento_lgpd?: boolean
+          cpf?: string
+          created_at?: string
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          tags?: Json | null
+          telefone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          patient_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          patient_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          patient_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      process_integration_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          queue_id: string
+          patient_id: string
+          payload: Json
+          retries: number
+        }[]
+      }
+      update_queue_status: {
+        Args: { queue_id: string; new_status: string; error_msg?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
