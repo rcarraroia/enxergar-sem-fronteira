@@ -13,6 +13,8 @@ import AdminSync from "./pages/AdminSync";
 import AdminPatients from "./pages/AdminPatients";
 import AdminPayments from "./pages/AdminPayments";
 import AdminEvents from "./pages/AdminEvents";
+import AdminRegistrations from "./pages/AdminRegistrations";
+import AdminEventDetails from "./pages/AdminEventDetails";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AdminEvents />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId" 
+              element={
+                <ProtectedRoute>
+                  <AdminEventDetails />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/registrations" 
+              element={
+                <ProtectedRoute>
+                  <AdminRegistrations />
                 </ProtectedRoute>
               } 
             />

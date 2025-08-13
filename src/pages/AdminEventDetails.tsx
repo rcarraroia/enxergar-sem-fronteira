@@ -13,13 +13,16 @@ import {
   Clock,
   Users,
   Edit,
-  Loader2
+  Loader2,
+  Mail
 } from 'lucide-react'
+import { useNotifications } from '@/hooks/useNotifications'
 
 const AdminEventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
   const { events, isLoading } = useEventsAdmin()
+  const { sendEventReminder, isLoading: isLoadingEmail } = useNotifications()
 
   const event = events?.find(e => e.id === eventId)
 
@@ -31,6 +34,11 @@ const AdminEventDetails = () => {
       return <Badge variant="destructive">Fechado</Badge>
     }
     return <Badge variant="default">Aberto</Badge>
+  }
+
+  const handleSendReminders = () => {
+    // Esta funcionalidade será expandida quando tivermos acesso aos dados de inscrição
+    console.log('Enviando lembretes para participantes do evento:', event?.title)
   }
 
   if (isLoading) {
@@ -79,10 +87,20 @@ const AdminEventDetails = () => {
               </div>
             </div>
             
-            <Button onClick={() => navigate(`/admin/events`)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar Evento
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={handleSendReminders}
+                disabled={isLoadingEmail}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Enviar Lembretes
+              </Button>
+              <Button onClick={() => navigate('/admin/events')}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar Evento
+              </Button>
+            </div>
           </div>
         </div>
       </header>

@@ -1,9 +1,10 @@
+
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, Settings, Users, Calendar, BarChart3, CreditCard, RefreshCw } from 'lucide-react'
+import { LogOut, Settings, Users, Calendar, BarChart3, CreditCard, RefreshCw, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Admin = () => {
@@ -68,6 +69,26 @@ const Admin = () => {
                 onClick={() => navigate('/admin/events')}
               >
                 Acessar Eventos
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-primary" />
+                Inscrições
+              </CardTitle>
+              <CardDescription>
+                Visualizar e gerenciar todas as inscrições
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin/registrations')}
+              >
+                Ver Inscrições
               </Button>
             </CardContent>
           </Card>
