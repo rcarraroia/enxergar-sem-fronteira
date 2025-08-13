@@ -31,10 +31,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          // Usar setTimeout para evitar problemas de re-render
-          setTimeout(() => {
-            checkAdminStatus(session.user.id)
-          }, 0)
+          // Verificar se é admin baseado no email diretamente
+          const isUserAdmin = session.user.email?.includes('@admin.') || false
+          console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
+          setIsAdmin(isUserAdmin)
         } else {
           setIsAdmin(false)
         }
@@ -55,40 +55,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       
       if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus(session.user.id)
-        }, 0)
-      } else {
-        setLoading(false)
+        // Verificar se é admin baseado no email diretamente
+        const isUserAdmin = session.user.email?.includes('@admin.') || false
+        console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
+        setIsAdmin(isUserAdmin)
       }
+      
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
-
-  const checkAdminStatus = async (userId: string) => {
-    try {
-      console.log('🔍 Verificando status de admin para:', userId)
-      const { data, error } = await supabase
-        .from('organizers')
-        .select('email')
-        .eq('id', userId)
-        .single()
-
-      if (!error && data?.email?.includes('@admin.')) {
-        console.log('✅ Usuário é admin:', data.email)
-        setIsAdmin(true)
-      } else {
-        console.log('👤 Usuário não é admin:', data?.email || 'Email não encontrado')
-        setIsAdmin(false)
-      }
-    } catch (error) {
-      console.log('❌ Erro ao verificar status admin:', error)
-      setIsAdmin(false)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const signIn = async (email: string, password: string) => {
     try {
