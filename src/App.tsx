@@ -9,6 +9,9 @@ import { navItems } from "./nav-items";
 import Registration from "./pages/Registration";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import AdminSync from "./pages/AdminSync";
+import AdminPatients from "./pages/AdminPatients";
+import AdminPayments from "./pages/AdminPayments";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/sync" 
+              element={
+                <ProtectedRoute>
+                  <AdminSync />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/patients" 
+              element={
+                <ProtectedRoute>
+                  <AdminPatients />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/payments" 
+              element={
+                <ProtectedRoute>
+                  <AdminPayments />
                 </ProtectedRoute>
               } 
             />
