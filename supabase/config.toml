@@ -1,0 +1,5 @@
+
+project_id = "uoermayoxjaaomzjmuhp"
+
+[functions.process-valente-sync]
+verify_jwt = false

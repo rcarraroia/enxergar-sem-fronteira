@@ -125,7 +125,9 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}
             <div className="text-center md:text-left">
-              <p className="text-sm text-muted opacity-80">© 2025 Projeto Enxergar Sem Fronteira. Todos os direitos reservados.</p>
+              <p className="text-sm text-muted opacity-80">
+                © 2025 Projeto Visão Itinerante. Todos os direitos reservados.
+              </p>
               <p className="text-xs text-muted opacity-60 mt-1">
                 Uma iniciativa do Instituto Coração Valente
               </p>
