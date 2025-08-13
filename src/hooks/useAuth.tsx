@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
@@ -21,9 +20,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
+    console.log('🔍 AuthProvider: Inicializando verificação de sessão...')
+    
     // Verificar sessão atual
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('❌ Erro ao verificar sessão:', error)
+      }
+      
+      console.log('📊 Sessão atual:', session?.user?.email || 'Nenhuma')
       setUser(session?.user ?? null)
+      
       if (session?.user) {
         checkAdminStatus(session.user.id)
       }
@@ -33,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
         setUser(session?.user ?? null)
         if (session?.user) {
           await checkAdminStatus(session.user.id)
@@ -48,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      console.log('🔍 Verificando status de admin para:', userId)
       const { data, error } = await supabase
         .from('organizers')
         .select('email')
@@ -55,25 +64,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
 
       if (!error && data?.email?.includes('@admin.')) {
+        console.log('✅ Usuário é admin:', data.email)
         setIsAdmin(true)
+      } else {
+        console.log('👤 Usuário não é admin:', data?.email || 'Email não encontrado')
+        setIsAdmin(false)
       }
     } catch (error) {
-      console.log('Erro ao verificar status admin:', error)
+      console.log('❌ Erro ao verificar status admin:', error)
+      setIsAdmin(false)
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔐 Tentando fazer login com:', email)
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
+        console.error('❌ Erro no login:', error)
         toast.error('Erro ao fazer login: ' + error.message)
         throw error
       }
 
+      console.log('✅ Login realizado com sucesso!')
       toast.success('Login realizado com sucesso!')
     } catch (error) {
       throw error
@@ -134,6 +151,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     isAdmin,
   }
+
+  console.log('🎯 AuthProvider estado atual:', { 
+    user: user?.email || 'Nenhum', 
+    loading, 
+    isAdmin 
+  })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

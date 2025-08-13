@@ -12,7 +12,15 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const { user, loading, isAdmin } = useAuth()
 
+  console.log('🛡️ ProtectedRoute verificando:', { 
+    user: user?.email || 'Nenhum', 
+    loading, 
+    isAdmin, 
+    requireAdmin 
+  })
+
   if (loading) {
+    console.log('⏳ ProtectedRoute: Carregando...')
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -24,10 +32,12 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (!user) {
+    console.log('🔒 ProtectedRoute: Usuário não autenticado, redirecionando para /auth')
     return <Navigate to="/auth" replace />
   }
 
   if (requireAdmin && !isAdmin) {
+    console.log('⛔ ProtectedRoute: Usuário não é admin, acesso negado')
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -38,5 +48,6 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
     )
   }
 
+  console.log('✅ ProtectedRoute: Acesso permitido')
   return <>{children}</>
 }
