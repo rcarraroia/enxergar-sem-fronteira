@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -409,14 +409,14 @@ export type Database = {
       process_integration_queue: {
         Args: Record<PropertyKey, never>
         Returns: {
-          queue_id: string
           patient_id: string
           payload: Json
+          queue_id: string
           retries: number
         }[]
       }
       update_queue_status: {
-        Args: { queue_id: string; new_status: string; error_msg?: string }
+        Args: { error_msg?: string; new_status: string; queue_id: string }
         Returns: undefined
       }
     }
