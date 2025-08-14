@@ -88,7 +88,7 @@ export const useOrganizerEvents = () => {
             ...event,
             status: event.status as 'open' | 'closed' | 'cancelled',
             registrations_count: count || 0
-          }
+          } as Event
         })
       )
 
