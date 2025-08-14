@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Clock, Users, Eye, ArrowRight } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
+import { formatTime, formatDate } from '@/utils/timeFormat';
 
 const EventsSection = () => {
   const { data: events, isLoading } = useEvents();
@@ -35,16 +36,8 @@ const EventsSection = () => {
     };
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
   const handleEventClick = (eventId: string) => {
+    console.log('🎯 Redirecionando para registro do evento:', eventId);
     navigate(`/registration?eventId=${eventId}`);
   };
 
@@ -121,7 +114,7 @@ const EventsSection = () => {
                         <Calendar className="h-4 w-4 text-primary" />
                         <span className="font-medium text-foreground">{formatDate(nextDate.date)}</span>
                         <Clock className="h-4 w-4 text-primary ml-4" />
-                        <span>{nextDate.start_time} - {nextDate.end_time}</span>
+                        <span>{formatTime(nextDate.start_time)} - {formatTime(nextDate.end_time)}</span>
                       </div>
 
                       <div className="space-y-1">
