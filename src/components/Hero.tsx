@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
+import { formatTime, formatDate } from '@/utils/timeFormat';
 
 const Hero = () => {
   const { data: events } = useEvents();
@@ -38,15 +39,6 @@ const Hero = () => {
     } else {
       navigate('/registration');
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
   };
 
   const formatWeekday = (dateString: string) => {
@@ -143,7 +135,7 @@ const Hero = () => {
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-medical-bg">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
-                          <div className="font-medium text-foreground">{nextEventDate.start_time} - {nextEventDate.end_time}</div>
+                          <div className="font-medium text-foreground">{formatTime(nextEventDate.start_time)} - {formatTime(nextEventDate.end_time)}</div>
                           <div className="text-sm text-muted-foreground">Atendimento contínuo</div>
                         </div>
                       </div>

@@ -8,17 +8,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, ExternalLink } from 'lucide-react'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2 } from 'lucide-react'
 import { useOrganizers } from '@/hooks/useOrganizers'
 import { toast } from 'sonner'
 
 const AdminOrganizers = () => {
-  const { organizers, loading, createOrganizer, updateOrganizerStatus, updateOrganizerApiKey, resendInvitation } = useOrganizers()
+  const { organizers, loading, createOrganizer, editOrganizer, deleteOrganizer, updateOrganizerStatus, updateOrganizerApiKey, resendInvitation } = useOrganizers()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false)
+  const [editingOrganizer, setEditingOrganizer] = useState<any>(null)
   const [selectedOrganizerApiKey, setSelectedOrganizerApiKey] = useState<{id: string, apiKey: string}>({id: '', apiKey: ''})
-  const [formData, setFormData] = useState({ name: '', email: '', asaas_api_key: '' })
+  const [formData, setFormData] = useState({ name: '', email: '' })
   const [isCreating, setIsCreating] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,12 +34,46 @@ const AdminOrganizers = () => {
     setIsCreating(true)
     try {
       await createOrganizer(formData)
-      setFormData({ name: '', email: '', asaas_api_key: '' })
+      setFormData({ name: '', email: '' })
       setShowCreateDialog(false)
     } catch (error) {
       // Erro já tratado no hook
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.name.trim() || !formData.email.trim()) {
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    setIsEditing(true)
+    try {
+      await editOrganizer(editingOrganizer.id, formData)
+      setFormData({ name: '', email: '' })
+      setShowEditDialog(false)
+      setEditingOrganizer(null)
+    } catch (error) {
+      // Erro já tratado no hook
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
+  const handleEditOrganizer = (organizer: any) => {
+    setEditingOrganizer(organizer)
+    setFormData({ name: organizer.name, email: organizer.email })
+    setShowEditDialog(true)
+  }
+
+  const handleDeleteOrganizer = async (id: string) => {
+    try {
+      await deleteOrganizer(id)
+    } catch (error) {
+      // Erro já tratado no hook
     }
   }
 
@@ -135,30 +173,6 @@ const AdminOrganizers = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="asaas_api_key">API Key do Asaas (Organizador - 25%)</Label>
-                <Input
-                  id="asaas_api_key"
-                  type="password"
-                  value={formData.asaas_api_key}
-                  onChange={(e) => setFormData({ ...formData, asaas_api_key: e.target.value })}
-                  placeholder="Chave API do Asaas do organizador"
-                />
-                <div className="flex items-center gap-2 mt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => window.open('https://www.asaas.com/r/51a27e42-08b8-495b-acfd-5f1369c2e104', '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Criar conta no Asaas
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Caso o organizador ainda não tenha conta
-                  </p>
-                </div>
-              </div>
               <div className="flex gap-2 pt-4">
                 <Button 
                   type="button" 
@@ -178,6 +192,63 @@ const AdminOrganizers = () => {
                     <>
                       <Mail className="h-4 w-4 mr-2" />
                       Criar e Enviar Convite
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Organizador</DialogTitle>
+              <DialogDescription>
+                Atualize os dados do organizador.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEdit} className="space-y-4">
+              <div>
+                <Label htmlFor="edit_name">Nome Completo</Label>
+                <Input
+                  id="edit_name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Nome do organizador"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit_email">Email</Label>
+                <Input
+                  id="edit_email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowEditDialog(false)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isEditing} className="flex-1">
+                  {isEditing ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Salvar Alterações
                     </>
                   )}
                 </Button>
@@ -277,6 +348,10 @@ const AdminOrganizers = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditOrganizer(organizer)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEditApiKeyDialog(organizer.id)}>
                             <Key className="h-4 w-4 mr-2" />
                             Configurar API Key
@@ -304,6 +379,35 @@ const AdminOrganizers = () => {
                               Reenviar Convite
                             </DropdownMenuItem>
                           )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem 
+                                onSelect={(e) => e.preventDefault()}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o organizador "{organizer.name}"? 
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteOrganizer(organizer.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

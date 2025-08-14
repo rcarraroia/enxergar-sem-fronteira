@@ -4,6 +4,7 @@ import { useEvents } from '@/hooks/useEvents'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, Users, Clock, Loader2 } from 'lucide-react'
+import { formatTime, formatDate } from '@/utils/timeFormat'
 
 export const EventsList = () => {
   const { data: events, isLoading, error } = useEvents()
@@ -68,12 +69,12 @@ export const EventsList = () => {
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>{new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                    <span>{formatDate(eventDate.date)}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-primary" />
-                    <span>{eventDate.start_time} às {eventDate.end_time}</span>
+                    <span>{formatTime(eventDate.start_time)} às {formatTime(eventDate.end_time)}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">

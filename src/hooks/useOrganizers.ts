@@ -55,7 +55,7 @@ export const useOrganizers = () => {
     }
   }
 
-  const createOrganizer = async (organizerData: { name: string; email: string; asaas_api_key?: string }) => {
+  const createOrganizer = async (organizerData: { name: string; email: string }) => {
     try {
       // Gerar token de convite
       const invitationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -69,8 +69,7 @@ export const useOrganizers = () => {
           email: organizerData.email,
           status: 'pending',
           invitation_token: invitationToken,
-          invitation_expires_at: expiresAt.toISOString(),
-          asaas_api_key: organizerData.asaas_api_key || null
+          invitation_expires_at: expiresAt.toISOString()
         })
         .select()
         .single()
@@ -86,6 +85,42 @@ export const useOrganizers = () => {
     } catch (error) {
       console.error('Erro ao criar organizador:', error)
       toast.error('Erro ao criar organizador')
+      throw error
+    }
+  }
+
+  const editOrganizer = async (id: string, data: { name: string; email: string }) => {
+    try {
+      const { error } = await supabase
+        .from('organizers')
+        .update(data)
+        .eq('id', id)
+
+      if (error) throw error
+
+      await fetchOrganizers()
+      toast.success('Organizador atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao atualizar organizador:', error)
+      toast.error('Erro ao atualizar organizador')
+      throw error
+    }
+  }
+
+  const deleteOrganizer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('organizers')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      await fetchOrganizers()
+      toast.success('Organizador excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir organizador:', error)
+      toast.error('Erro ao excluir organizador')
       throw error
     }
   }
@@ -159,6 +194,8 @@ export const useOrganizers = () => {
     organizers,
     loading,
     createOrganizer,
+    editOrganizer,
+    deleteOrganizer,
     updateOrganizerStatus,
     updateOrganizerApiKey,
     resendInvitation,
