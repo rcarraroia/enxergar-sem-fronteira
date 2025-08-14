@@ -31,19 +31,25 @@ const Hero = () => {
   }];
 
   const handleRegisterClick = () => {
-    navigate('/registration');
+    if (nextEvent) {
+      navigate(`/registration?eventId=${nextEvent.id}`);
+    } else {
+      navigate('/registration');
+    }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: 'numeric',
-      month: 'long',
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric'
     });
   };
 
   const formatWeekday = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
       weekday: 'long'
     });
   };

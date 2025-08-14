@@ -36,11 +36,16 @@ const EventsSection = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
-      month: 'short',
+      month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const handleEventClick = (eventId: string) => {
+    navigate(`/registration?eventId=${eventId}`);
   };
 
   const handleWaitingListClick = () => {
@@ -147,7 +152,7 @@ const EventsSection = () => {
                     <Button 
                       className={`w-full ${event.available_slots === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
                       disabled={event.available_slots === 0}
-                      onClick={() => navigate('/registration')}
+                      onClick={() => handleEventClick(event.id)}
                     >
                       {event.available_slots === 0 ? 'Evento Lotado' : 'Inscrever-se'}
                       {event.available_slots > 0 && (
