@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
@@ -17,9 +16,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const determineUserRole = (email: string): 'admin' | 'organizer' | 'user' => {
+const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user'> => {
+  // Verificar se é admin (mantém a lógica baseada em email)
   if (email.includes('@admin.')) return 'admin'
-  if (email.includes('@organizer.')) return 'organizer'
+  
+  try {
+    // Verificar se é organizador consultando a tabela organizers
+    const { data, error } = await supabase
+      .from('organizers')
+      .select('id')
+      .eq('email', email)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (error) {
+      console.error('Erro ao verificar organizador:', error)
+      return 'user'
+    }
+
+    if (data) {
+      return 'organizer'
+    }
+  } catch (error) {
+    console.error('Erro ao determinar papel do usuário:', error)
+  }
+  
   return 'user'
 }
 
@@ -40,11 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
         
         // Corrigir bug: aguardar um tick antes de atualizar o estado
-        setTimeout(() => {
+        setTimeout(async () => {
           setUser(session?.user ?? null)
           
           if (session?.user) {
-            const role = determineUserRole(session.user.email || '')
+            const role = await determineUserRole(session.user.email || '')
             console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
             setUserRole(role)
 
@@ -76,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const role = determineUserRole(session.user.email || '')
+          const role = await determineUserRole(session.user.email || '')
           console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
           setUserRole(role)
 
@@ -152,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         // Criar perfil na tabela organizers se for organizador
-        const userRole = role || determineUserRole(email)
+        const userRole = role || await determineUserRole(email)
         if (userRole === 'organizer') {
           try {
             const { error: profileError } = await supabase

@@ -615,6 +615,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_organizer_email: {
+        Args: { email_to_check: string }
+        Returns: boolean
+      }
       is_organizer_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
