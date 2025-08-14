@@ -12,6 +12,15 @@ export default function Registration() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString + 'T00:00:00')
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
   const handleRegisterClick = (eventId: string) => {
     setSelectedEventId(eventId)
     setShowRegistrationForm(true)
@@ -116,7 +125,7 @@ export default function Registration() {
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span>{new Date(event.date).toLocaleDateString('pt-BR')}</span>
+                        <span>{formatDate(event.date)}</span>
                       </div>
                       
                       <div className="flex items-center gap-2 text-sm">
