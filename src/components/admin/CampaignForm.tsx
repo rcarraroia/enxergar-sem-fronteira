@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -20,6 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Calendar, CalendarIcon, Plus, X } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -68,14 +68,14 @@ export const CampaignForm = () => {
   const onSubmit = async (data: CampaignFormData) => {
     try {
       const submitData: CreateCampaignData = {
-        title: data.title,
+        title: data.title!,
         description: data.description,
         event_id: data.event_id,
         goal_amount: data.goal_amount,
         suggested_amounts: customAmounts,
-        allow_custom_amount: data.allow_custom_amount,
-        allow_subscriptions: data.allow_subscriptions,
-        status: data.status,
+        allow_custom_amount: data.allow_custom_amount!,
+        allow_subscriptions: data.allow_subscriptions!,
+        status: data.status!,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
       }
@@ -222,10 +222,10 @@ export const CampaignForm = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
+                  <CalendarComponent
                     mode="single"
                     selected={startDate}
-                    onSelect={(date: Date | undefined) => setStartDate(date)}
+                    onSelect={setStartDate}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
@@ -249,10 +249,10 @@ export const CampaignForm = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
+                  <CalendarComponent
                     mode="single"
                     selected={endDate}
-                    onSelect={(date: Date | undefined) => setEndDate(date)}
+                    onSelect={setEndDate}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
