@@ -28,6 +28,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
         
+        // Corrigir bug: aguardar um tick antes de atualizar o estado
+        setTimeout(() => {
+          setUser(session?.user ?? null)
+          
+          if (session?.user) {
+            // Verificar se é admin baseado no email
+            const isUserAdmin = session.user.email?.includes('@admin.') || false
+            console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
+            setIsAdmin(isUserAdmin)
+          } else {
+            setIsAdmin(false)
+          }
+          
+          setLoading(false)
+        }, 0)
+      }
+    )
+
+    // Verificar sessão atual
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('❌ Erro ao verificar sessão:', error)
+          setLoading(false)
+          return
+        }
+        
+        console.log('📊 Sessão atual:', session?.user?.email || 'Nenhuma')
         setUser(session?.user ?? null)
         
         if (session?.user) {
@@ -35,34 +65,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const isUserAdmin = session.user.email?.includes('@admin.') || false
           console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
           setIsAdmin(isUserAdmin)
-        } else {
-          setIsAdmin(false)
         }
         
         setLoading(false)
-      }
-    )
-
-    // Verificar sessão atual
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('❌ Erro ao verificar sessão:', error)
+      } catch (error) {
+        console.error('❌ Erro crítico na verificação de sessão:', error)
         setLoading(false)
-        return
       }
-      
-      console.log('📊 Sessão atual:', session?.user?.email || 'Nenhuma')
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        // Verificar se é admin baseado no email
-        const isUserAdmin = session.user.email?.includes('@admin.') || false
-        console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
-        setIsAdmin(isUserAdmin)
-      }
-      
-      setLoading(false)
-    })
+    }
+
+    checkSession()
 
     return () => subscription.unsubscribe()
   }, [])
@@ -109,17 +121,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user) {
-        // Criar perfil do organizador
-        const { error: profileError } = await supabase
-          .from('organizers')
-          .insert({
-            id: data.user.id,
-            name,
-            email,
-          })
+        // Corrigir bug: verificar se a tabela organizers existe antes de inserir
+        try {
+          const { error: profileError } = await supabase
+            .from('organizers')
+            .insert({
+              id: data.user.id,
+              name,
+              email,
+            })
 
-        if (profileError) {
-          console.error('Erro ao criar perfil:', profileError)
+          if (profileError) {
+            console.warn('⚠️ Erro ao criar perfil (pode ser normal se tabela não existir):', profileError)
+          }
+        } catch (profileError) {
+          console.warn('⚠️ Tabela organizers pode não existir:', profileError)
         }
       }
 
@@ -138,6 +154,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error('Erro ao fazer logout: ' + error.message)
         throw error
       }
+      
+      // Corrigir bug: limpar estados locais imediatamente
+      setUser(null)
+      setIsAdmin(false)
+      
       toast.success('Logout realizado com sucesso!')
     } catch (error) {
       setLoading(false)

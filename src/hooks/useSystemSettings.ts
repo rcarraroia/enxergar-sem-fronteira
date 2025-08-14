@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { debugUtils } from '@/utils/debugUtils'
 
 interface SystemSettings {
   social_links: {
@@ -32,9 +33,16 @@ export const useSystemSettings = () => {
     if (typeof value === 'object') return value
     if (typeof value === 'string') {
       try {
-        // Check if it's already a valid JSON string
+        // Corrigir bug: verificar se é uma string vazia
         if (value.trim() === '') return fallback
-        return JSON.parse(value)
+        
+        // Corrigir bug: verificar se já é um objeto válido
+        if (value.startsWith('{') && value.endsWith('}')) {
+          return JSON.parse(value)
+        }
+        
+        // Se não parece ser JSON, retornar como string
+        return value
       } catch (error) {
         console.warn('🔧 Failed to parse JSON value:', value, 'Using fallback:', fallback)
         return fallback
@@ -47,18 +55,22 @@ export const useSystemSettings = () => {
     try {
       console.log('🔧 Buscando configurações do sistema...')
       
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('key, value')
+      const result = await debugUtils.measureFunction(async () => {
+        const { data, error } = await supabase
+          .from('system_settings')
+          .select('key, value')
 
-      if (error) {
-        console.error('❌ Erro ao buscar configurações:', error)
-        throw error
-      }
+        if (error) {
+          console.error('❌ Erro ao buscar configurações:', error)
+          throw error
+        }
 
-      console.log('📊 Dados recebidos:', data)
+        return data
+      }, 'fetchSystemSettings')
 
-      if (!data || data.length === 0) {
+      console.log('📊 Dados recebidos:', result)
+
+      if (!result || result.length === 0) {
         console.log('📝 Nenhuma configuração encontrada, usando padrões')
         setSettings(DEFAULT_SETTINGS)
         setLoading(false)
@@ -67,7 +79,7 @@ export const useSystemSettings = () => {
 
       const settingsObj: any = { ...DEFAULT_SETTINGS }
       
-      data.forEach(item => {
+      result.forEach(item => {
         if (!item.key || item.value === undefined || item.value === null) {
           console.warn('⚠️ Item inválido ignorado:', item)
           return
@@ -83,7 +95,7 @@ export const useSystemSettings = () => {
         }
       })
 
-      // Ensure social_links has the correct structure
+      // Corrigir bug: garantir estrutura correta do social_links
       if (!settingsObj.social_links || typeof settingsObj.social_links !== 'object') {
         settingsObj.social_links = DEFAULT_SETTINGS.social_links
       } else {
@@ -108,20 +120,22 @@ export const useSystemSettings = () => {
     try {
       console.log(`📝 Atualizando configuração: ${key}`)
       
-      const jsonValue = typeof value === 'string' ? value : JSON.stringify(value)
-      
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert({ 
-          key, 
-          value: jsonValue,
-          updated_at: new Date().toISOString()
-        })
+      await debugUtils.measureFunction(async () => {
+        const jsonValue = typeof value === 'string' ? value : JSON.stringify(value)
+        
+        const { error } = await supabase
+          .from('system_settings')
+          .upsert({ 
+            key, 
+            value: jsonValue,
+            updated_at: new Date().toISOString()
+          })
 
-      if (error) {
-        console.error('❌ Erro ao atualizar configuração:', error)
-        throw error
-      }
+        if (error) {
+          console.error('❌ Erro ao atualizar configuração:', error)
+          throw error
+        }
+      }, `updateSetting-${key}`)
 
       await fetchSettings()
       toast.success('Configuração atualizada com sucesso!')

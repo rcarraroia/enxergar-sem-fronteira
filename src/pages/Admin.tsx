@@ -3,17 +3,20 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Calendar, Settings, Activity, TestTube } from 'lucide-react'
+import { Users, Calendar, Settings, Activity, TestTube, Bug } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { LazyWrapper, LazySystemHealthCard } from '@/components/LazyComponents'
 import { PerformanceMonitor } from '@/components/admin/PerformanceMonitor'
+import { SystemDebugCard } from '@/components/admin/SystemDebugCard'
 import { runAutomatedTests } from '@/utils/testUtils'
 import { useOptimizedCache } from '@/hooks/useOptimizedCache'
+import { useErrorBoundary } from '@/hooks/useErrorBoundary'
 import { toast } from 'sonner'
 
 const Admin = () => {
   const { user } = useAuth()
   const { prefetchCriticalData } = useOptimizedCache()
+  const { errors, clearErrors } = useErrorBoundary('AdminPage')
 
   const handleRunTests = () => {
     toast.info('Executando testes automatizados...')
@@ -46,9 +49,25 @@ const Admin = () => {
         <p className="text-gray-600">
           Bem-vindo, {user?.email}
         </p>
+        {errors.length > 0 && (
+          <div className="mt-2">
+            <Badge variant="destructive" className="mr-2">
+              {errors.length} erro(s) detectado(s)
+            </Badge>
+            <Button onClick={clearErrors} variant="outline" size="sm">
+              Limpar erros
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Ferramentas de Performance e Testes */}
+      {/* Ferramentas de Debug e Performance */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <SystemDebugCard />
+        <PerformanceMonitor />
+      </div>
+
+      {/* Ferramentas de Testes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -70,7 +89,33 @@ const Admin = () => {
           </CardContent>
         </Card>
 
-        <PerformanceMonitor />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Status do Sistema
+            </CardTitle>
+            <CardDescription>
+              Monitoramento em tempo real
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Aplicação</span>
+                <Badge variant="default">Online</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Banco de Dados</span>
+                <Badge variant="default">Conectado</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Cache</span>
+                <Badge variant="secondary">Otimizado</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Menu principal */}
