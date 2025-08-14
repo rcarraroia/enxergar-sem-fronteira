@@ -42,6 +42,13 @@ const Header = () => {
     }
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
@@ -62,16 +69,28 @@ const Header = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
-            <a href="#home" className="text-gray-600 hover:text-primary transition-colors">
+            <button 
+              onClick={() => scrollToSection('home')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Início
-            </a>
-            <a href="#about" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => scrollToSection('about')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Sobre
-            </a>
-            <a href="#events" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => scrollToSection('events')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Eventos
-            </a>
-            <a href="/registration" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <a 
+              href="/registration" 
+              className="text-gray-600 hover:text-primary transition-colors"
+            >
               Cadastrar-se
             </a>
           </div>
@@ -95,7 +114,7 @@ const Header = () => {
             ) : (
               <>
                 <Button variant="outline" asChild>
-                  <a href="/auth">Login</a>
+                  <a href="/auth">Conecte-se</a>
                 </Button>
                 <Button asChild>
                   <a href="/registration">Participar</a>
