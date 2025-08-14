@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -163,20 +162,10 @@ export const useOrganizers = () => {
     try {
       console.log('✏️ Editando organizador:', id, data)
       
-      // Se uma senha foi fornecida, atualizar a conta de usuário no Supabase Auth
+      // Para atualização de senha, informar que deve ser feita pelo próprio usuário
       if (data.password) {
-        console.log('🔐 Atualizando senha do usuário...')
-        const { error: authError } = await supabase.auth.admin.updateUserById(id, {
-          password: data.password
-        })
-
-        if (authError) {
-          console.error('❌ Erro ao atualizar senha:', authError)
-          toast.error('Erro ao atualizar senha: ' + authError.message)
-          throw authError
-        }
-
-        console.log('✅ Senha atualizada com sucesso')
+        toast.error('Por questões de segurança, a senha deve ser alterada pelo próprio organizador através do sistema de recuperação de senha.')
+        return
       }
 
       // Atualizar dados do organizador (sem a senha)
