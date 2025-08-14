@@ -52,8 +52,9 @@ const AdminEvents = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredEvents = events?.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+    event.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.organizers?.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || []
 
   const handleCreateEvent = (data: EventFormData) => {
@@ -161,9 +162,9 @@ const AdminEvents = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Gerenciamento de Eventos</h1>
+          <h1 className="text-2xl font-bold">Gerenciamento de Atendimentos</h1>
           <p className="text-muted-foreground">
-            Crie e gerencie eventos oftalmológicos com múltiplas datas
+            Crie e gerencie atendimentos oftalmológicos gratuitos com múltiplas datas
           </p>
         </div>
         <div className="flex gap-2">
@@ -173,7 +174,7 @@ const AdminEvents = () => {
           </Button>
           <Button onClick={() => setViewMode('create')}>
             <Plus className="mr-2 h-4 w-4" />
-            Novo Evento
+            Novo Atendimento
           </Button>
         </div>
       </div>
@@ -184,7 +185,7 @@ const AdminEvents = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Buscar eventos por título ou local..."
+                placeholder="Buscar por cidade, local ou organizador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -197,28 +198,28 @@ const AdminEvents = () => {
       {/* Lista de Eventos */}
       <Card>
         <CardHeader>
-          <CardTitle>Eventos Cadastrados</CardTitle>
+          <CardTitle>Atendimentos Cadastrados</CardTitle>
           <CardDescription>
-            {filteredEvents.length} evento(s) encontrado(s)
+            {filteredEvents.length} atendimento(s) encontrado(s)
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando eventos...</span>
+              <span className="ml-2">Carregando atendimentos...</span>
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm ? 'Nenhum evento encontrado com este filtro' : 'Nenhum evento cadastrado'}
+                {searchTerm ? 'Nenhum atendimento encontrado com este filtro' : 'Nenhum atendimento cadastrado'}
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Evento</TableHead>
+                  <TableHead>Cidade</TableHead>
                   <TableHead>Datas</TableHead>
                   <TableHead>Local</TableHead>
                   <TableHead>Vagas Totais</TableHead>
@@ -235,11 +236,16 @@ const AdminEvents = () => {
                     <TableRow key={event.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{event.title}</div>
+                          <div className="font-medium">{event.city}</div>
                           <div className="text-sm text-muted-foreground">
-                            {event.description?.slice(0, 60)}
-                            {event.description && event.description.length > 60 && '...'}
+                            Org: {event.organizers?.name || 'Organizador Local'}
                           </div>
+                          {event.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {event.description.slice(0, 60)}
+                              {event.description.length > 60 && '...'}
+                            </div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -292,7 +298,7 @@ const AdminEvents = () => {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o evento "{event.title}"? 
+                                  Tem certeza que deseja excluir o atendimento em "{event.city}"? 
                                   Esta ação não pode ser desfeita e excluirá todas as datas e inscrições associadas.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>

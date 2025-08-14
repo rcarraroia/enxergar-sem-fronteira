@@ -14,7 +14,7 @@ export interface EventDate {
 }
 
 export interface EventFormData {
-  title: string
+  city: string
   description?: string
   location: string
   address: string
@@ -28,6 +28,11 @@ export interface Event extends Omit<EventFormData, 'dates'> {
   created_at: string
   updated_at: string
   event_dates: EventDate[]
+  organizers?: {
+    id: string
+    name: string
+    email: string
+  }
 }
 
 export const useEventsAdmin = () => {
@@ -50,6 +55,11 @@ export const useEventsAdmin = () => {
             end_time,
             total_slots,
             available_slots
+          ),
+          organizers (
+            id,
+            name,
+            email
           )
         `)
         .order('created_at', { ascending: false })
@@ -69,13 +79,13 @@ export const useEventsAdmin = () => {
     mutationFn: async (eventData: EventFormData) => {
       if (!user) throw new Error('Usuário não autenticado')
       
-      console.log('📝 Criando novo evento:', eventData.title)
+      console.log('📝 Criando novo evento:', eventData.city)
       
       // Criar o evento
       const { data: event, error: eventError } = await supabase
         .from('events')
         .insert({
-          title: eventData.title,
+          city: eventData.city,
           description: eventData.description,
           location: eventData.location,
           address: eventData.address,
@@ -109,7 +119,7 @@ export const useEventsAdmin = () => {
         throw datesError
       }
 
-      console.log('✅ Evento criado com sucesso:', event.title)
+      console.log('✅ Evento criado com sucesso:', event.city)
       return event
     },
     onSuccess: () => {
@@ -124,13 +134,13 @@ export const useEventsAdmin = () => {
 
   const updateEvent = useMutation({
     mutationFn: async (eventData: EventFormData & { id: string }) => {
-      console.log('📝 Atualizando evento:', eventData.title)
+      console.log('📝 Atualizando evento:', eventData.city)
       
       // Atualizar o evento
       const { data: event, error: eventError } = await supabase
         .from('events')
         .update({
-          title: eventData.title,
+          city: eventData.city,
           description: eventData.description,
           location: eventData.location,
           address: eventData.address,
@@ -176,7 +186,7 @@ export const useEventsAdmin = () => {
         throw datesError
       }
 
-      console.log('✅ Evento atualizado com sucesso:', event.title)
+      console.log('✅ Evento atualizado com sucesso:', event.city)
       return event
     },
     onSuccess: () => {

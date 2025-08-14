@@ -44,12 +44,19 @@ export const EventsList = () => {
           <Card key={event.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{event.title}</CardTitle>
+                <CardTitle className="text-lg">{event.city}</CardTitle>
                 <Badge variant={totalAvailable > 0 ? "default" : "secondary"}>
                   {totalAvailable > 0 ? "Vagas Disponíveis" : "Lotado"}
                 </Badge>
               </div>
-              <CardDescription>{event.description}</CardDescription>
+              <CardDescription>
+                Organizado por: {event.organizers?.name || 'Organizador Local'}
+              </CardDescription>
+              {event.description && (
+                <CardDescription className="mt-2">
+                  {event.description}
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {/* Mostrar todas as datas do evento */}

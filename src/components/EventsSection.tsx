@@ -104,7 +104,10 @@ const EventsSection = () => {
                           <Eye className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-foreground text-lg">{event.title}</h3>
+                          <h3 className="font-semibold text-foreground text-lg">{event.city}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Organizado por: {event.organizers?.name || 'Organizador Local'}
+                          </p>
                           <Badge variant={statusInfo.variant} className="mt-1">
                             {statusInfo.badge}
                           </Badge>

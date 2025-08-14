@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { EventFormData, EventDate } from '@/hooks/useEventsAdmin'
-import { Loader2, Save, X, Plus, Trash2, Calendar } from 'lucide-react'
+import { Loader2, Save, X, Plus, Trash2, Calendar, MapPin } from 'lucide-react'
 
 interface EventFormProps {
   initialData?: EventFormData & { id?: string }
@@ -23,7 +23,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   isLoading
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
-    title: '',
+    city: '',
     description: '',
     location: '',
     address: '',
@@ -41,7 +41,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   useEffect(() => {
     if (initialData) {
       setFormData({
-        title: initialData.title,
+        city: initialData.city,
         description: initialData.description || '',
         location: initialData.location,
         address: initialData.address,
@@ -112,23 +112,26 @@ export const EventForm: React.FC<EventFormProps> = ({
           {initialData ? 'Editar Evento' : 'Criar Novo Evento'}
         </CardTitle>
         <CardDescription>
-          Preencha os dados do evento oftalmológico e suas datas
+          Preencha os dados do atendimento oftalmológico gratuito
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Informações básicas do evento */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Informações do Evento</h3>
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Informações do Atendimento
+            </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <Label htmlFor="title">Título do Evento *</Label>
+                <Label htmlFor="city">Cidade do Atendimento *</Label>
                 <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ex: Consulta Oftalmológica Gratuita"
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  placeholder="Ex: São Paulo, Rio de Janeiro, Belo Horizonte"
                   required
                 />
               </div>
@@ -139,7 +142,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descreva o evento, procedimentos disponíveis, etc."
+                  placeholder="Descreva procedimentos disponíveis, requisitos especiais, etc."
                   rows={3}
                 />
               </div>
@@ -192,7 +195,7 @@ export const EventForm: React.FC<EventFormProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Datas do Evento
+                Datas do Atendimento
               </h3>
               <Button type="button" variant="outline" onClick={addDate}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -271,7 +274,7 @@ export const EventForm: React.FC<EventFormProps> = ({
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
-              {initialData ? 'Atualizar' : 'Criar'} Evento
+              {initialData ? 'Atualizar' : 'Criar'} Atendimento
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               <X className="mr-2 h-4 w-4" />
