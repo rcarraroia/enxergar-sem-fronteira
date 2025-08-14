@@ -14,6 +14,9 @@ interface SystemSettings {
   logo_footer: string
   project_name: string
   project_description: string
+  asaas_ong_coracao_valente: string
+  asaas_projeto_visao_itinerante: string
+  asaas_renum_tecnologia: string
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -21,7 +24,10 @@ const DEFAULT_SETTINGS: SystemSettings = {
   logo_header: '',
   logo_footer: '',
   project_name: 'Enxergar sem Fronteiras',
-  project_description: 'Democratizando o acesso à saúde oftalmológica'
+  project_description: 'Democratizando o acesso à saúde oftalmológica',
+  asaas_ong_coracao_valente: '',
+  asaas_projeto_visao_itinerante: '',
+  asaas_renum_tecnologia: ''
 }
 
 export const useSystemSettings = () => {

@@ -1,9 +1,10 @@
+
 import Admin from "./pages/Admin";
 import AdminPatients from "./pages/AdminPatients";
 import AdminEvents from "./pages/AdminEvents";
 import AdminRegistrations from "./pages/AdminRegistrations";
 import AdminSync from "./pages/AdminSync";
-import AdminPayments from "./pages/AdminPayments";
+import AdminDonations from "./pages/AdminDonations";
 import AdminEventDetails from "./pages/AdminEventDetails";
 import AdminOrganizers from "./pages/AdminOrganizers";
 import AdminSettings from "./pages/AdminSettings";
@@ -52,9 +53,9 @@ export const navItems = [
     page: <AdminSync />,
   },
   {
-    title: "Pagamentos",
-    to: "/admin/payments",
-    icon: "credit-card",
-    page: <AdminPayments />,
+    title: "Campanhas de Arrecadação",
+    to: "/admin/donations",
+    icon: "heart",
+    page: <AdminDonations />,
   },
 ];

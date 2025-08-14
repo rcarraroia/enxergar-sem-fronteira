@@ -13,10 +13,11 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="logos">Logos</TabsTrigger>
           <TabsTrigger value="social">Redes Sociais</TabsTrigger>
+          <TabsTrigger value="apikeys">API Keys</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
@@ -29,6 +30,10 @@ const AdminSettings = () => {
 
         <TabsContent value="social" className="space-y-4">
           <SystemSettingsForm section="social" />
+        </TabsContent>
+
+        <TabsContent value="apikeys" className="space-y-4">
+          <SystemSettingsForm section="apikeys" />
         </TabsContent>
       </Tabs>
     </div>

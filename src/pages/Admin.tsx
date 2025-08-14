@@ -3,8 +3,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Calendar, Settings, Activity, TestTube, Bug } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Users, Calendar, Settings, Activity, TestTube, Bug, UserCog, Heart } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { LazyWrapper, LazySystemHealthCard } from '@/components/LazyComponents'
 import { PerformanceMonitor } from '@/components/admin/PerformanceMonitor'
 import { SystemDebugCard } from '@/components/admin/SystemDebugCard'
@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 
 const Admin = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { prefetchCriticalData } = useOptimizedCache()
   const { errors, clearErrors } = useErrorBoundary('AdminPage')
 
@@ -147,6 +148,48 @@ const Admin = () => {
             </CardHeader>
           </Card>
         </Link>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCog className="h-5 w-5 text-primary" />
+              Organizadores Locais
+            </CardTitle>
+            <CardDescription>
+              Gerenciar organizadores e suas API Keys do Asaas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full" 
+              variant="outline"
+              onClick={() => navigate('/admin/organizers')}
+            >
+              Gerenciar Organizadores
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-primary" />
+              Campanhas de Arrecadação
+            </CardTitle>
+            <CardDescription>
+              Gestão de campanhas de arrecadação
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full" 
+              variant="outline"
+              onClick={() => navigate('/admin/donations')}
+            >
+              Gerenciar Campanhas
+            </Button>
+          </CardContent>
+        </Card>
 
         <Link to="/admin/settings">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">

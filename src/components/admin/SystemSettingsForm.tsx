@@ -1,15 +1,16 @@
+
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Settings, Image, Share2, Save } from 'lucide-react'
+import { Settings, Image, Share2, Save, Key, ExternalLink } from 'lucide-react'
 import { useSystemSettings } from '@/hooks/useSystemSettings'
 import { ImageUpload } from './ImageUpload'
 
 interface SystemSettingsFormProps {
-  section: 'general' | 'logos' | 'social'
+  section: 'general' | 'logos' | 'social' | 'apikeys'
 }
 
 export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
@@ -33,6 +34,11 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           break
         case 'social':
           await updateSetting('social_links', formData.social_links)
+          break
+        case 'apikeys':
+          await updateSetting('asaas_ong_coracao_valente', formData.asaas_ong_coracao_valente)
+          await updateSetting('asaas_projeto_visao_itinerante', formData.asaas_projeto_visao_itinerante)
+          await updateSetting('asaas_renum_tecnologia', formData.asaas_renum_tecnologia)
           break
       }
     } catch (error) {
@@ -123,6 +129,76 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           <Button onClick={handleSave} className="w-full">
             <Save className="h-4 w-4 mr-2" />
             Salvar Configurações de Logo
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (section === 'apikeys') {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Key className="h-5 w-5" />
+            Configuração das API Keys Asaas
+          </CardTitle>
+          <CardDescription>
+            Configure as chaves API das 3 entidades fixas que recebem 25% cada no split automático
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="asaas_ong_coracao_valente">API Key - ONG Coração Valente (25%)</Label>
+            <Input
+              id="asaas_ong_coracao_valente"
+              type="password"
+              value={formData.asaas_ong_coracao_valente}
+              onChange={(e) => setFormData({ ...formData, asaas_ong_coracao_valente: e.target.value })}
+              placeholder="Chave API do Asaas da ONG Coração Valente"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="asaas_projeto_visao">API Key - Projeto Visão Itinerante (25%)</Label>
+            <Input
+              id="asaas_projeto_visao"
+              type="password"
+              value={formData.asaas_projeto_visao_itinerante}
+              onChange={(e) => setFormData({ ...formData, asaas_projeto_visao_itinerante: e.target.value })}
+              placeholder="Chave API do Asaas do Projeto Visão Itinerante"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="asaas_renum">API Key - Renum Tecnologia (25%)</Label>
+            <Input
+              id="asaas_renum"
+              type="password"
+              value={formData.asaas_renum_tecnologia}
+              onChange={(e) => setFormData({ ...formData, asaas_renum_tecnologia: e.target.value })}
+              placeholder="Chave API do Asaas da Renum Tecnologia"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg">
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.open('https://www.asaas.com/r/51a27e42-08b8-495b-acfd-5f1369c2e104', '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Criar conta no Asaas
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              Caso alguma entidade ainda não tenha conta no Asaas
+            </p>
+          </div>
+          
+          <Button onClick={handleSave} className="w-full">
+            <Save className="h-4 w-4 mr-2" />
+            Salvar Configurações das API Keys
           </Button>
         </CardContent>
       </Card>

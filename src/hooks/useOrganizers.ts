@@ -12,6 +12,7 @@ interface Organizer {
   invited_by?: string | null
   invitation_token?: string | null
   invitation_expires_at?: string | null
+  asaas_api_key?: string | null
 }
 
 export const useOrganizers = () => {
@@ -30,7 +31,8 @@ export const useOrganizers = () => {
           created_at,
           invited_by,
           invitation_token,
-          invitation_expires_at
+          invitation_expires_at,
+          asaas_api_key
         `)
         .order('created_at', { ascending: false })
 
@@ -53,7 +55,7 @@ export const useOrganizers = () => {
     }
   }
 
-  const createOrganizer = async (organizerData: { name: string; email: string }) => {
+  const createOrganizer = async (organizerData: { name: string; email: string; asaas_api_key?: string }) => {
     try {
       // Gerar token de convite
       const invitationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -67,7 +69,8 @@ export const useOrganizers = () => {
           email: organizerData.email,
           status: 'pending',
           invitation_token: invitationToken,
-          invitation_expires_at: expiresAt.toISOString()
+          invitation_expires_at: expiresAt.toISOString(),
+          asaas_api_key: organizerData.asaas_api_key || null
         })
         .select()
         .single()
@@ -101,6 +104,23 @@ export const useOrganizers = () => {
     } catch (error) {
       console.error('Erro ao atualizar organizador:', error)
       toast.error('Erro ao atualizar status')
+    }
+  }
+
+  const updateOrganizerApiKey = async (id: string, asaas_api_key: string) => {
+    try {
+      const { error } = await supabase
+        .from('organizers')
+        .update({ asaas_api_key })
+        .eq('id', id)
+
+      if (error) throw error
+
+      await fetchOrganizers()
+      toast.success('API Key do organizador atualizada!')
+    } catch (error) {
+      console.error('Erro ao atualizar API Key:', error)
+      toast.error('Erro ao atualizar API Key')
     }
   }
 
@@ -140,6 +160,7 @@ export const useOrganizers = () => {
     loading,
     createOrganizer,
     updateOrganizerStatus,
+    updateOrganizerApiKey,
     resendInvitation,
     fetchOrganizers
   }
