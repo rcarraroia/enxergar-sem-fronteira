@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -86,7 +85,7 @@ const OrganizerProfile = () => {
       if (error) throw error
 
       // Safely parse notification_preferences
-      const notificationPrefs = data.notification_preferences as NotificationPreferences || {
+      const notificationPrefs = (data.notification_preferences as unknown as NotificationPreferences) || {
         email_reminders: true,
         sms_reminders: false,
         registration_notifications: true,
@@ -156,7 +155,7 @@ const OrganizerProfile = () => {
           address: formData.address,
           asaas_api_key: formData.asaas_api_key || null,
           whatsapp_api_key: formData.whatsapp_api_key || null,
-          notification_preferences: formData.notification_preferences,
+          notification_preferences: formData.notification_preferences as unknown as any,
           updated_at: new Date().toISOString()
         })
         .eq('id', user?.id)
