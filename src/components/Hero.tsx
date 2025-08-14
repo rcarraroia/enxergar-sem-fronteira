@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
@@ -115,15 +116,15 @@ const Hero = () => {
                     <Eye className="h-10 w-10 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">
-                    {nextEvent ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
+                    {nextEvent && nextEventDate ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
                   </h3>
-                  {nextEvent && (
+                  {nextEvent && nextEventDate ? (
                     <div className="text-2xl font-bold text-primary mt-2 mb-2">
                       {nextEvent.city}
                     </div>
-                  )}
+                  ) : null}
                   <p className="text-muted-foreground">
-                    {nextEvent ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
+                    {nextEvent && nextEventDate ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
                   </p>
                 </div>
 
