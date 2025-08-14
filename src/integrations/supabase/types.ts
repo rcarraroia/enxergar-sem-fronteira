@@ -167,7 +167,11 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invitation_expires_at: string | null
+          invitation_token: string | null
+          invited_by: string | null
           name: string
+          status: string | null
           updated_at: string
           whatsapp_api_key: string | null
         }
@@ -176,7 +180,11 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          invitation_expires_at?: string | null
+          invitation_token?: string | null
+          invited_by?: string | null
           name: string
+          status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
         }
@@ -185,11 +193,65 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          invitation_expires_at?: string | null
+          invitation_token?: string | null
+          invited_by?: string | null
           name?: string
+          status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizers_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_access_tokens: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string
+          id: string
+          patient_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at?: string
+          id?: string
+          patient_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          patient_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_access_tokens_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_tokens_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -275,11 +337,42 @@ export type Database = {
           },
         ]
       }
+      system_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_access_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean

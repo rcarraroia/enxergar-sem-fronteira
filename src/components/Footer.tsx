@@ -1,8 +1,11 @@
 
 import { Heart, Eye, Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 const Footer = () => {
+  const { settings, loading } = useSystemSettings();
+
   const quickLinks = [{
     name: 'Sobre o Projeto',
     href: '#about'
@@ -31,19 +34,48 @@ const Footer = () => {
     href: '/cookies'
   }];
 
-  const socialLinks = [{
-    icon: Facebook,
-    href: '#',
-    label: 'Facebook'
-  }, {
-    icon: Instagram,
-    href: '#',
-    label: 'Instagram'
-  }, {
-    icon: Linkedin,
-    href: '#',
-    label: 'LinkedIn'
-  }];
+  const socialLinks = [
+    {
+      icon: Facebook,
+      href: settings.social_links.facebook,
+      label: 'Facebook'
+    }, 
+    {
+      icon: Instagram,
+      href: settings.social_links.instagram,
+      label: 'Instagram'
+    }, 
+    {
+      icon: Linkedin,
+      href: settings.social_links.linkedin,
+      label: 'LinkedIn'
+    }
+  ].filter(social => social.href && social.href.trim() !== '');
+
+  if (loading) {
+    return (
+      <footer className="bg-foreground text-background">
+        <div className="container mx-auto px-4 py-16">
+          <div className="animate-pulse">
+            <div className="h-8 bg-background/20 rounded mb-4"></div>
+            <div className="h-4 bg-background/20 rounded mb-8"></div>
+            <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <div className="h-6 bg-background/20 rounded"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-background/20 rounded"></div>
+                    <div className="h-4 bg-background/20 rounded"></div>
+                    <div className="h-4 bg-background/20 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-foreground text-background">
@@ -53,13 +85,24 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Heart className="h-8 w-8 text-primary" fill="currentColor" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></div>
-              </div>
+              {settings.logo_footer ? (
+                <img 
+                  src={settings.logo_footer} 
+                  alt={settings.project_name}
+                  className="h-10 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="relative">
+                  <Heart className="h-8 w-8 text-primary" fill="currentColor" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></div>
+                </div>
+              )}
               <div>
-                <h3 className="text-xl font-bold">Enxergar sem Fronteira</h3>
-                <p className="text-sm text-muted opacity-80">Cuidado que alcança você</p>
+                <h3 className="text-xl font-bold">{settings.project_name}</h3>
+                <p className="text-sm text-muted opacity-80">{settings.project_description}</p>
               </div>
             </div>
             
@@ -68,21 +111,23 @@ const Footer = () => {
               em comunidades carentes por todo o Brasil.
             </p>
 
-            <div className="flex space-x-3">
-              {socialLinks.map((social, index) => (
-                <Button 
-                  key={index} 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-10 h-10 p-0 border-background/40 hover:bg-primary hover:border-primary hover:text-primary-foreground bg-background/10 text-background hover:text-white transition-all duration-200" 
-                  asChild
-                >
-                  <a href={social.href} aria-label={social.label}>
-                    <social.icon className="h-4 w-4" />
-                  </a>
-                </Button>
-              ))}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex space-x-3">
+                {socialLinks.map((social, index) => (
+                  <Button 
+                    key={index} 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-10 h-10 p-0 border-background/40 hover:bg-primary hover:border-primary hover:text-primary-foreground bg-background/10 text-background hover:text-white transition-all duration-200" 
+                    asChild
+                  >
+                    <a href={social.href} aria-label={social.label} target="_blank" rel="noopener noreferrer">
+                      <social.icon className="h-4 w-4" />
+                    </a>
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -146,7 +191,7 @@ const Footer = () => {
             {/* Copyright */}
             <div className="text-center md:text-left">
               <p className="text-sm text-muted opacity-80">
-                © 2025 Projeto Visão Itinerante. Todos os direitos reservados.
+                © 2025 {settings.project_name}. Todos os direitos reservados.
               </p>
               <p className="text-xs text-muted opacity-60 mt-1">
                 Uma iniciativa do Instituto Coração Valente
@@ -164,16 +209,6 @@ const Footer = () => {
                   {link.name}
                 </a>
               ))}
-            </div>
-          </div>
-
-          {/* Recognition */}
-          <div className="mt-8 pt-6 border-t border-background/10 text-center">
-            <div className="flex items-center justify-center space-x-2 text-primary">
-              <Eye className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                Projeto reconhecido pelo Ministério da Saúde
-              </span>
             </div>
           </div>
         </div>

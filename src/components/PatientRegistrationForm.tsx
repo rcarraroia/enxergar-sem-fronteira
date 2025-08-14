@@ -1,367 +1,211 @@
-import React, { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { supabase } from '@/integrations/supabase/client'
-import { useEvents } from '@/hooks/useEvents'
-import { toast } from 'sonner'
-import { Loader2, UserPlus, Calendar, MapPin, Clock, Users } from 'lucide-react'
+import React, { useState } from 'react'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
 
-interface Props {
-  selectedEventId?: string | null
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { toast } from "@/hooks/use-toast"
+import { supabase } from '@/integrations/supabase/client'
+import { Checkbox } from "@/components/ui/checkbox"
+import { usePatientTokens } from '@/hooks/usePatientTokens'
+
+const formSchema = z.object({
+  nome: z.string().min(2, {
+    message: "Nome deve ter pelo menos 2 caracteres.",
+  }),
+  email: z.string().email({
+    message: "Email inválido.",
+  }),
+  telefone: z.string().min(10, {
+    message: "Telefone deve ter pelo menos 10 caracteres.",
+  }),
+  cpf: z.string().min(11, {
+    message: "CPF deve ter pelo menos 11 caracteres.",
+  }).max(11, {
+    message: "CPF deve ter no máximo 11 caracteres.",
+  }),
+  data_nascimento: z.string().nullable(),
+  consentimento_lgpd: z.boolean().refine((value) => value === true, {
+    message: "Você precisa aceitar os termos de LGPD.",
+  }),
+})
+
+interface PatientRegistrationFormProps {
+  eventId: string
   onSuccess?: () => void
 }
 
-export const PatientRegistrationForm = ({ selectedEventId, onSuccess }: Props) => {
-  const { data: events, isLoading: eventsLoading } = useEvents()
+type FormData = z.infer<typeof formSchema>
+
+export const PatientRegistrationForm = ({ eventId, onSuccess }: PatientRegistrationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    nome: '',
-    cpf: '',
-    email: '',
-    telefone: '',
-    data_nascimento: '',
-    diagnostico: '',
-    event_id: selectedEventId || '',
-    consentimento_lgpd: false
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      nome: "",
+      email: "",
+      telefone: "",
+      cpf: "",
+      data_nascimento: null,
+      consentimento_lgpd: false,
+    },
   })
 
-  // Atualizar event_id quando selectedEventId mudar
-  useEffect(() => {
-    if (selectedEventId) {
-      setFormData(prev => ({ ...prev, event_id: selectedEventId }))
-    }
-  }, [selectedEventId])
+  const { generatePatientToken } = usePatientTokens()
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
-  }
-
-  const validateCPF = (cpf: string) => {
-    const numbers = cpf.replace(/\D/g, '')
-    return numbers.length === 11
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  const selectedEvent = events?.find(e => e.id === formData.event_id)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.consentimento_lgpd) {
-      toast.error('É necessário aceitar os termos da LGPD')
-      return
-    }
-
-    if (!validateCPF(formData.cpf)) {
-      toast.error('CPF inválido')
-      return
-    }
-
-    if (!formData.event_id) {
-      toast.error('Selecione um evento')
-      return
-    }
-
-    setIsSubmitting(true)
-
+  const handleSubmit = async (values: FormData) => {
     try {
+      setIsSubmitting(true)
       console.log('📝 Iniciando cadastro do paciente...')
 
-      // Buscar dados do evento selecionado para as tags
-      const selectedEvent = events?.find(e => e.id === formData.event_id)
-      
-      const tags = {
-        evento: selectedEvent?.title || 'evento_desconhecido',
-        local: selectedEvent?.location || 'local_desconhecido'
-      }
+      // Gerar tags automaticamente
+      const tags = ['inscrito-online', 'evento-' + eventId]
 
-      console.log('🏷️ Tags para sincronização:', tags)
-
-      // Inserir paciente (trigger automático irá adicionar na fila de sincronização)
-      const { data: patient, error: patientError } = await supabase
+      // Inserir paciente no banco de dados
+      const { data, error } = await supabase
         .from('patients')
         .insert({
-          nome: formData.nome,
-          cpf: formData.cpf.replace(/\D/g, ''),
-          email: formData.email,
-          telefone: formData.telefone,
-          data_nascimento: formData.data_nascimento || null,
-          diagnostico: formData.diagnostico || null,
-          consentimento_lgpd: formData.consentimento_lgpd,
-          tags: tags
+          ...values,
+          tags: tags,
         })
         .select()
         .single()
 
-      if (patientError) {
-        console.error('❌ Erro ao cadastrar paciente:', patientError)
-        
-        if (patientError.code === '23505') {
-          toast.error('CPF já cadastrado no sistema')
-        } else {
-          toast.error('Erro ao cadastrar paciente')
+      if (error) {
+        console.error('Erro ao inserir paciente:', error)
+        throw error
+      }
+
+      if (data) {
+        // Gerar token de acesso para o paciente
+        try {
+          await generatePatientToken(data.id, eventId)
+          console.log('🔗 Token de acesso gerado para o paciente')
+        } catch (tokenError) {
+          console.error('Erro ao gerar token de acesso:', tokenError)
+          // Não bloqueia o cadastro se der erro no token
         }
-        return
-      }
 
-      console.log('✅ Paciente cadastrado:', patient.nome)
-
-      // Verificar vagas disponíveis
-      const { data: eventData } = await supabase
-        .from('events')
-        .select('available_slots')
-        .eq('id', formData.event_id)
-        .single()
-
-      if (!eventData || eventData.available_slots <= 0) {
-        toast.error('Evento não possui vagas disponíveis')
-        return
-      }
-
-      // Registrar no evento
-      const { error: registrationError } = await supabase
-        .from('registrations')
-        .insert({
-          patient_id: patient.id,
-          event_id: formData.event_id
-        })
-
-      if (registrationError) {
-        console.error('❌ Erro ao registrar no evento:', registrationError)
-        toast.error('Erro ao registrar no evento')
-        return
-      }
-
-      // Atualizar vagas disponíveis
-      await supabase
-        .from('events')
-        .update({ 
-          available_slots: eventData.available_slots - 1,
-          status: eventData.available_slots - 1 <= 0 ? 'full' : 'open'
-        })
-        .eq('id', formData.event_id)
-
-      toast.success('🎉 Cadastro realizado com sucesso! Os dados serão sincronizados automaticamente.')
-
-      // Limpar formulário
-      setFormData({
-        nome: '',
-        cpf: '',
-        email: '',
-        telefone: '',
-        data_nascimento: '',
-        diagnostico: '',
-        event_id: selectedEventId || '',
-        consentimento_lgpd: false
-      })
-
-      // Chamar callback de sucesso se fornecido
-      if (onSuccess) {
-        onSuccess()
-      }
-
-      // Disparar processamento da fila (opcional - pode ser executado por cron)
-      try {
-        await supabase.functions.invoke('process-valente-sync')
-        console.log('🚀 Fila de sincronização processada')
-      } catch (syncError) {
-        console.warn('⚠️ Erro ao processar fila (será processada automaticamente):', syncError)
+        console.log('✅ Paciente cadastrado:', data.nome)
+        toast.success(`Cadastro realizado com sucesso! Bem-vindo(a), ${data.nome}!`)
+        
+        // Reset form
+        form.reset()
+        
+        // Call success callback
+        onSuccess?.()
       }
 
     } catch (error) {
-      console.error('❌ Erro geral:', error)
-      toast.error('Erro interno do sistema')
+      console.error('❌ Erro no cadastro:', error)
+      toast.error('Erro ao realizar cadastro. Tente novamente.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  if (eventsLoading) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Carregando eventos...</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5" />
-          Cadastro de Paciente
-        </CardTitle>
-        <CardDescription>
-          Preencha seus dados para se inscrever em um evento oftalmológico gratuito
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="nome">Nome Completo *</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                required
-              />
-            </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="nome"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome Completo</FormLabel>
+              <FormControl>
+                <Input placeholder="Digite seu nome completo" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <Label htmlFor="cpf">CPF *</Label>
-              <Input
-                id="cpf"
-                value={formData.cpf}
-                onChange={(e) => setFormData(prev => ({ ...prev, cpf: formatCPF(e.target.value) }))}
-                placeholder="000.000.000-00"
-                required
-              />
-            </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="seuemail@exemplo.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
-              />
-            </div>
+        <FormField
+          control={form.control}
+          name="telefone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefone</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <Label htmlFor="telefone">Telefone *</Label>
-              <Input
-                id="telefone"
-                value={formData.telefone}
-                onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
-                placeholder="(11) 99999-9999"
-                required
-              />
-            </div>
+        <FormField
+          control={form.control}
+          name="cpf"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CPF</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="00000000000" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <Label htmlFor="data_nascimento">Data de Nascimento</Label>
-              <Input
-                id="data_nascimento"
-                type="date"
-                value={formData.data_nascimento}
-                onChange={(e) => setFormData(prev => ({ ...prev, data_nascimento: e.target.value }))}
-              />
-            </div>
+        <FormField
+          control={form.control}
+          name="data_nascimento"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data de Nascimento</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <Label htmlFor="event_id">
-                Evento * 
-                {selectedEventId && <Badge variant="secondary" className="ml-2">Pré-selecionado</Badge>}
-              </Label>
-              
-              {selectedEventId && selectedEvent ? (
-                <div className="p-4 border rounded-lg bg-secondary/5">
-                  <div className="space-y-2">
-                    <div className="font-medium text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      {selectedEvent.title}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <MapPin className="h-3 w-3" />
-                      {selectedEvent.location}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Clock className="h-3 w-3" />
-                      {formatDate(selectedEvent.date)} - {selectedEvent.start_time} às {selectedEvent.end_time}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Users className="h-3 w-3" />
-                      {selectedEvent.available_slots} vagas disponíveis
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <Select 
-                  value={formData.event_id} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}
-                  disabled={!!selectedEventId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um evento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {events?.map((event) => (
-                      <SelectItem key={event.id} value={event.id}>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            {event.title}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {event.location} - {formatDate(event.date)}
-                            <span className="ml-2">({event.available_slots} vagas)</span>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </div>
+        <FormField
+          control={form.control}
+          name="consentimento_lgpd"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Eu concordo com a LGPD</FormLabel>
+                <FormDescription>
+                  Você concorda em fornecer seus dados para o projeto.
+                </FormDescription>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div>
-            <Label htmlFor="diagnostico">Diagnóstico ou Observações</Label>
-            <Textarea
-              id="diagnostico"
-              value={formData.diagnostico}
-              onChange={(e) => setFormData(prev => ({ ...prev, diagnostico: e.target.value }))}
-              placeholder="Descreva seu diagnóstico oftalmológico ou observações relevantes"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="lgpd"
-              checked={formData.consentimento_lgpd}
-              onCheckedChange={(checked) => 
-                setFormData(prev => ({ ...prev, consentimento_lgpd: checked === true }))
-              }
-            />
-            <Label htmlFor="lgpd" className="text-sm">
-              Concordo com o tratamento dos meus dados pessoais conforme a Lei Geral de Proteção de Dados (LGPD) e autorizo o compartilhamento com o Instituto Coração Valente para follow-up *
-            </Label>
-          </div>
-
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? 'Cadastrando...' : 'Realizar Cadastro'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Cadastrando..." : "Cadastrar"}
+        </Button>
+      </form>
+    </Form>
   )
 }
