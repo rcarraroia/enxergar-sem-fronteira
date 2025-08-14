@@ -34,27 +34,26 @@ export const useSystemSettings = () => {
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
 
-  const safeJsonParse = (value: any, fallback: any = null) => {
-    if (!value) return fallback
-    if (typeof value === 'object') return value
-    if (typeof value === 'string') {
-      try {
-        // Corrigir bug: verificar se é uma string vazia
-        if (value.trim() === '') return fallback
-        
-        // Corrigir bug: verificar se já é um objeto válido
-        if (value.startsWith('{') && value.endsWith('}')) {
-          return JSON.parse(value)
-        }
-        
-        // Se não parece ser JSON, retornar como string
-        return value
-      } catch (error) {
-        console.warn('🔧 Failed to parse JSON value:', value, 'Using fallback:', fallback)
-        return fallback
+  const safeJsonParse = (value: string, fallback: any = null) => {
+    if (!value || value.trim() === '') return fallback
+    
+    try {
+      // Se o valor já começa e termina com aspas, é uma string JSON
+      if (value.startsWith('"') && value.endsWith('"')) {
+        return JSON.parse(value)
       }
+      
+      // Se parece ser um objeto JSON
+      if (value.startsWith('{') && value.endsWith('}')) {
+        return JSON.parse(value)
+      }
+      
+      // Caso contrário, retornar como string
+      return value
+    } catch (error) {
+      console.warn('🔧 Failed to parse JSON value:', value, 'Using fallback:', fallback)
+      return fallback
     }
-    return fallback
   }
 
   const fetchSettings = async () => {
@@ -101,7 +100,7 @@ export const useSystemSettings = () => {
         }
       })
 
-      // Corrigir bug: garantir estrutura correta do social_links
+      // Garantir estrutura correta do social_links
       if (!settingsObj.social_links || typeof settingsObj.social_links !== 'object') {
         settingsObj.social_links = DEFAULT_SETTINGS.social_links
       } else {
@@ -126,20 +125,54 @@ export const useSystemSettings = () => {
     try {
       console.log(`📝 Atualizando configuração: ${key}`)
       
-      await debugUtils.measureFunction(async () => {
-        const jsonValue = typeof value === 'string' ? value : JSON.stringify(value)
-        
-        const { error } = await supabase
-          .from('system_settings')
-          .upsert({ 
-            key, 
-            value: jsonValue,
-            updated_at: new Date().toISOString()
-          })
+      // Validações específicas
+      if ((key === 'logo_header' || key === 'logo_footer') && typeof value === 'string' && value.trim()) {
+        try {
+          new URL(value)
+        } catch {
+          toast.error('URL da logo inválida')
+          return
+        }
+      }
 
-        if (error) {
-          console.error('❌ Erro ao atualizar configuração:', error)
-          throw error
+      await debugUtils.measureFunction(async () => {
+        // Preparar valor para salvamento
+        const jsonValue = typeof value === 'string' ? JSON.stringify(value) : JSON.stringify(value)
+        
+        // Primeiro, verificar se o registro existe
+        const { data: existing } = await supabase
+          .from('system_settings')
+          .select('id')
+          .eq('key', key)
+          .single()
+
+        if (existing) {
+          // Atualizar registro existente
+          const { error } = await supabase
+            .from('system_settings')
+            .update({ 
+              value: jsonValue,
+              updated_at: new Date().toISOString()
+            })
+            .eq('key', key)
+
+          if (error) {
+            console.error('❌ Erro ao atualizar configuração:', error)
+            throw error
+          }
+        } else {
+          // Inserir novo registro
+          const { error } = await supabase
+            .from('system_settings')
+            .insert({ 
+              key, 
+              value: jsonValue
+            })
+
+          if (error) {
+            console.error('❌ Erro ao inserir configuração:', error)
+            throw error
+          }
         }
       }, `updateSetting-${key}`)
 

@@ -1,215 +1,343 @@
 
-import { useAuth } from '@/hooks/useAuth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Calendar, Settings, Activity, TestTube, Bug, UserCog, Heart } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
-import { LazyWrapper, LazySystemHealthCard } from '@/components/LazyComponents'
-import { PerformanceMonitor } from '@/components/admin/PerformanceMonitor'
-import { SystemDebugCard } from '@/components/admin/SystemDebugCard'
-import { runAutomatedTests } from '@/utils/testUtils'
-import { useOptimizedCache } from '@/hooks/useOptimizedCache'
-import { useErrorBoundary } from '@/hooks/useErrorBoundary'
-import { toast } from 'sonner'
+import { 
+  Calendar, 
+  Users, 
+  UserCheck, 
+  Building2, 
+  Heart, 
+  Settings,
+  Activity,
+  RefreshCw,
+  Shield,
+  FileText,
+  BarChart3,
+  Plus,
+  Eye
+} from 'lucide-react'
+import { useAdminMetrics } from '@/hooks/useAdminMetrics'
+import { useRecentActivity } from '@/hooks/useRecentActivity'
+import { useSystemAlerts } from '@/hooks/useSystemAlerts'
+import { MetricCard } from '@/components/admin/MetricCard'
+import { AlertBanner } from '@/components/admin/AlertBanner'
+import { ActivityFeed } from '@/components/admin/ActivityFeed'
+import { QuickActions } from '@/components/admin/QuickActions'
 
 const Admin = () => {
-  const { user } = useAuth()
   const navigate = useNavigate()
-  const { prefetchCriticalData } = useOptimizedCache()
-  const { errors, clearErrors } = useErrorBoundary('AdminPage')
+  const { data: metrics, isLoading: metricsLoading } = useAdminMetrics()
+  const { data: activities = [], isLoading: activitiesLoading } = useRecentActivity()
+  const { data: alerts = [], isLoading: alertsLoading } = useSystemAlerts()
 
-  const handleRunTests = () => {
-    toast.info('Executando testes automatizados...')
-    const results = runAutomatedTests()
-    const passedTests = results.filter(r => r.passed).length
-    
-    if (passedTests === results.length) {
-      toast.success(`✅ Todos os ${results.length} testes passaram!`)
-    } else {
-      toast.error(`❌ ${results.length - passedTests} testes falharam`)
-    }
+  const handleCreateEvent = () => {
+    navigate('/admin/events')
   }
 
-  const handleOptimizeCache = async () => {
-    toast.info('Otimizando cache...')
-    try {
-      await prefetchCriticalData()
-      toast.success('Cache otimizado com sucesso!')
-    } catch (error) {
-      toast.error('Erro ao otimizar cache')
-    }
+  const handleViewTodayRegistrations = () => {
+    navigate('/admin/registrations')
+  }
+
+  const handleExportReports = () => {
+    // TODO: Implementar exportação de relatórios
+    console.log('Exportar relatórios')
+  }
+
+  const handleSendReminders = () => {
+    // TODO: Implementar envio de lembretes
+    console.log('Enviar lembretes')
+  }
+
+  const handleAlertAction = (actionUrl: string) => {
+    navigate(actionUrl)
+  }
+
+  if (metricsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Painel Administrativo
-        </h1>
-        <p className="text-gray-600">
-          Bem-vindo, {user?.email}
-        </p>
-        {errors.length > 0 && (
-          <div className="mt-2">
-            <Badge variant="destructive" className="mr-2">
-              {errors.length} erro(s) detectado(s)
-            </Badge>
-            <Button onClick={clearErrors} variant="outline" size="sm">
-              Limpar erros
-            </Button>
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
+          <p className="text-muted-foreground">
+            Visão geral do sistema Enxergar sem Fronteiras
+          </p>
+        </div>
+        <Button onClick={handleCreateEvent} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Novo Evento
+        </Button>
       </div>
 
-      {/* Ferramentas de Debug e Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <SystemDebugCard />
-        <PerformanceMonitor />
-      </div>
+      {/* Alertas do Sistema */}
+      {!alertsLoading && alerts.length > 0 && (
+        <div className="space-y-3">
+          {alerts.slice(0, 3).map((alert) => (
+            <AlertBanner
+              key={alert.id}
+              alert={alert}
+              onAction={handleAlertAction}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Ferramentas de Testes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TestTube className="h-5 w-5" />
-              Testes Automatizados
-            </CardTitle>
-            <CardDescription>
-              Execute testes de validação e performance
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button onClick={handleRunTests} className="w-full">
-              Executar Testes
-            </Button>
-            <Button onClick={handleOptimizeCache} variant="outline" className="w-full">
-              Otimizar Cache
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Cards Operacionais Principais */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Operações Principais</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <MetricCard
+            title="Eventos"
+            icon={Calendar}
+            value={metrics?.totalEvents || 0}
+            subtitle={`${metrics?.activeEvents || 0} eventos ativos`}
+            trend={{
+              value: metrics?.thisWeekEvents || 0,
+              label: "novos esta semana",
+              isPositive: true
+            }}
+            actions={[
+              { label: "Gerenciar Eventos", onClick: () => navigate('/admin/events') },
+              { label: "Ver Calendário", onClick: () => navigate('/admin/events') }
+            ]}
+          />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Status do Sistema
-            </CardTitle>
-            <CardDescription>
-              Monitoramento em tempo real
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Aplicação</span>
-                <Badge variant="default">Online</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Banco de Dados</span>
-                <Badge variant="default">Conectado</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Cache</span>
-                <Badge variant="secondary">Otimizado</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <MetricCard
+            title="Pacientes"
+            icon={Users}
+            value={metrics?.totalPatients || 0}
+            subtitle="Total de cadastros"
+            trend={{
+              value: metrics?.newPatientsThisWeek || 0,
+              label: "novos esta semana",
+              isPositive: true
+            }}
+            actions={[
+              { label: "Ver Pacientes", onClick: () => navigate('/admin/patients') },
+              { label: "Exportar Lista", onClick: handleExportReports }
+            ]}
+          />
 
-      {/* Menu principal */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Link to="/admin/events">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Eventos
+          <MetricCard
+            title="Inscrições"
+            icon={UserCheck}
+            value={metrics?.totalRegistrations || 0}
+            subtitle={`${metrics?.todayRegistrations || 0} hoje`}
+            actions={[
+              { label: "Ver Inscrições", onClick: () => navigate('/admin/registrations') },
+              { label: "Inscrições Hoje", onClick: handleViewTodayRegistrations }
+            ]}
+          />
+
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  Organizadores Locais
+                </div>
+                <Badge variant="secondary" className="text-lg font-bold">
+                  {metrics?.totalOrganizers || 0}
+                </Badge>
               </CardTitle>
-              <CardDescription>
-                Gerenciar eventos e datas
-              </CardDescription>
             </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground mb-3">
+                Parceiros cadastrados
+              </p>
+              <div className="space-y-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate('/admin/organizers')}
+                >
+                  Gerenciar Organizadores
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate('/admin/organizers')}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Relatórios
+                </Button>
+              </div>
+            </CardContent>
           </Card>
-        </Link>
 
-        <Link to="/admin/patients">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Pacientes
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-primary" />
+                  Campanhas de Arrecadação
+                </div>
+                <Badge variant="secondary" className="text-lg font-bold">
+                  R$ {(metrics?.totalDonations || 0).toLocaleString()}
+                </Badge>
               </CardTitle>
-              <CardDescription>
-                Visualizar dados dos pacientes
-              </CardDescription>
             </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground mb-3">
+                Total arrecadado
+              </p>
+              <div className="space-y-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate('/admin/donations')}
+                >
+                  Ver Doações
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate('/admin/payments')}
+                >
+                  Gerenciar Pagamentos
+                </Button>
+              </div>
+            </CardContent>
           </Card>
-        </Link>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCog className="h-5 w-5 text-primary" />
-              Organizadores Locais
-            </CardTitle>
-            <CardDescription>
-              Gerenciar organizadores e suas API Keys do Asaas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              className="w-full" 
-              variant="outline"
-              onClick={() => navigate('/admin/organizers')}
-            >
-              Gerenciar Organizadores
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              Campanhas de Arrecadação
-            </CardTitle>
-            <CardDescription>
-              Gestão de campanhas de arrecadação
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              className="w-full" 
-              variant="outline"
-              onClick={() => navigate('/admin/donations')}
-            >
-              Gerenciar Campanhas
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Link to="/admin/settings">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Configurações
+          <Card className="hover:shadow-lg transition-all duration-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-primary" />
+                  Configurações
+                </div>
               </CardTitle>
-              <CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground mb-3">
                 Configurações do sistema
-              </CardDescription>
-            </CardHeader>
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate('/admin/settings')}
+              >
+                Configurar Sistema
+              </Button>
+            </CardContent>
           </Card>
-        </Link>
+        </div>
       </div>
 
-      {/* Monitor de Sistema */}
-      <LazyWrapper height="h-64">
-        <LazySystemHealthCard />
-      </LazyWrapper>
+      {/* Seção de Atividades e Ações Rápidas */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <ActivityFeed activities={activities} />
+        <QuickActions
+          onCreateEvent={handleCreateEvent}
+          onViewTodayRegistrations={handleViewTodayRegistrations}
+          onExportReports={handleExportReports}
+          onSendReminders={handleSendReminders}
+        />
+      </div>
+
+      {/* Seção Sistema - Informações Técnicas */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Sistema</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <RefreshCw className="h-4 w-4 text-blue-600" />
+                Sincronização
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate('/admin/sync')}
+              >
+                Ver Status
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Activity className="h-4 w-4 text-green-600" />
+                Saúde do Sistema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-muted-foreground">
+                  {metrics?.systemHealth === 'healthy' ? 'Saudável' : 'Com problemas'}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate('/admin')}
+              >
+                Ver Detalhes
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <BarChart3 className="h-4 w-4 text-purple-600" />
+                Monitoramento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate('/admin')}
+              >
+                Ver Métricas
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <FileText className="h-4 w-4 text-orange-600" />
+                Logs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate('/admin')}
+              >
+                Ver Logs
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
