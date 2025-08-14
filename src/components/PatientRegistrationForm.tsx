@@ -24,10 +24,11 @@ type PatientFormData = z.infer<typeof patientSchema>
 
 interface PatientRegistrationFormProps {
   eventId?: string
+  eventDateId?: string
   onSuccess?: () => void
 }
 
-export const PatientRegistrationForm = ({ eventId, onSuccess }: PatientRegistrationFormProps) => {
+export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -63,13 +64,13 @@ export const PatientRegistrationForm = ({ eventId, onSuccess }: PatientRegistrat
 
       if (patientError) throw patientError
 
-      // Se há um evento selecionado, criar inscrição
-      if (eventId && patient) {
+      // Se há uma data específica de evento selecionada, criar inscrição
+      if (eventDateId && patient) {
         const { error: registrationError } = await supabase
           .from('registrations')
           .insert({
             patient_id: patient.id,
-            event_id: eventId,
+            event_date_id: eventDateId,
             status: 'confirmed',
           })
 
@@ -83,7 +84,7 @@ export const PatientRegistrationForm = ({ eventId, onSuccess }: PatientRegistrat
           .insert({
             patient_id: patient.id,
             token: accessToken,
-            event_id: eventId,
+            event_date_id: eventDateId,
           })
 
         if (tokenError) {

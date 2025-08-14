@@ -35,9 +35,11 @@ const AdminRegistrations = () => {
   }
 
   const getTotalRegistrations = () => {
-    return events?.reduce((total, event) => {
-      return total + (event.total_slots - event.available_slots)
-    }, 0) || 0
+    if (!events) return 0
+    return events.reduce((total, event) => {
+      const eventTotal = event.event_dates.reduce((sum, date) => sum + (date.total_slots - date.available_slots), 0)
+      return total + eventTotal
+    }, 0)
   }
 
   const getEventStats = () => {
@@ -51,6 +53,16 @@ const AdminRegistrations = () => {
   }
 
   const stats = getEventStats()
+
+  // Criar opções do select com informações das datas
+  const eventOptions = events?.map(event => {
+    const firstDate = event.event_dates[0]
+    return {
+      id: event.id,
+      title: event.title,
+      date: firstDate ? new Date(firstDate.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data'
+    }
+  }) || []
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -150,9 +162,9 @@ const AdminRegistrations = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Eventos</SelectItem>
-                {events?.map((event) => (
+                {eventOptions.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
-                    {event.title} - {new Date(event.date).toLocaleDateString('pt-BR')}
+                    {event.title} - {event.date}
                   </SelectItem>
                 ))}
               </SelectContent>

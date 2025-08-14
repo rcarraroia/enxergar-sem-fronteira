@@ -1,164 +1,186 @@
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useEventsAdmin } from '@/hooks/useEventsAdmin'
 import { useAsaasPayment } from '@/hooks/useAsaasPayment'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { CreditCard, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { CalendarDays, DollarSign, Users } from 'lucide-react'
 
-const PaymentForm = () => {
-  const [selectedEventId, setSelectedEventId] = useState('')
-  const [selectedPatientId, setSelectedPatientId] = useState('')
-  const [amount, setAmount] = useState('')
-  const [description, setDescription] = useState('')
-  
-  const { createPayment, loading } = useAsaasPayment()
+const paymentSchema = z.object({
+  event_date_id: z.string().min(1, 'Selecione uma data do evento'),
+  amount: z.number().min(0.01, 'Valor deve ser maior que zero'),
+  description: z.string().min(1, 'Descrição é obrigatória'),
+})
 
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, title, date')
-        .order('date', { ascending: true })
-      
-      if (error) throw error
-      return data || []
-    }
+type PaymentFormData = z.infer<typeof paymentSchema>
+
+export const PaymentForm = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { events, isLoading: eventsLoading } = useEventsAdmin()
+  const { createPayment } = useAsaasPayment()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm<PaymentFormData>({
+    resolver: zodResolver(paymentSchema),
   })
 
-  const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('id, nome, cpf')
-        .order('nome')
-      
-      if (error) throw error
-      return data || []
-    }
-  })
+  const selectedEventDateId = watch('event_date_id')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!selectedEventId || !selectedPatientId || !amount || !description) {
-      return
-    }
+  // Criar lista de todas as datas de eventos disponíveis
+  const eventDateOptions = events?.flatMap(event => 
+    event.event_dates.map(eventDate => ({
+      eventDateId: eventDate.id,
+      eventId: event.id,
+      eventTitle: event.title,
+      date: eventDate.date,
+      startTime: eventDate.start_time,
+      endTime: eventDate.end_time,
+      totalSlots: eventDate.total_slots,
+      availableSlots: eventDate.available_slots
+    }))
+  ) || []
 
-    const paymentData = {
-      eventId: selectedEventId,
-      patientId: selectedPatientId,
-      amount: parseFloat(amount),
-      description
-    }
+  const onSubmit = async (data: PaymentFormData) => {
+    try {
+      setIsSubmitting(true)
 
-    const payment = await createPayment(paymentData)
-    
-    if (payment) {
-      // Abrir URL de pagamento em nova aba
-      if (payment.invoiceUrl) {
-        window.open(payment.invoiceUrl, '_blank')
+      const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === data.event_date_id)
+      if (!selectedEventDate) {
+        toast.error('Data do evento não encontrada')
+        return
       }
-      
-      // Limpar formulário
-      setSelectedEventId('')
-      setSelectedPatientId('')
-      setAmount('')
-      setDescription('')
+
+      await createPayment.mutateAsync({
+        eventDateId: data.event_date_id,
+        amount: data.amount,
+        description: data.description,
+      })
+
+      reset()
+      toast.success('Cobrança criada com sucesso!')
+    } catch (error) {
+      console.error('Erro ao criar cobrança:', error)
+      toast.error('Erro ao criar cobrança. Tente novamente.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
+  const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === selectedEventDateId)
+
   return (
-    <Card>
+    <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          Criar Pagamento Asaas
+          <DollarSign className="h-5 w-5" />
+          Criar Cobrança
         </CardTitle>
         <CardDescription>
-          Gere cobranças com split automático de 25% para cada ente
+          Configure uma cobrança para um evento específico
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="event">Evento</Label>
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Seleção da Data do Evento */}
+          <div className="space-y-2">
+            <Label htmlFor="event_date_id">Data do Evento</Label>
+            <Select 
+              value={selectedEventDateId} 
+              onValueChange={(value) => setValue('event_date_id', value)}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um evento" />
+                <SelectValue placeholder="Selecione uma data do evento" />
               </SelectTrigger>
               <SelectContent>
-                {events.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.title} - {new Date(event.date).toLocaleDateString('pt-BR')}
+                {eventDateOptions.map((eventDate) => (
+                  <SelectItem key={eventDate.eventDateId} value={eventDate.eventDateId}>
+                    {eventDate.eventTitle} - {new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')} ({eventDate.startTime} - {eventDate.endTime})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {errors.event_date_id && (
+              <p className="text-sm text-destructive">{errors.event_date_id.message}</p>
+            )}
           </div>
 
-          <div>
-            <Label htmlFor="patient">Paciente</Label>
-            <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um paciente" />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    {patient.nome} - {patient.cpf}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Informações do Evento Selecionado */}
+          {selectedEventDate && (
+            <Card className="p-4 bg-muted/50">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{selectedEventDate.eventTitle}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>📅 {new Date(selectedEventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                  <span>• 🕐 {selectedEventDate.startTime} - {selectedEventDate.endTime}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span>{selectedEventDate.availableSlots} vagas disponíveis de {selectedEventDate.totalSlots}</span>
+                </div>
+              </div>
+            </Card>
+          )}
 
-          <div>
+          {/* Valor */}
+          <div className="space-y-2">
             <Label htmlFor="amount">Valor (R$)</Label>
             <Input
               id="amount"
               type="number"
               step="0.01"
-              min="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
+              min="0"
+              placeholder="0,00"
+              {...register('amount', { valueAsNumber: true })}
             />
-          </div>
-
-          <div>
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição do pagamento..."
-              required
-            />
-          </div>
-
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Criando pagamento...
-              </>
-            ) : (
-              'Criar Pagamento'
+            {errors.amount && (
+              <p className="text-sm text-destructive">{errors.amount.message}</p>
             )}
+          </div>
+
+          {/* Descrição */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Input
+              id="description"
+              placeholder="Descrição da cobrança"
+              {...register('description')}
+            />
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description.message}</p>
+            )}
+          </div>
+
+          <Button 
+            type="submit" 
+            disabled={isSubmitting || eventsLoading} 
+            className="w-full"
+          >
+            {isSubmitting ? 'Criando...' : 'Criar Cobrança'}
           </Button>
         </form>
       </CardContent>
     </Card>
   )
 }
-
-export default PaymentForm
