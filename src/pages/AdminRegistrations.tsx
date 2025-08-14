@@ -59,7 +59,7 @@ const AdminRegistrations = () => {
     const firstDate = event.event_dates[0]
     return {
       id: event.id,
-      title: event.title,
+      city: event.city,
       date: firstDate ? new Date(firstDate.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data'
     }
   }) || []
@@ -164,7 +164,7 @@ const AdminRegistrations = () => {
                 <SelectItem value="all">Todos os Eventos</SelectItem>
                 {eventOptions.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
-                    {event.title} - {event.date}
+                    {event.city} - {event.date}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEventsAdmin } from '@/hooks/useEventsAdmin'
@@ -38,7 +37,7 @@ const AdminEventDetails = () => {
 
   const handleSendReminders = () => {
     // Esta funcionalidade será expandida quando tivermos acesso aos dados de inscrição
-    console.log('Enviando lembretes para participantes do evento:', event?.title)
+    console.log('Enviando lembretes para participantes do evento:', event?.city)
   }
 
   if (isLoading) {
@@ -86,7 +85,7 @@ const AdminEventDetails = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Detalhes do Evento</h1>
-                <p className="text-sm text-muted-foreground">{event.title}</p>
+                <p className="text-sm text-muted-foreground">{event.city}</p>
               </div>
             </div>
             
@@ -114,7 +113,7 @@ const AdminEventDetails = () => {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">{event.title}</CardTitle>
+              <CardTitle className="text-2xl">{event.city}</CardTitle>
               {getStatusBadge(event.status, totalAvailable)}
             </div>
             {event.description && (

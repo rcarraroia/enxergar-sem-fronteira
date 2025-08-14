@@ -1,188 +1,160 @@
-
 import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { useEventsAdmin } from '@/hooks/useEventsAdmin'
+import { useAsaasPayment } from '@/hooks/useAsaasPayment'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
+import { Textarea } from '@/components/ui/textarea'
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { useAsaasPayment } from '@/hooks/useAsaasPayment'
+import { CreditCard, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { CalendarDays, DollarSign, Users } from 'lucide-react'
-
-const paymentSchema = z.object({
-  event_date_id: z.string().min(1, 'Selecione uma data do evento'),
-  amount: z.number().min(0.01, 'Valor deve ser maior que zero'),
-  description: z.string().min(1, 'Descrição é obrigatória'),
-})
-
-type PaymentFormData = z.infer<typeof paymentSchema>
 
 export const PaymentForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { events, isLoading: eventsLoading } = useEventsAdmin()
-  const { createPayment, loading } = useAsaasPayment()
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
+  const { events } = useEventsAdmin()
+  const { createPayment, isLoading } = useAsaasPayment()
+  
+  const [formData, setFormData] = useState({
+    eventId: '',
+    amount: '',
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    description: ''
   })
 
-  const selectedEventDateId = watch('event_date_id')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.eventId || !formData.amount || !formData.customerName || !formData.customerEmail) {
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
 
-  // Criar lista de todas as datas de eventos disponíveis
-  const eventDateOptions = events?.flatMap(event => 
-    event.event_dates.map(eventDate => ({
-      eventDateId: eventDate.id,
-      eventId: event.id,
-      eventTitle: event.title,
-      date: eventDate.date,
-      startTime: eventDate.start_time,
-      endTime: eventDate.end_time,
-      totalSlots: eventDate.total_slots,
-      availableSlots: eventDate.available_slots
-    }))
-  ) || []
-
-  const onSubmit = async (data: PaymentFormData) => {
     try {
-      setIsSubmitting(true)
+      await createPayment.mutateAsync({
+        eventId: formData.eventId,
+        amount: parseFloat(formData.amount),
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        description: formData.description
+      })
 
-      const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === data.event_date_id)
-      if (!selectedEventDate) {
-        toast.error('Data do evento não encontrada')
-        return
-      }
-
-      const paymentData = {
-        eventId: selectedEventDate.eventId,
-        patientId: '', // This will need to be provided somehow
-        amount: data.amount,
-        description: data.description,
-      }
-
-      const result = await createPayment(paymentData)
-      
-      if (result) {
-        reset()
-        toast.success('Cobrança criada com sucesso!')
-      }
+      // Reset form
+      setFormData({
+        eventId: '',
+        amount: '',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        description: ''
+      })
     } catch (error) {
-      console.error('Erro ao criar cobrança:', error)
-      toast.error('Erro ao criar cobrança. Tente novamente.')
-    } finally {
-      setIsSubmitting(false)
+      console.error('Erro ao criar pagamento:', error)
     }
   }
 
-  const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === selectedEventDateId)
+  const selectedEvent = events?.find(e => e.id === formData.eventId)
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
-          Criar Cobrança
-        </CardTitle>
+        <div className="flex items-center space-x-2">
+          <CreditCard className="h-5 w-5 text-primary" />
+          <CardTitle>Novo Pagamento</CardTitle>
+        </div>
         <CardDescription>
-          Configure uma cobrança para um evento específico
+          Crie uma cobrança para um evento específico
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Seleção da Data do Evento */}
-          <div className="space-y-2">
-            <Label htmlFor="event_date_id">Data do Evento</Label>
-            <Select 
-              value={selectedEventDateId} 
-              onValueChange={(value) => setValue('event_date_id', value)}
-            >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="eventId">Evento *</Label>
+            <Select value={formData.eventId} onValueChange={(value) => setFormData(prev => ({ ...prev, eventId: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma data do evento" />
+                <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
-                {eventDateOptions.map((eventDate) => (
-                  <SelectItem key={eventDate.eventDateId} value={eventDate.eventDateId}>
-                    {eventDate.eventTitle} - {new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')} ({eventDate.startTime} - {eventDate.endTime})
+                {events?.map((event) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.city} - {event.location}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.event_date_id && (
-              <p className="text-sm text-destructive">{errors.event_date_id.message}</p>
-            )}
           </div>
 
-          {/* Informações do Evento Selecionado */}
-          {selectedEventDate && (
-            <Card className="p-4 bg-muted/50">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{selectedEventDate.eventTitle}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>📅 {new Date(selectedEventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
-                  <span>• 🕐 {selectedEventDate.startTime} - {selectedEventDate.endTime}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedEventDate.availableSlots} vagas disponíveis de {selectedEventDate.totalSlots}</span>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Valor */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">Valor (R$)</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0,00"
-              {...register('amount', { valueAsNumber: true })}
+          <div>
+            <Label htmlFor="amount">Valor *</Label>
+            <Input 
+              type="number" 
+              id="amount" 
+              value={formData.amount}
+              onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+              placeholder="R$ 0,00"
             />
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
-            )}
           </div>
 
-          {/* Descrição */}
-          <div className="space-y-2">
+          <div>
+            <Label htmlFor="customerName">Nome do Cliente *</Label>
+            <Input 
+              type="text" 
+              id="customerName" 
+              value={formData.customerName}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+              placeholder="Nome completo"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="customerEmail">Email do Cliente *</Label>
+            <Input 
+              type="email" 
+              id="customerEmail" 
+              value={formData.customerEmail}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
+              placeholder="email@example.com"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="customerPhone">Telefone do Cliente</Label>
+            <Input 
+              type="tel" 
+              id="customerPhone" 
+              value={formData.customerPhone}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
+              placeholder="(XX) XXXX-XXXX"
+            />
+          </div>
+
+          <div>
             <Label htmlFor="description">Descrição</Label>
-            <Input
-              id="description"
-              placeholder="Descrição da cobrança"
-              {...register('description')}
+            <Textarea 
+              id="description" 
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Informações adicionais"
             />
-            {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
-            )}
           </div>
 
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || loading || eventsLoading} 
-            className="w-full"
-          >
-            {isSubmitting || loading ? 'Criando...' : 'Criar Cobrança'}
+          <Button disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Criando...
+              </>
+            ) : (
+              'Criar Pagamento'
+            )}
           </Button>
         </form>
       </CardContent>

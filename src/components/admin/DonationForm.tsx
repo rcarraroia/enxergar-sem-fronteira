@@ -1,188 +1,163 @@
-
 import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { useEventsAdmin } from '@/hooks/useEventsAdmin'
+import { useAsaasDonation } from '@/hooks/useAsaasDonation'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
+import { Textarea } from '@/components/ui/textarea'
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { useAsaasDonation } from '@/hooks/useAsaasDonation'
+import { Heart, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { CalendarDays, Heart, Users } from 'lucide-react'
-
-const donationSchema = z.object({
-  event_date_id: z.string().min(1, 'Selecione uma data do evento'),
-  amount: z.number().min(0.01, 'Valor deve ser maior que zero'),
-  description: z.string().min(1, 'Descrição é obrigatória'),
-})
-
-type DonationFormData = z.infer<typeof donationSchema>
 
 export const DonationForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { events, isLoading: eventsLoading } = useEventsAdmin()
-  const { createDonation, loading } = useAsaasDonation()
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<DonationFormData>({
-    resolver: zodResolver(donationSchema),
+  const { events } = useEventsAdmin()
+  const { createDonation, isLoading } = useAsaasDonation()
+  
+  const [formData, setFormData] = useState({
+    eventId: '',
+    amount: '',
+    donorName: '',
+    donorEmail: '',
+    donorPhone: '',
+    description: ''
   })
 
-  const selectedEventDateId = watch('event_date_id')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.eventId || !formData.amount || !formData.donorName || !formData.donorEmail) {
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
 
-  // Criar lista de todas as datas de eventos disponíveis
-  const eventDateOptions = events?.flatMap(event => 
-    event.event_dates.map(eventDate => ({
-      eventDateId: eventDate.id,
-      eventId: event.id,
-      eventTitle: event.title,
-      date: eventDate.date,
-      startTime: eventDate.start_time,
-      endTime: eventDate.end_time,
-      totalSlots: eventDate.total_slots,
-      availableSlots: eventDate.available_slots
-    }))
-  ) || []
-
-  const onSubmit = async (data: DonationFormData) => {
     try {
-      setIsSubmitting(true)
+      await createDonation.mutateAsync({
+        eventId: formData.eventId,
+        amount: parseFloat(formData.amount),
+        donorName: formData.donorName,
+        donorEmail: formData.donorEmail,
+        donorPhone: formData.donorPhone,
+        description: formData.description
+      })
 
-      const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === data.event_date_id)
-      if (!selectedEventDate) {
-        toast.error('Data do evento não encontrada')
-        return
-      }
-
-      const donationData = {
-        eventId: selectedEventDate.eventId,
-        patientId: '', // This will need to be provided somehow
-        amount: data.amount,
-        description: data.description,
-      }
-
-      const result = await createDonation(donationData)
-      
-      if (result) {
-        reset()
-        toast.success('Campanha de doação criada com sucesso!')
-      }
+      // Reset form
+      setFormData({
+        eventId: '',
+        amount: '',
+        donorName: '',
+        donorEmail: '',
+        donorPhone: '',
+        description: ''
+      })
     } catch (error) {
-      console.error('Erro ao criar campanha de doação:', error)
-      toast.error('Erro ao criar campanha de doação. Tente novamente.')
-    } finally {
-      setIsSubmitting(false)
+      console.error('Erro ao criar doação:', error)
     }
   }
 
-  const selectedEventDate = eventDateOptions.find(ed => ed.eventDateId === selectedEventDateId)
+  const selectedEvent = events?.find(e => e.id === formData.eventId)
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="h-5 w-5" />
-          Criar Campanha de Doação
-        </CardTitle>
+        <div className="flex items-center space-x-2">
+          <Heart className="h-5 w-5 text-primary" />
+          <CardTitle>Nova Campanha de Doação</CardTitle>
+        </div>
         <CardDescription>
-          Configure uma campanha de arrecadação para um evento específico
+          Crie uma campanha de doação para um evento específico
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Seleção da Data do Evento */}
-          <div className="space-y-2">
-            <Label htmlFor="event_date_id">Data do Evento</Label>
-            <Select 
-              value={selectedEventDateId} 
-              onValueChange={(value) => setValue('event_date_id', value)}
-            >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="eventId">Evento *</Label>
+            <Select value={formData.eventId} onValueChange={(value) => setFormData(prev => ({ ...prev, eventId: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma data do evento" />
+                <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
-                {eventDateOptions.map((eventDate) => (
-                  <SelectItem key={eventDate.eventDateId} value={eventDate.eventDateId}>
-                    {eventDate.eventTitle} - {new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')} ({eventDate.startTime} - {eventDate.endTime})
+                {events?.map((event) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.city} - {event.location}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.event_date_id && (
-              <p className="text-sm text-destructive">{errors.event_date_id.message}</p>
-            )}
           </div>
 
-          {/* Informações do Evento Selecionado */}
-          {selectedEventDate && (
-            <Card className="p-4 bg-muted/50">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{selectedEventDate.eventTitle}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>📅 {new Date(selectedEventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
-                  <span>• 🕐 {selectedEventDate.startTime} - {selectedEventDate.endTime}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedEventDate.availableSlots} vagas disponíveis de {selectedEventDate.totalSlots}</span>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Valor */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">Valor Meta (R$)</Label>
+          <div>
+            <Label htmlFor="amount">Valor da Doação *</Label>
             <Input
-              id="amount"
               type="number"
-              step="0.01"
-              min="0"
-              placeholder="0,00"
-              {...register('amount', { valueAsNumber: true })}
+              id="amount"
+              value={formData.amount}
+              onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+              placeholder="R$ 0,00"
+              required
             />
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
-            )}
           </div>
 
-          {/* Descrição */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição da Campanha</Label>
+          <div>
+            <Label htmlFor="donorName">Nome do Doador *</Label>
             <Input
-              id="description"
-              placeholder="Descrição da campanha de arrecadação"
-              {...register('description')}
+              type="text"
+              id="donorName"
+              value={formData.donorName}
+              onChange={(e) => setFormData(prev => ({ ...prev, donorName: e.target.value }))}
+              placeholder="Nome Completo"
+              required
             />
-            {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
-            )}
           </div>
 
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || loading || eventsLoading} 
-            className="w-full"
-          >
-            {isSubmitting || loading ? 'Criando...' : 'Criar Campanha de Doação'}
+          <div>
+            <Label htmlFor="donorEmail">Email do Doador *</Label>
+            <Input
+              type="email"
+              id="donorEmail"
+              value={formData.donorEmail}
+              onChange={(e) => setFormData(prev => ({ ...prev, donorEmail: e.target.value }))}
+              placeholder="email@example.com"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="donorPhone">Telefone do Doador</Label>
+            <Input
+              type="tel"
+              id="donorPhone"
+              value={formData.donorPhone}
+              onChange={(e) => setFormData(prev => ({ ...prev, donorPhone: e.target.value }))}
+              placeholder="(XX) XXXX-XXXX"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Detalhes adicionais sobre a doação"
+            />
+          </div>
+
+          <Button disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processando
+              </>
+            ) : (
+              'Criar Campanha de Doação'
+            )}
           </Button>
         </form>
       </CardContent>
