@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { Settings, Image, Share2, Save } from 'lucide-react'
 import { useSystemSettings } from '@/hooks/useSystemSettings'
+import { ImageUpload } from './ImageUpload'
 
 interface SystemSettingsFormProps {
   section: 'general' | 'logos' | 'social'
@@ -99,62 +99,26 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
             Configure as logos que aparecerão no cabeçalho e rodapé do site
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="logo_header">Logo do Cabeçalho (Colorida)</Label>
-            <Input
-              id="logo_header"
-              value={formData.logo_header}
-              onChange={(e) => setFormData({ ...formData, logo_header: e.target.value })}
-              placeholder="URL da logo colorida (recomendado: 200x50px)"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Tamanho recomendado: 200x50px para melhor qualidade no cabeçalho
-            </p>
-            {formData.logo_header && (
-              <div className="mt-2 p-2 border rounded">
-                <p className="text-sm font-medium mb-2">Preview:</p>
-                <img 
-                  src={formData.logo_header} 
-                  alt="Logo Header Preview" 
-                  className="h-12 object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = ''
-                    e.currentTarget.alt = 'Erro ao carregar imagem'
-                  }}
-                />
-              </div>
-            )}
-          </div>
+        <CardContent className="space-y-6">
+          <ImageUpload
+            label="Logo do Cabeçalho (Colorida)"
+            value={formData.logo_header}
+            onChange={(url) => setFormData({ ...formData, logo_header: url })}
+            placeholder="URL da logo colorida (recomendado: 200x50px)"
+            description="Tamanho recomendado: 200x50px para melhor qualidade no cabeçalho"
+            previewBg="bg-white"
+          />
 
           <Separator />
 
-          <div>
-            <Label htmlFor="logo_footer">Logo do Rodapé (Branca)</Label>
-            <Input
-              id="logo_footer"
-              value={formData.logo_footer}
-              onChange={(e) => setFormData({ ...formData, logo_footer: e.target.value })}
-              placeholder="URL da logo branca (recomendado: 150x40px)"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Tamanho recomendado: 150x40px para melhor qualidade no rodapé
-            </p>
-            {formData.logo_footer && (
-              <div className="mt-2 p-2 border rounded bg-slate-800">
-                <p className="text-sm font-medium mb-2 text-white">Preview:</p>
-                <img 
-                  src={formData.logo_footer} 
-                  alt="Logo Footer Preview" 
-                  className="h-10 object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = ''
-                    e.currentTarget.alt = 'Erro ao carregar imagem'
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          <ImageUpload
+            label="Logo do Rodapé (Branca)"
+            value={formData.logo_footer}
+            onChange={(url) => setFormData({ ...formData, logo_footer: url })}
+            placeholder="URL da logo branca (recomendado: 150x40px)"
+            description="Tamanho recomendado: 150x40px para melhor qualidade no rodapé"
+            previewBg="bg-slate-800"
+          />
 
           <Button onClick={handleSave} className="w-full">
             <Save className="h-4 w-4 mr-2" />

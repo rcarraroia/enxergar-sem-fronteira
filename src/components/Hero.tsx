@@ -27,8 +27,9 @@ const Hero = () => {
     label: 'Cidades Atendidas'
   }, {
     icon: Stethoscope,
-    value: '24/7',
-    label: 'Suporte Médico'
+    value: '24',
+    label: 'horas por dia, 7 dias por semana',
+    sublabel: 'Suporte Médico'
   }];
 
   const handleRegisterClick = () => {
@@ -99,7 +100,14 @@ const Hero = () => {
                 <Card key={index} className={`p-4 text-center medical-card animate-slide-up stagger-${index + 1}`}>
                   <stat.icon className="h-6 w-6 text-primary mx-auto mb-2 medical-icon" />
                   <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                  <div className={`text-xs text-muted-foreground ${stat.sublabel ? 'leading-tight' : ''}`}>
+                    {stat.label}
+                  </div>
+                  {stat.sublabel && (
+                    <div className="text-xs font-medium text-primary mt-1">
+                      {stat.sublabel}
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>
