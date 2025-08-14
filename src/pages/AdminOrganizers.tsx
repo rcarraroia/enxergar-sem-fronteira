@@ -121,12 +121,9 @@ const AdminOrganizers = () => {
     return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Não configurada</Badge>
   }
 
-  const generateOrganizerLink = (organizerEmail: string) => {
-    // Para acessar como organizador, o email deve conter @organizer.
-    if (organizerEmail.includes('@organizer.')) {
-      return `/organizer`
-    }
-    return null
+  const canOrganizerLogin = (organizerEmail: string) => {
+    // Organizador pode fazer login se estiver na tabela com status ativo
+    return true // Todos os organizadores na tabela podem fazer login
   }
 
   if (loading) {
@@ -160,8 +157,7 @@ const AdminOrganizers = () => {
               <DialogTitle>Criar Novo Organizador</DialogTitle>
               <DialogDescription>
                 Preencha os dados do organizador. Um convite será enviado por email.
-                <br />
-                <strong>Importante:</strong> Para que o organizador possa fazer login, o email deve conter "@organizer." (ex: joao@organizer.exemplo.com)
+                O organizador poderá fazer login usando qualquer email válido após ser cadastrado.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -182,11 +178,11 @@ const AdminOrganizers = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="exemplo@organizer.dominio.com"
+                  placeholder="email@exemplo.com"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  O email deve conter "@organizer." para permitir acesso ao painel
+                  O organizador poderá fazer login usando este email
                 </p>
               </div>
               <div className="flex gap-2 pt-4">
@@ -320,8 +316,7 @@ const AdminOrganizers = () => {
           <CardTitle>Organizadores Cadastrados</CardTitle>
           <CardDescription>
             Gerencie os organizadores que podem criar e gerenciar eventos.
-            <br />
-            <strong>Para acessar o painel:</strong> O organizador deve fazer login com um email que contenha "@organizer."
+            Os organizadores podem fazer login usando o email cadastrado na página /auth.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -340,12 +335,12 @@ const AdminOrganizers = () => {
           ) : (
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Como acessar o painel do organizador:</h4>
+                <h4 className="font-medium text-blue-900 mb-2">Como os organizadores acessam o painel:</h4>
                 <ol className="text-sm text-blue-800 space-y-1">
-                  <li>1. O organizador deve ter um email que contenha "@organizer." (ex: joao@organizer.exemplo.com)</li>
-                  <li>2. Fazer logout do painel administrativo</li>
-                  <li>3. Fazer login com as credenciais do organizador na página /auth</li>
-                  <li>4. Será redirecionado automaticamente para /organizer</li>
+                  <li>1. O organizador deve estar cadastrado na tabela com status "Ativo"</li>
+                  <li>2. Fazer login na página /auth usando o email cadastrado</li>
+                  <li>3. Será redirecionado automaticamente para /organizer</li>
+                  <li>4. O sistema identifica automaticamente o papel baseado no cadastro</li>
                 </ol>
               </div>
               
@@ -369,14 +364,14 @@ const AdminOrganizers = () => {
                       <TableCell>{getStatusBadge(organizer.status)}</TableCell>
                       <TableCell>{getApiKeyBadge(organizer.asaas_api_key)}</TableCell>
                       <TableCell>
-                        {organizer.email.includes('@organizer.') ? (
+                        {organizer.status === 'active' ? (
                           <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Pode acessar
                           </Badge>
                         ) : (
-                          <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
-                            Email inválido
+                          <Badge variant="secondary" className="bg-gray-100 text-gray-800 border-gray-200">
+                            Acesso bloqueado
                           </Badge>
                         )}
                       </TableCell>
