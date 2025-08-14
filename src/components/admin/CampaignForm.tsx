@@ -1,112 +1,144 @@
 
 import React, { useState } from 'react'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { useCampaigns, CreateCampaignData } from '@/hooks/useCampaigns'
+import { useEvents } from '@/hooks/useEvents'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Heart, Loader2, Plus } from 'lucide-react'
-import { toast } from 'sonner'
+import { Calendar, CalendarIcon, Plus, X } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+
+const campaignSchema = z.object({
+  title: z.string().min(1, 'Título é obrigatório'),
+  description: z.string().optional(),
+  event_id: z.string().optional(),
+  goal_amount: z.number().optional(),
+  suggested_amounts: z.array(z.number()).optional(),
+  allow_custom_amount: z.boolean().default(true),
+  allow_subscriptions: z.boolean().default(true),
+  status: z.enum(['active', 'paused', 'ended']).default('active'),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+})
+
+type CampaignFormData = z.infer<typeof campaignSchema>
 
 export const CampaignForm = () => {
-  const { events } = useEventsAdmin()
   const { createCampaign } = useCampaigns()
-  
-  const [formData, setFormData] = useState<CreateCampaignData>({
-    title: '',
-    description: '',
-    event_id: '',
-    goal_amount: undefined,
-    suggested_amounts: [25, 50, 100, 200],
-    allow_custom_amount: true,
-    allow_subscriptions: true,
-    status: 'active'
+  const { events } = useEvents()
+  const [customAmounts, setCustomAmounts] = useState<number[]>([25, 50, 100, 200])
+  const [newAmount, setNewAmount] = useState('')
+  const [startDate, setStartDate] = useState<Date>()
+  const [endDate, setEndDate] = useState<Date>()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset
+  } = useForm<CampaignFormData>({
+    resolver: zodResolver(campaignSchema),
+    defaultValues: {
+      allow_custom_amount: true,
+      allow_subscriptions: true,
+      status: 'active'
+    }
   })
 
-  const [suggestedAmountsText, setSuggestedAmountsText] = useState('25, 50, 100, 200')
+  const selectedEventId = watch('event_id')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.title.trim()) {
-      toast.error('Título da campanha é obrigatório')
-      return
-    }
-
+  const onSubmit = async (data: CampaignFormData) => {
     try {
-      // Parse suggested amounts
-      const amounts = suggestedAmountsText
-        .split(',')
-        .map(amount => parseFloat(amount.trim()))
-        .filter(amount => !isNaN(amount) && amount > 0)
+      const submitData: CreateCampaignData = {
+        ...data,
+        suggested_amounts: customAmounts,
+        start_date: startDate?.toISOString(),
+        end_date: endDate?.toISOString(),
+      }
 
-      await createCampaign.mutateAsync({
-        ...formData,
-        suggested_amounts: amounts.length > 0 ? amounts : [25, 50, 100, 200],
-        goal_amount: formData.goal_amount || undefined,
-        event_id: formData.event_id || undefined
-      })
-
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        event_id: '',
-        goal_amount: undefined,
-        suggested_amounts: [25, 50, 100, 200],
-        allow_custom_amount: true,
-        allow_subscriptions: true,
-        status: 'active'
-      })
-      setSuggestedAmountsText('25, 50, 100, 200')
+      await createCampaign.mutateAsync(submitData)
+      reset()
+      setCustomAmounts([25, 50, 100, 200])
+      setStartDate(undefined)
+      setEndDate(undefined)
+      setNewAmount('')
     } catch (error) {
       console.error('Erro ao criar campanha:', error)
     }
   }
 
+  const addCustomAmount = () => {
+    const amount = parseFloat(newAmount)
+    if (amount > 0 && !customAmounts.includes(amount)) {
+      setCustomAmounts([...customAmounts, amount].sort((a, b) => a - b))
+      setNewAmount('')
+    }
+  }
+
+  const removeCustomAmount = (amount: number) => {
+    setCustomAmounts(customAmounts.filter(a => a !== amount))
+  }
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center space-x-2">
-          <Heart className="h-5 w-5 text-primary" />
-          <CardTitle>Nova Campanha de Arrecadação</CardTitle>
-        </div>
+        <CardTitle>Nova Campanha</CardTitle>
         <CardDescription>
-          Crie uma nova campanha para captação de recursos
+          Crie uma nova campanha de arrecadação
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título da Campanha *</Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Informações básicas */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Título da Campanha</Label>
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Ex: Ajude a levar atendimento para..."
-                required
+                {...register('title')}
+                placeholder="Ex: Ajude-nos a levar atendimento para São Paulo"
+              />
+              {errors.title && (
+                <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="description">Descrição</Label>
+              <Textarea
+                id="description"
+                {...register('description')}
+                placeholder="Descreva os objetivos e impacto da campanha..."
+                rows={4}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="event">Evento Associado</Label>
-              <Select value={formData.event_id} onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}>
+            <div>
+              <Label htmlFor="event_id">Evento Associado (Opcional)</Label>
+              <Select value={selectedEventId || ""} onValueChange={(value) => setValue('event_id', value || undefined)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um evento (opcional)" />
+                  <SelectValue placeholder="Selecione um evento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum evento específico</SelectItem>
+                  <SelectItem value="general">Campanha Geral</SelectItem>
                   {events?.map((event) => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.city} - {event.location}
@@ -117,56 +149,122 @@ export const CampaignForm = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Descreva o objetivo da campanha, como os recursos serão utilizados..."
-              rows={4}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="goal_amount">Meta de Arrecadação (R$)</Label>
+          {/* Meta e valores */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="goal_amount">Meta de Arrecadação (Opcional)</Label>
               <Input
                 id="goal_amount"
                 type="number"
-                min="0"
                 step="0.01"
-                value={formData.goal_amount || ''}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  goal_amount: e.target.value ? parseFloat(e.target.value) : undefined 
-                }))}
-                placeholder="Ex: 5000.00"
+                min="0"
+                {...register('goal_amount', { valueAsNumber: true })}
+                placeholder="0.00"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="suggested_amounts">Valores Sugeridos (R$)</Label>
-              <Input
-                id="suggested_amounts"
-                value={suggestedAmountsText}
-                onChange={(e) => setSuggestedAmountsText(e.target.value)}
-                placeholder="Ex: 25, 50, 100, 200"
-              />
+            <div>
+              <Label>Valores Sugeridos</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {customAmounts.map((amount) => (
+                  <div key={amount} className="flex items-center gap-1 bg-secondary px-2 py-1 rounded">
+                    <span>R$ {amount}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeCustomAmount(amount)}
+                      className="h-4 w-4 p-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(e.target.value)}
+                  placeholder="Novo valor"
+                  className="flex-1"
+                />
+                <Button type="button" onClick={addCustomAmount} size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Datas */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Data de Início (Opcional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP", { locale: ptBR }) : "Selecione"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label>Data de Fim (Opcional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP", { locale: ptBR }) : "Selecione"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {/* Configurações */}
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Permitir Valor Personalizado</Label>
                 <p className="text-sm text-muted-foreground">
-                  Doadores podem inserir qualquer valor
+                  Doadores podem inserir valores personalizados
                 </p>
               </div>
               <Switch
-                checked={formData.allow_custom_amount}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allow_custom_amount: checked }))}
+                checked={watch('allow_custom_amount')}
+                onCheckedChange={(checked) => setValue('allow_custom_amount', checked)}
               />
             </div>
 
@@ -174,31 +272,33 @@ export const CampaignForm = () => {
               <div className="space-y-0.5">
                 <Label>Permitir Assinaturas Mensais</Label>
                 <p className="text-sm text-muted-foreground">
-                  Doadores podem fazer doações recorrentes
+                  Habilitar doações recorrentes mensais
                 </p>
               </div>
               <Switch
-                checked={formData.allow_subscriptions}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allow_subscriptions: checked }))}
+                checked={watch('allow_subscriptions')}
+                onCheckedChange={(checked) => setValue('allow_subscriptions', checked)}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={watch('status')} onValueChange={(value) => setValue('status', value as 'active' | 'paused' | 'ended')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Ativa</SelectItem>
+                  <SelectItem value="paused">Pausada</SelectItem>
+                  <SelectItem value="ended">Encerrada</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={createCampaign.isPending}>
-              {createCampaign.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Criando...
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar Campanha
-                </>
-              )}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" disabled={createCampaign.isPending}>
+            {createCampaign.isPending ? 'Criando...' : 'Criar Campanha'}
+          </Button>
         </form>
       </CardContent>
     </Card>

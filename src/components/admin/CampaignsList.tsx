@@ -160,7 +160,7 @@ export const CampaignsList = () => {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="z-50 bg-popover">
                           <DropdownMenuItem onClick={() => handleCopyLink(campaign.slug)}>
                             <Copy className="mr-2 h-4 w-4" />
                             Copiar Link
