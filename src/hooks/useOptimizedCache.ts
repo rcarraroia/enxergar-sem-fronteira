@@ -81,14 +81,50 @@ export const useOptimizedCache = () => {
 
   // Pré-carregar dados críticos
   const prefetchCriticalData = async () => {
+    const systemSettingsQueryFn = async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('key, value')
+        .in('key', ['project_name', 'project_description', 'social_links', 'logo_header', 'logo_footer'])
+      if (error) throw error
+      return data
+    }
+
+    const upcomingEventsQueryFn = async () => {
+      const today = new Date().toISOString().split('T')[0]
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          id,
+          title,
+          location,
+          address,
+          status,
+          event_dates!inner (
+            id,
+            date,
+            start_time,
+            end_time,
+            total_slots,
+            available_slots
+          )
+        `)
+        .eq('status', 'open')
+        .gte('event_dates.date', today)
+        .order('date', { ascending: true, foreignTable: 'event_dates' })
+        .limit(5)
+      if (error) throw error
+      return data
+    }
+
     await Promise.all([
       queryClient.prefetchQuery({
         queryKey: ['system-settings-optimized'],
-        queryFn: () => useSystemSettingsCache().queryFn?.()
+        queryFn: systemSettingsQueryFn
       }),
       queryClient.prefetchQuery({
         queryKey: ['upcoming-events-optimized'],
-        queryFn: () => useUpcomingEventsCache().queryFn?.()
+        queryFn: upcomingEventsQueryFn
       })
     ])
   }

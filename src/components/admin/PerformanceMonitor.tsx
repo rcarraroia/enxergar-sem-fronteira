@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
-import { Activity, Clock, Memory, Network, AlertTriangle } from 'lucide-react'
+import { Activity, Clock, HardDrive, Network, AlertTriangle } from 'lucide-react'
 
 export const PerformanceMonitor = () => {
   const { metrics, generateReport } = usePerformanceMonitor()
@@ -70,7 +70,7 @@ export const PerformanceMonitor = () => {
           {metrics.memoryUsage && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <Memory className="h-4 w-4" />
+                <HardDrive className="h-4 w-4" />
                 Uso de Memória
               </div>
               <div className="text-lg font-semibold">
