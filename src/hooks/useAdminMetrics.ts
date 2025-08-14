@@ -12,6 +12,11 @@ export interface AdminMetrics {
   totalRevenue: number
   occupancyRate: number
   growthRate: number
+  newPatientsThisWeek: number
+  todayRegistrations: number
+  totalOrganizers: number
+  totalDonations: number
+  systemHealth: 'healthy' | 'warning' | 'error'
 }
 
 export const useAdminMetrics = () => {
@@ -29,15 +34,17 @@ export const useAdminMetrics = () => {
         // Buscar eventos
         const { data: events } = await supabase
           .from('events')
-          .select('id, created_at, event_dates(event_date)')
+          .select('id, created_at')
 
         const totalEvents = events?.length || 0
         
         // Eventos ativos (com datas futuras)
-        const now = new Date()
-        const activeEvents = events?.filter(event => 
-          event.event_dates?.some(date => new Date(date.event_date) > now)
-        ).length || 0
+        const { data: eventDates } = await supabase
+          .from('event_dates')
+          .select('event_id, date')
+          .gte('date', new Date().toISOString().split('T')[0])
+
+        const activeEvents = new Set(eventDates?.map(ed => ed.event_id)).size || 0
 
         // Eventos desta semana
         const weekAgo = new Date()
@@ -57,6 +64,25 @@ export const useAdminMetrics = () => {
           .select('*', { count: 'exact', head: true })
           .gte('created_at', weekAgo.toISOString())
 
+        // Inscrições de hoje
+        const today = new Date().toISOString().split('T')[0]
+        const { count: todayRegistrations } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', `${today}T00:00:00.000Z`)
+          .lt('created_at', `${today}T23:59:59.999Z`)
+
+        // Novos pacientes desta semana
+        const { count: newPatientsThisWeek } = await supabase
+          .from('patients')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', weekAgo.toISOString())
+
+        // Buscar organizadores
+        const { count: totalOrganizers } = await supabase
+          .from('organizers')
+          .select('*', { count: 'exact', head: true })
+
         // Buscar receita total
         const { data: transactions } = await supabase
           .from('asaas_transactions')
@@ -75,6 +101,9 @@ export const useAdminMetrics = () => {
           ? ((thisWeekRegistrations / Math.max(totalRegistrations - thisWeekRegistrations, 1)) * 100)
           : 0
 
+        // Simular saúde do sistema
+        const systemHealth: 'healthy' | 'warning' | 'error' = 'healthy'
+
         const metrics: AdminMetrics = {
           totalPatients: totalPatients || 0,
           totalEvents,
@@ -84,7 +113,12 @@ export const useAdminMetrics = () => {
           thisWeekRegistrations: thisWeekRegistrations || 0,
           totalRevenue,
           occupancyRate: Math.round(occupancyRate),
-          growthRate: Math.round(growthRate)
+          growthRate: Math.round(growthRate),
+          newPatientsThisWeek: newPatientsThisWeek || 0,
+          todayRegistrations: todayRegistrations || 0,
+          totalOrganizers: totalOrganizers || 0,
+          totalDonations: totalRevenue, // Using same as revenue for now
+          systemHealth
         }
 
         console.log('📊 Métricas carregadas:', metrics)
@@ -102,7 +136,12 @@ export const useAdminMetrics = () => {
           thisWeekRegistrations: 0,
           totalRevenue: 0,
           occupancyRate: 0,
-          growthRate: 0
+          growthRate: 0,
+          newPatientsThisWeek: 0,
+          todayRegistrations: 0,
+          totalOrganizers: 0,
+          totalDonations: 0,
+          systemHealth: 'error'
         }
       }
     },
