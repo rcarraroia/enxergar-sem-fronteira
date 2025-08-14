@@ -208,6 +208,7 @@ const AdminOrganizers = () => {
                   onClick={() => {
                     setShowCreateDialog(false)
                     setFormData({ name: '', email: '', password: '' })
+                    setShowPassword(false)
                   }}
                   className="flex-1"
                 >
@@ -240,28 +241,7 @@ const AdminOrganizers = () => {
               Atualize os dados do organizador.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={async (e) => {
-            e.preventDefault()
-            if (!formData.name.trim() || !formData.email.trim()) {
-              toast.error('Preencha todos os campos obrigatórios')
-              return
-            }
-
-            setIsEditing(true)
-            try {
-              await editOrganizer(editingOrganizer.id, {
-                name: formData.name,
-                email: formData.email
-              })
-              setFormData({ name: '', email: '', password: '' })
-              setShowEditDialog(false)
-              setEditingOrganizer(null)
-            } catch (error) {
-              // Erro já tratado no hook
-            } finally {
-              setIsEditing(false)
-            }
-          }} className="space-y-4">
+          <form onSubmit={handleEdit} className="space-y-4">
             <div>
               <Label htmlFor="edit_name">Nome Completo</Label>
               <Input
@@ -287,7 +267,10 @@ const AdminOrganizers = () => {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setShowEditDialog(false)}
+                onClick={() => {
+                  setShowEditDialog(false)
+                  setFormData({ name: '', email: '', password: '' })
+                }}
                 className="flex-1"
               >
                 Cancelar
