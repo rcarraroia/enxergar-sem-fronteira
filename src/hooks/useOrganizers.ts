@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -13,6 +12,7 @@ interface Organizer {
   invitation_token?: string | null
   invitation_expires_at?: string | null
   asaas_api_key?: string | null
+  events_count?: number
 }
 
 export const useOrganizers = () => {
@@ -46,15 +46,25 @@ export const useOrganizers = () => {
 
       console.log('✅ Organizadores encontrados:', data?.length || 0)
 
-      // Garantir que o status está correto
-      const organizersWithValidStatus = data?.map(org => ({
-        ...org,
-        status: ['active', 'inactive', 'pending'].includes(org.status) 
-          ? org.status as 'active' | 'inactive' | 'pending'
-          : 'active' as const
-      })) || []
+      // Buscar contagem de eventos para cada organizador
+      const organizersWithEventCount = await Promise.all(
+        (data || []).map(async (org) => {
+          const { count } = await supabase
+            .from('events')
+            .select('*', { count: 'exact', head: true })
+            .eq('organizer_id', org.id)
 
-      setOrganizers(organizersWithValidStatus)
+          return {
+            ...org,
+            status: ['active', 'inactive', 'pending'].includes(org.status) 
+              ? org.status as 'active' | 'inactive' | 'pending'
+              : 'active' as const,
+            events_count: count || 0
+          }
+        })
+      )
+
+      setOrganizers(organizersWithEventCount)
     } catch (error) {
       console.error('❌ Erro ao buscar organizadores:', error)
       toast.error('Erro ao carregar organizadores')
@@ -63,7 +73,7 @@ export const useOrganizers = () => {
     }
   }
 
-  const createOrganizer = async (organizerData: { name: string; email: string }) => {
+  const createOrganizer = async (organizerData: { name: string; email: string; password?: string }) => {
     try {
       console.log('🔨 Criando organizador:', organizerData)
       
@@ -79,6 +89,26 @@ export const useOrganizers = () => {
         throw new Error('Organizador já existe')
       }
 
+      // Se foi fornecida uma senha, criar conta de usuário no Supabase Auth
+      let userId = null
+      if (organizerData.password) {
+        console.log('🔐 Criando conta de usuário com senha...')
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: organizerData.email,
+          password: organizerData.password,
+          email_confirm: true
+        })
+
+        if (authError) {
+          console.error('❌ Erro ao criar usuário:', authError)
+          toast.error('Erro ao criar conta de usuário: ' + authError.message)
+          throw authError
+        }
+
+        userId = authData.user?.id
+        console.log('✅ Usuário criado com ID:', userId)
+      }
+
       // Gerar token de convite
       const invitationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       const expiresAt = new Date()
@@ -87,9 +117,10 @@ export const useOrganizers = () => {
       const { data, error } = await supabase
         .from('organizers')
         .insert({
+          id: userId || undefined, // Usar o ID do usuário criado se disponível
           name: organizerData.name,
           email: organizerData.email,
-          status: 'active', // Mudança: criar como ativo por padrão
+          status: 'active',
           invitation_token: invitationToken,
           invitation_expires_at: expiresAt.toISOString()
         })
@@ -103,11 +134,13 @@ export const useOrganizers = () => {
 
       console.log('✅ Organizador criado com sucesso:', data)
       
-      // TODO: Enviar email de convite
-      console.log('📧 Convite gerado para:', organizerData.email, 'Token:', invitationToken)
+      if (organizerData.password) {
+        toast.success('Organizador criado com sucesso! Conta de usuário também foi criada.')
+      } else {
+        toast.success('Organizador criado com sucesso! Convite enviado por email.')
+      }
 
       await fetchOrganizers()
-      toast.success('Organizador criado com sucesso!')
       return data
     } catch (error: any) {
       console.error('❌ Erro ao criar organizador:', error)
@@ -153,6 +186,17 @@ export const useOrganizers = () => {
     try {
       console.log('🗑️ Excluindo organizador:', id)
       
+      // Verificar se o organizador tem eventos associados
+      const { count: eventsCount } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true })
+        .eq('organizer_id', id)
+
+      if (eventsCount && eventsCount > 0) {
+        toast.error(`Não é possível excluir este organizador pois ele possui ${eventsCount} evento(s) associado(s). Remova ou transfira os eventos primeiro.`)
+        return
+      }
+
       const { error } = await supabase
         .from('organizers')
         .delete()
@@ -240,7 +284,6 @@ export const useOrganizers = () => {
         throw error
       }
 
-      // TODO: Enviar email de convite
       console.log('📧 Novo convite gerado, Token:', newToken)
 
       await fetchOrganizers()
