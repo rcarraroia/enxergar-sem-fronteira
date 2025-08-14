@@ -1,36 +1,22 @@
 
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useCampaigns } from '@/hooks/useCampaigns'
+import { useDonations, useSubscriptions } from '@/hooks/useDonations'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, ArrowLeft, Heart, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
+import { LogOut, ArrowLeft, Heart, DollarSign, TrendingUp, AlertCircle, Users, Calendar } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { DonationForm } from '@/components/admin/DonationForm'
+import { CampaignForm } from '@/components/admin/CampaignForm'
+import { CampaignsList } from '@/components/admin/CampaignsList'
 
 const AdminDonations = () => {
   const { user, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
-
-  const { data: donations = [], isLoading } = useQuery({
-    queryKey: ['asaas-donations'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('asaas_transactions')
-        .select(`
-          *,
-          events:event_id (
-            title
-          )
-        `)
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      return data || []
-    }
-  })
+  const { campaigns } = useCampaigns()
+  const { donations } = useDonations()
+  const { subscriptions } = useSubscriptions()
 
   const handleSignOut = async () => {
     try {
@@ -40,14 +26,19 @@ const AdminDonations = () => {
     }
   }
 
+  // Calcular métricas
   const stats = {
-    total: donations.length,
-    pending: donations.filter(t => t.payment_status === 'pending').length,
-    received: donations.filter(t => t.payment_status === 'paid').length,
-    failed: donations.filter(t => t.payment_status === 'failed').length,
-    totalValue: donations
-      .filter(t => t.payment_status === 'paid')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
+    totalCampaigns: campaigns?.length || 0,
+    activeCampaigns: campaigns?.filter(c => c.status === 'active').length || 0,
+    totalRaised: campaigns?.reduce((sum, c) => sum + c.current_amount, 0) || 0,
+    totalDonations: donations?.length || 0,
+    activeSubscriptions: subscriptions?.filter(s => s.status === 'active').length || 0,
+    thisMonthDonations: donations?.filter(d => {
+      const donationDate = new Date(d.created_at)
+      const now = new Date()
+      return donationDate.getMonth() === now.getMonth() && 
+             donationDate.getFullYear() === now.getFullYear()
+    }).length || 0
   }
 
   const getStatusBadge = (status: string) => {
@@ -59,7 +50,7 @@ const AdminDonations = () => {
 
     const labels = {
       pending: 'Pendente',
-      paid: 'Recebida',
+      paid: 'Paga',
       failed: 'Falhou'
     }
 
@@ -87,7 +78,7 @@ const AdminDonations = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Campanhas de Arrecadação</h1>
-                <p className="text-sm text-muted-foreground">Gestão de campanhas de doação com split automático</p>
+                <p className="text-sm text-muted-foreground">Sistema completo de captação de recursos</p>
               </div>
             </div>
             
@@ -108,44 +99,17 @@ const AdminDonations = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total</CardTitle>
+              <CardTitle className="text-sm font-medium">Campanhas</CardTitle>
               <Heart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pendente</CardTitle>
-              <AlertCircle className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recebidas</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.received}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Falharam</CardTitle>
-              <AlertCircle className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.failed}</div>
+              <div className="text-2xl font-bold">{stats.totalCampaigns}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.activeCampaigns} ativas
+              </p>
             </CardContent>
           </Card>
 
@@ -156,41 +120,78 @@ const AdminDonations = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {(stats.totalValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                R$ {stats.totalRaised.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Doações</CardTitle>
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalDonations}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.thisMonthDonations} este mês
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Assinantes</CardTitle>
+              <Users className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activeSubscriptions}</div>
+              <p className="text-xs text-muted-foreground">ativos</p>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sistema</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm">
+                <p className="font-medium">Split automático de 25% cada:</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ONG • Projeto Visão • Renum • Organizador
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Donation Form */}
-          <DonationForm />
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* Campaign Form */}
+          <CampaignForm />
 
-          {/* Donations List */}
+          {/* Recent Donations */}
           <Card>
             <CardHeader>
               <CardTitle>Doações Recentes</CardTitle>
               <CardDescription>
-                Histórico de doações recebidas
+                Últimas doações processadas
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div className="text-center py-4">Carregando...</div>
-              ) : donations.length === 0 ? (
+              {donations.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
                   Nenhuma doação encontrada
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {donations.slice(0, 10).map((donation) => (
+                  {donations.slice(0, 5).map((donation) => (
                     <div key={donation.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">
-                          {(donation.events as any)?.title || 'Evento não identificado'}
+                          {donation.campaigns?.title || 'Campanha não identificada'}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          ID: {donation.transaction_id}
+                          {donation.donor_name} • {donation.donor_email}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(donation.created_at).toLocaleDateString('pt-BR')}
@@ -198,7 +199,7 @@ const AdminDonations = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
-                          R$ {(Number(donation.amount) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {Number(donation.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </p>
                         {getStatusBadge(donation.payment_status)}
                       </div>
@@ -209,6 +210,9 @@ const AdminDonations = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Campaigns List */}
+        <CampaignsList />
       </main>
     </div>
   )

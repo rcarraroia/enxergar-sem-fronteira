@@ -21,6 +21,7 @@ import AdminOrganizers from "./pages/AdminOrganizers";
 import AdminSettings from "./pages/AdminSettings";
 import AdminSync from "./pages/AdminSync";
 import AdminPayments from "./pages/AdminPayments";
+import AdminDonations from "./pages/AdminDonations";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,11 @@ function App() {
             <Route path="/admin/payments" element={
               <ProtectedRoute>
                 <AdminPayments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/donations" element={
+              <ProtectedRoute>
+                <AdminDonations />
               </ProtectedRoute>
             } />
             

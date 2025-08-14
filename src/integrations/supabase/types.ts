@@ -55,6 +55,194 @@ export type Database = {
           },
         ]
       }
+      campaigns: {
+        Row: {
+          allow_custom_amount: boolean | null
+          allow_subscriptions: boolean | null
+          created_at: string | null
+          created_by: string | null
+          current_amount: number | null
+          description: string | null
+          end_date: string | null
+          event_id: string | null
+          goal_amount: number | null
+          id: string
+          image_url: string | null
+          slug: string
+          start_date: string | null
+          status: string | null
+          suggested_amounts: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          allow_custom_amount?: boolean | null
+          allow_subscriptions?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          current_amount?: number | null
+          description?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_url?: string | null
+          slug: string
+          start_date?: string | null
+          status?: string | null
+          suggested_amounts?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          allow_custom_amount?: boolean | null
+          allow_subscriptions?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          current_amount?: number | null
+          description?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_url?: string | null
+          slug?: string
+          start_date?: string | null
+          status?: string | null
+          suggested_amounts?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donation_subscriptions: {
+        Row: {
+          amount: number
+          asaas_subscription_id: string | null
+          campaign_id: string | null
+          created_at: string | null
+          donation_id: string | null
+          id: string
+          next_charge_date: string | null
+          status: string | null
+          subscriber_email: string
+          total_charges: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          donation_id?: string | null
+          id?: string
+          next_charge_date?: string | null
+          status?: string | null
+          subscriber_email: string
+          total_charges?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          donation_id?: string | null
+          id?: string
+          next_charge_date?: string | null
+          status?: string | null
+          subscriber_email?: string
+          total_charges?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_subscriptions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_subscriptions_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donations: {
+        Row: {
+          amount: number
+          asaas_subscription_id: string | null
+          campaign_id: string
+          created_at: string | null
+          donation_type: string
+          donor_email: string | null
+          donor_name: string | null
+          donor_phone: string | null
+          id: string
+          payment_id: string | null
+          payment_status: string | null
+          split_data: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          asaas_subscription_id?: string | null
+          campaign_id: string
+          created_at?: string | null
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          donor_phone?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_status?: string | null
+          split_data?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string
+          created_at?: string | null
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          donor_phone?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_status?: string | null
+          split_data?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_dates: {
         Row: {
           available_slots: number
