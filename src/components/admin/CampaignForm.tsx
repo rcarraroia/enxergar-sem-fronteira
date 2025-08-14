@@ -225,7 +225,7 @@ export const CampaignForm = () => {
                   <Calendar
                     mode="single"
                     selected={startDate}
-                    onSelect={setStartDate}
+                    onSelect={(date: Date | undefined) => setStartDate(date)}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
@@ -252,7 +252,7 @@ export const CampaignForm = () => {
                   <Calendar
                     mode="single"
                     selected={endDate}
-                    onSelect={setEndDate}
+                    onSelect={(date: Date | undefined) => setEndDate(date)}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
