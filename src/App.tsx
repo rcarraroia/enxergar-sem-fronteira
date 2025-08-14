@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -22,6 +23,10 @@ import AdminSync from "./pages/AdminSync";
 import AdminPayments from "./pages/AdminPayments";
 import AdminDonations from "./pages/AdminDonations";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import OrganizerEvents from "./pages/OrganizerEvents";
+import OrganizerEventForm from "./pages/OrganizerEventForm";
+import OrganizerRegistrations from "./pages/OrganizerRegistrations";
+import OrganizerProfile from "./pages/OrganizerProfile";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AuthProvider } from "./hooks/useAuth";
 
@@ -100,6 +105,31 @@ function App() {
               <Route path="/organizer" element={
                 <ProtectedRoute requireOrganizer>
                   <OrganizerDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/events" element={
+                <ProtectedRoute requireOrganizer>
+                  <OrganizerEvents />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/events/new" element={
+                <ProtectedRoute requireOrganizer>
+                  <OrganizerEventForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/events/:eventId/edit" element={
+                <ProtectedRoute requireOrganizer>
+                  <OrganizerEventForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/registrations" element={
+                <ProtectedRoute requireOrganizer>
+                  <OrganizerRegistrations />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/profile" element={
+                <ProtectedRoute requireOrganizer>
+                  <OrganizerProfile />
                 </ProtectedRoute>
               } />
               
