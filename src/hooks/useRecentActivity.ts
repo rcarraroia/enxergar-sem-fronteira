@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 
 export interface ActivityItem {
   id: string
-  type: 'patient_registered' | 'event_created' | 'registration_completed' | 'sync_completed'
+  type: 'registration' | 'event' | 'patient' | 'system'
   title: string
   description: string
   timestamp: string
@@ -15,82 +15,83 @@ export const useRecentActivity = () => {
   return useQuery({
     queryKey: ['recent-activity'],
     queryFn: async (): Promise<ActivityItem[]> => {
-      console.log('⚡ Buscando atividades recentes...')
-      
-      const activities: ActivityItem[] = []
+      try {
+        console.log('🔍 Buscando atividades recentes...')
 
-      // Buscar novos pacientes (últimas 24h)
-      const { data: newPatients } = await supabase
-        .from('patients')
-        .select('id, nome, created_at')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5)
+        const activities: ActivityItem[] = []
 
-      newPatients?.forEach(patient => {
-        activities.push({
-          id: `patient-${patient.id}`,
-          type: 'patient_registered',
-          title: 'Novo paciente cadastrado',
-          description: `${patient.nome} se cadastrou no sistema`,
-          timestamp: patient.created_at,
-          icon: 'user-plus'
+        // Buscar inscrições recentes
+        const { data: registrations } = await supabase
+          .from('registrations')
+          .select(`
+            id, 
+            created_at, 
+            patients(name),
+            events(title)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        registrations?.forEach(reg => {
+          activities.push({
+            id: `reg-${reg.id}`,
+            type: 'registration',
+            title: 'Nova Inscrição',
+            description: `${reg.patients?.name || 'Paciente'} se inscreveu em ${reg.events?.title || 'evento'}`,
+            timestamp: reg.created_at,
+            icon: 'UserPlus'
+          })
         })
-      })
 
-      // Buscar novos eventos (última semana)
-      const { data: newEvents } = await supabase
-        .from('events')
-        .select('id, title, created_at')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(3)
+        // Buscar eventos recentes
+        const { data: events } = await supabase
+          .from('events')
+          .select('id, title, created_at')
+          .order('created_at', { ascending: false })
+          .limit(3)
 
-      newEvents?.forEach(event => {
-        activities.push({
-          id: `event-${event.id}`,
-          type: 'event_created',
-          title: 'Novo evento criado',
-          description: `Evento "${event.title}" foi cadastrado`,
-          timestamp: event.created_at,
-          icon: 'calendar-plus'
+        events?.forEach(event => {
+          activities.push({
+            id: `event-${event.id}`,
+            type: 'event',
+            title: 'Evento Criado',
+            description: `Novo evento: ${event.title}`,
+            timestamp: event.created_at,
+            icon: 'Calendar'
+          })
         })
-      })
 
-      // Buscar novas inscrições (últimas 12h)
-      const { data: newRegistrations } = await supabase
-        .from('event_registrations')
-        .select(`
-          id, 
-          created_at,
-          patients(nome),
-          events(title)
-        `)
-        .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5)
+        // Buscar pacientes recentes
+        const { data: patients } = await supabase
+          .from('patients')
+          .select('id, name, created_at')
+          .order('created_at', { ascending: false })
+          .limit(3)
 
-      newRegistrations?.forEach(registration => {
-        const patient = registration.patients as any
-        const event = registration.events as any
-        activities.push({
-          id: `registration-${registration.id}`,
-          type: 'registration_completed',
-          title: 'Nova inscrição realizada',
-          description: `${patient?.nome} se inscreveu em "${event?.title}"`,
-          timestamp: registration.created_at,
-          icon: 'user-check'
+        patients?.forEach(patient => {
+          activities.push({
+            id: `patient-${patient.id}`,
+            type: 'patient',
+            title: 'Paciente Cadastrado',
+            description: `Novo paciente: ${patient.name}`,
+            timestamp: patient.created_at,
+            icon: 'User'
+          })
         })
-      })
 
-      // Ordenar por timestamp mais recente
-      const sortedActivities = activities.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      ).slice(0, 10)
+        // Ordenar por timestamp e limitar a 10 itens
+        const sortedActivities = activities
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 10)
 
-      console.log(`✅ Encontradas ${sortedActivities.length} atividades recentes`)
-      return sortedActivities
+        console.log('📋 Atividades carregadas:', sortedActivities.length)
+        return sortedActivities
+
+      } catch (error) {
+        console.error('❌ Erro ao carregar atividades:', error)
+        return []
+      }
     },
-    refetchInterval: 60000 // Atualizar a cada minuto
+    refetchInterval: 30000, // Atualizar a cada 30 segundos
   })
 }

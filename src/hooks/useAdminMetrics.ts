@@ -3,83 +3,109 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 
 export interface AdminMetrics {
+  totalPatients: number
   totalEvents: number
   activeEvents: number
   thisWeekEvents: number
-  totalPatients: number
-  newPatientsThisWeek: number
   totalRegistrations: number
-  todayRegistrations: number
-  totalOrganizers: number
-  totalDonations: number
-  systemHealth: 'healthy' | 'warning' | 'error'
+  thisWeekRegistrations: number
+  totalRevenue: number
+  occupancyRate: number
+  growthRate: number
 }
 
 export const useAdminMetrics = () => {
   return useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async (): Promise<AdminMetrics> => {
-      console.log('📊 Buscando métricas do dashboard...')
-      
-      const today = new Date().toISOString().split('T')[0]
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      try {
+        console.log('🔍 Buscando métricas administrativas...')
 
-      // Buscar métricas em paralelo
-      const [
-        eventsResult,
-        patientsResult,
-        registrationsResult,
-        organizersResult,
-        donationsResult
-      ] = await Promise.all([
-        // Eventos
-        supabase
-          .from('events')
-          .select('id, status, created_at'),
-        
-        // Pacientes
-        supabase
+        // Buscar total de pacientes
+        const { count: totalPatients } = await supabase
           .from('patients')
-          .select('id, created_at'),
+          .select('*', { count: 'exact', head: true })
+
+        // Buscar eventos
+        const { data: events } = await supabase
+          .from('events')
+          .select('id, created_at, event_dates(event_date)')
+
+        const totalEvents = events?.length || 0
         
-        // Inscrições
-        supabase
-          .from('event_registrations')
-          .select('id, created_at'),
-        
-        // Organizadores
-        supabase
-          .from('organizers')
-          .select('id'),
-        
-        // Doações (assumindo que existe tabela de doações)
-        supabase
+        // Eventos ativos (com datas futuras)
+        const now = new Date()
+        const activeEvents = events?.filter(event => 
+          event.event_dates?.some(date => new Date(date.event_date) > now)
+        ).length || 0
+
+        // Eventos desta semana
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        const thisWeekEvents = events?.filter(event => 
+          new Date(event.created_at) > weekAgo
+        ).length || 0
+
+        // Buscar inscrições
+        const { count: totalRegistrations } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+
+        // Inscrições desta semana
+        const { count: thisWeekRegistrations } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', weekAgo.toISOString())
+
+        // Buscar receita total
+        const { data: transactions } = await supabase
           .from('asaas_transactions')
-          .select('id, amount')
-      ])
+          .select('amount')
+          .eq('payment_status', 'CONFIRMED')
 
-      const events = eventsResult.data || []
-      const patients = patientsResult.data || []
-      const registrations = registrationsResult.data || []
-      const organizers = organizersResult.data || []
-      const donations = donationsResult.data || []
+        const totalRevenue = transactions?.reduce((sum, t) => sum + t.amount, 0) || 0
 
-      const metrics: AdminMetrics = {
-        totalEvents: events.length,
-        activeEvents: events.filter(e => e.status === 'open').length,
-        thisWeekEvents: events.filter(e => e.created_at >= weekAgo).length,
-        totalPatients: patients.length,
-        newPatientsThisWeek: patients.filter(p => p.created_at >= weekAgo).length,
-        totalRegistrations: registrations.length,
-        todayRegistrations: registrations.filter(r => r.created_at.split('T')[0] === today).length,
-        totalOrganizers: organizers.length,
-        totalDonations: donations.reduce((sum, d) => sum + (d.amount || 0), 0),
-        systemHealth: 'healthy' // Simplificado por enquanto
+        // Calcular taxa de ocupação (simulada)
+        const occupancyRate = totalRegistrations && totalEvents 
+          ? Math.min((totalRegistrations / (totalEvents * 100)) * 100, 100)
+          : 0
+
+        // Taxa de crescimento (simulada)
+        const growthRate = thisWeekRegistrations && totalRegistrations
+          ? ((thisWeekRegistrations / Math.max(totalRegistrations - thisWeekRegistrations, 1)) * 100)
+          : 0
+
+        const metrics: AdminMetrics = {
+          totalPatients: totalPatients || 0,
+          totalEvents,
+          activeEvents,
+          thisWeekEvents,
+          totalRegistrations: totalRegistrations || 0,
+          thisWeekRegistrations: thisWeekRegistrations || 0,
+          totalRevenue,
+          occupancyRate: Math.round(occupancyRate),
+          growthRate: Math.round(growthRate)
+        }
+
+        console.log('📊 Métricas carregadas:', metrics)
+        return metrics
+
+      } catch (error) {
+        console.error('❌ Erro ao carregar métricas:', error)
+        // Retornar métricas zeradas em caso de erro
+        return {
+          totalPatients: 0,
+          totalEvents: 0,
+          activeEvents: 0,
+          thisWeekEvents: 0,
+          totalRegistrations: 0,
+          thisWeekRegistrations: 0,
+          totalRevenue: 0,
+          occupancyRate: 0,
+          growthRate: 0
+        }
       }
-
-      console.log('✅ Métricas carregadas:', metrics)
-      return metrics
     },
-    refetchInterval: 30000 // Atualizar a cada 30 segundos
+    refetchInterval: 60000, // Atualizar a cada minuto
   })
 }

@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Registration from "./pages/Registration";
@@ -29,72 +28,70 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/registration" element={<Registration />} />
-              <Route path="/patient-access" element={<PatientAccess />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-use" element={<TermsOfUse />} />
-              <Route path="/lgpd" element={<LGPD />} />
-              <Route path="/cookies" element={<Cookies />} />
-              
-              {/* Protected Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/patients" element={
-                <ProtectedRoute>
-                  <AdminPatients />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/events" element={
-                <ProtectedRoute>
-                  <AdminEvents />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/events/:eventId" element={
-                <ProtectedRoute>
-                  <AdminEventDetails />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/registrations" element={
-                <ProtectedRoute>
-                  <AdminRegistrations />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/organizers" element={
-                <ProtectedRoute>
-                  <AdminOrganizers />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/settings" element={
-                <ProtectedRoute>
-                  <AdminSettings />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/sync" element={
-                <ProtectedRoute>
-                  <AdminSync />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/payments" element={
-                <ProtectedRoute>
-                  <AdminPayments />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/patient-access" element={<PatientAccess />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/lgpd" element={<LGPD />} />
+            <Route path="/cookies" element={<Cookies />} />
+            
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/patients" element={
+              <ProtectedRoute>
+                <AdminPatients />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/events" element={
+              <ProtectedRoute>
+                <AdminEvents />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/events/:eventId" element={
+              <ProtectedRoute>
+                <AdminEventDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/registrations" element={
+              <ProtectedRoute>
+                <AdminRegistrations />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/organizers" element={
+              <ProtectedRoute>
+                <AdminOrganizers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/settings" element={
+              <ProtectedRoute>
+                <AdminSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/sync" element={
+              <ProtectedRoute>
+                <AdminSync />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/payments" element={
+              <ProtectedRoute>
+                <AdminPayments />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
