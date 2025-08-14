@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -158,13 +159,31 @@ export const useOrganizers = () => {
     }
   }
 
-  const editOrganizer = async (id: string, data: { name: string; email: string }) => {
+  const editOrganizer = async (id: string, data: { name: string; email: string; password?: string }) => {
     try {
       console.log('✏️ Editando organizador:', id, data)
       
+      // Se uma senha foi fornecida, atualizar a conta de usuário no Supabase Auth
+      if (data.password) {
+        console.log('🔐 Atualizando senha do usuário...')
+        const { error: authError } = await supabase.auth.admin.updateUserById(id, {
+          password: data.password
+        })
+
+        if (authError) {
+          console.error('❌ Erro ao atualizar senha:', authError)
+          toast.error('Erro ao atualizar senha: ' + authError.message)
+          throw authError
+        }
+
+        console.log('✅ Senha atualizada com sucesso')
+      }
+
+      // Atualizar dados do organizador (sem a senha)
+      const { password, ...organizerData } = data
       const { error } = await supabase
         .from('organizers')
-        .update(data)
+        .update(organizerData)
         .eq('id', id)
 
       if (error) {

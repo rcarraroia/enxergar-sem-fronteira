@@ -21,6 +21,7 @@ const AdminOrganizers = () => {
   const [selectedOrganizerApiKey, setSelectedOrganizerApiKey] = useState<{id: string, apiKey: string}>({id: '', apiKey: ''})
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
+  const [showEditPassword, setShowEditPassword] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
@@ -58,7 +59,8 @@ const AdminOrganizers = () => {
     try {
       await editOrganizer(editingOrganizer.id, {
         name: formData.name,
-        email: formData.email
+        email: formData.email,
+        password: formData.password.trim() || undefined
       })
       setFormData({ name: '', email: '', password: '' })
       setShowEditDialog(false)
@@ -238,7 +240,7 @@ const AdminOrganizers = () => {
           <DialogHeader>
             <DialogTitle>Editar Organizador</DialogTitle>
             <DialogDescription>
-              Atualize os dados do organizador.
+              Atualize os dados do organizador. Se definir uma senha, a conta será atualizada.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4">
@@ -263,6 +265,34 @@ const AdminOrganizers = () => {
                 required
               />
             </div>
+            <div>
+              <Label htmlFor="edit_password">Nova Senha (Opcional)</Label>
+              <div className="relative">
+                <Input
+                  id="edit_password"
+                  type={showEditPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Deixe em branco para manter a senha atual"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowEditPassword(!showEditPassword)}
+                >
+                  {showEditPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Se definir uma nova senha, a conta do organizador será atualizada.
+              </p>
+            </div>
             <div className="flex gap-2 pt-4">
               <Button 
                 type="button" 
@@ -270,6 +300,7 @@ const AdminOrganizers = () => {
                 onClick={() => {
                   setShowEditDialog(false)
                   setFormData({ name: '', email: '', password: '' })
+                  setShowEditPassword(false)
                 }}
                 className="flex-1"
               >
