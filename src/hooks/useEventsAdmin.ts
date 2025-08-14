@@ -81,7 +81,7 @@ export const useEventsAdmin = () => {
       
       console.log('📝 Criando novo evento:', eventData.city)
       
-      // Criar o evento
+      // Criar o evento - usar insert direto com os campos corretos
       const { data: event, error: eventError } = await supabase
         .from('events')
         .insert({
@@ -90,7 +90,8 @@ export const useEventsAdmin = () => {
           location: eventData.location,
           address: eventData.address,
           status: eventData.status,
-          organizer_id: user.id
+          organizer_id: user.id,
+          title: eventData.city // Temporário para compatibilidade com a estrutura atual
         })
         .select()
         .single()
@@ -145,7 +146,8 @@ export const useEventsAdmin = () => {
           location: eventData.location,
           address: eventData.address,
           status: eventData.status,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          title: eventData.city // Temporário para compatibilidade
         })
         .eq('id', eventData.id)
         .select()

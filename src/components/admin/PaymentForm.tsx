@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 
 export const PaymentForm = () => {
   const { events } = useEventsAdmin()
-  const { createPayment, isLoading } = useAsaasPayment()
+  const { createPayment, loading } = useAsaasPayment()
   
   const [formData, setFormData] = useState({
     eventId: '',
@@ -38,7 +38,7 @@ export const PaymentForm = () => {
     }
 
     try {
-      await createPayment.mutateAsync({
+      await createPayment({
         eventId: formData.eventId,
         amount: parseFloat(formData.amount),
         customerName: formData.customerName,
@@ -146,8 +146,8 @@ export const PaymentForm = () => {
             />
           </div>
 
-          <Button disabled={isLoading}>
-            {isLoading ? (
+          <Button disabled={loading}>
+            {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Criando...

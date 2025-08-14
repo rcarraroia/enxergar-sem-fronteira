@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 
 export const DonationForm = () => {
   const { events } = useEventsAdmin()
-  const { createDonation, isLoading } = useAsaasDonation()
+  const { createDonation, loading } = useAsaasDonation()
   
   const [formData, setFormData] = useState({
     eventId: '',
@@ -38,7 +38,7 @@ export const DonationForm = () => {
     }
 
     try {
-      await createDonation.mutateAsync({
+      await createDonation({
         eventId: formData.eventId,
         amount: parseFloat(formData.amount),
         donorName: formData.donorName,
@@ -149,8 +149,8 @@ export const DonationForm = () => {
             />
           </div>
 
-          <Button disabled={isLoading}>
-            {isLoading ? (
+          <Button disabled={loading}>
+            {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processando
