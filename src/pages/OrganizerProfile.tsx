@@ -25,6 +25,13 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
+interface NotificationPreferences {
+  email_reminders: boolean
+  sms_reminders: boolean
+  registration_notifications: boolean
+  event_updates: boolean
+}
+
 interface OrganizerProfile {
   id: string
   name: string
@@ -35,12 +42,9 @@ interface OrganizerProfile {
   profile_image_url?: string
   asaas_api_key?: string
   whatsapp_api_key?: string
-  notification_preferences: {
-    email_reminders: boolean
-    sms_reminders: boolean
-    registration_notifications: boolean
-    event_updates: boolean
-  }
+  notification_preferences: NotificationPreferences
+  created_at?: string
+  last_login?: string
 }
 
 const OrganizerProfile = () => {
@@ -62,7 +66,7 @@ const OrganizerProfile = () => {
       sms_reminders: false,
       registration_notifications: true,
       event_updates: true
-    }
+    } as NotificationPreferences
   })
 
   useEffect(() => {
@@ -81,20 +85,38 @@ const OrganizerProfile = () => {
 
       if (error) throw error
 
-      setProfile(data)
-      setFormData({
+      // Safely parse notification_preferences
+      const notificationPrefs = data.notification_preferences as NotificationPreferences || {
+        email_reminders: true,
+        sms_reminders: false,
+        registration_notifications: true,
+        event_updates: true
+      }
+
+      const profileData: OrganizerProfile = {
+        id: data.id,
         name: data.name || '',
+        email: data.email || '',
         phone: data.phone || '',
         organization: data.organization || '',
         address: data.address || '',
+        profile_image_url: data.profile_image_url || '',
         asaas_api_key: data.asaas_api_key || '',
         whatsapp_api_key: data.whatsapp_api_key || '',
-        notification_preferences: data.notification_preferences || {
-          email_reminders: true,
-          sms_reminders: false,
-          registration_notifications: true,
-          event_updates: true
-        }
+        notification_preferences: notificationPrefs,
+        created_at: data.created_at,
+        last_login: data.last_login
+      }
+
+      setProfile(profileData)
+      setFormData({
+        name: profileData.name,
+        phone: profileData.phone || '',
+        organization: profileData.organization || '',
+        address: profileData.address || '',
+        asaas_api_key: profileData.asaas_api_key || '',
+        whatsapp_api_key: profileData.whatsapp_api_key || '',
+        notification_preferences: profileData.notification_preferences
       })
     } catch (error) {
       console.error('Erro ao buscar perfil:', error)
