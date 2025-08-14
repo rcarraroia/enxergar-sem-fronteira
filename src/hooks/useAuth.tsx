@@ -21,70 +21,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    // Verificar sessão atual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        checkAdminStatus(session.user.id)
-      }
-      setLoading(false)
-    })
-
-    // Escutar mudanças de autenticação
+    console.log('🔍 AuthProvider: Inicializando verificação de sessão...')
+    
+    // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
+        
         setUser(session?.user ?? null)
+        
         if (session?.user) {
-          await checkAdminStatus(session.user.id)
+          // Verificar se é admin baseado no email
+          const isUserAdmin = session.user.email?.includes('@admin.') || false
+          console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
+          setIsAdmin(isUserAdmin)
         } else {
           setIsAdmin(false)
         }
+        
         setLoading(false)
       }
     )
 
+    // Verificar sessão atual
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('❌ Erro ao verificar sessão:', error)
+        setLoading(false)
+        return
+      }
+      
+      console.log('📊 Sessão atual:', session?.user?.email || 'Nenhuma')
+      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        // Verificar se é admin baseado no email
+        const isUserAdmin = session.user.email?.includes('@admin.') || false
+        console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
+        setIsAdmin(isUserAdmin)
+      }
+      
+      setLoading(false)
+    })
+
     return () => subscription.unsubscribe()
   }, [])
 
-  const checkAdminStatus = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('organizers')
-        .select('email')
-        .eq('id', userId)
-        .single()
-
-      if (!error && data?.email?.includes('@admin.')) {
-        setIsAdmin(true)
-      }
-    } catch (error) {
-      console.log('Erro ao verificar status admin:', error)
-    }
-  }
-
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔐 Tentando fazer login com:', email)
+      setLoading(true)
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
+        console.error('❌ Erro no login:', error)
         toast.error('Erro ao fazer login: ' + error.message)
         throw error
       }
 
+      console.log('✅ Login realizado com sucesso!')
       toast.success('Login realizado com sucesso!')
     } catch (error) {
+      setLoading(false)
       throw error
     }
   }
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      setLoading(true)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`
+        }
       })
 
       if (error) {
@@ -109,12 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       toast.success('Conta criada com sucesso! Verifique seu email.')
     } catch (error) {
+      setLoading(false)
       throw error
     }
   }
 
   const signOut = async () => {
     try {
+      setLoading(true)
       const { error } = await supabase.auth.signOut()
       if (error) {
         toast.error('Erro ao fazer logout: ' + error.message)
@@ -122,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       toast.success('Logout realizado com sucesso!')
     } catch (error) {
+      setLoading(false)
       throw error
     }
   }
@@ -134,6 +153,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     isAdmin,
   }
+
+  console.log('🎯 AuthProvider estado atual:', { 
+    user: user?.email || 'Nenhum', 
+    loading, 
+    isAdmin 
+  })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

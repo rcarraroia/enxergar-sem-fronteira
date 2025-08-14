@@ -280,6 +280,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       process_integration_queue: {
         Args: Record<PropertyKey, never>
         Returns: {

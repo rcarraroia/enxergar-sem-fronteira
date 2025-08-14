@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,12 +6,18 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/integrations/supabase/client'
 import { useEvents } from '@/hooks/useEvents'
 import { toast } from 'sonner'
-import { Loader2, UserPlus, Calendar, MapPin } from 'lucide-react'
+import { Loader2, UserPlus, Calendar, MapPin, Clock, Users } from 'lucide-react'
 
-export const PatientRegistrationForm = () => {
+interface Props {
+  selectedEventId?: string | null
+  onSuccess?: () => void
+}
+
+export const PatientRegistrationForm = ({ selectedEventId, onSuccess }: Props) => {
   const { data: events, isLoading: eventsLoading } = useEvents()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -22,9 +27,16 @@ export const PatientRegistrationForm = () => {
     telefone: '',
     data_nascimento: '',
     diagnostico: '',
-    event_id: '',
+    event_id: selectedEventId || '',
     consentimento_lgpd: false
   })
+
+  // Atualizar event_id quando selectedEventId mudar
+  useEffect(() => {
+    if (selectedEventId) {
+      setFormData(prev => ({ ...prev, event_id: selectedEventId }))
+    }
+  }, [selectedEventId])
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '')
@@ -35,6 +47,17 @@ export const PatientRegistrationForm = () => {
     const numbers = cpf.replace(/\D/g, '')
     return numbers.length === 11
   }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const selectedEvent = events?.find(e => e.id === formData.event_id)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,9 +166,14 @@ export const PatientRegistrationForm = () => {
         telefone: '',
         data_nascimento: '',
         diagnostico: '',
-        event_id: '',
+        event_id: selectedEventId || '',
         consentimento_lgpd: false
       })
+
+      // Chamar callback de sucesso se fornecido
+      if (onSuccess) {
+        onSuccess()
+      }
 
       // Disparar processamento da fila (opcional - pode ser executado por cron)
       try {
@@ -244,32 +272,60 @@ export const PatientRegistrationForm = () => {
             </div>
 
             <div>
-              <Label htmlFor="event_id">Evento *</Label>
-              <Select 
-                value={formData.event_id} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {events?.map((event) => (
-                    <SelectItem key={event.id} value={event.id}>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          {event.title}
+              <Label htmlFor="event_id">
+                Evento * 
+                {selectedEventId && <Badge variant="secondary" className="ml-2">Pré-selecionado</Badge>}
+              </Label>
+              
+              {selectedEventId && selectedEvent ? (
+                <div className="p-4 border rounded-lg bg-secondary/5">
+                  <div className="space-y-2">
+                    <div className="font-medium text-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {selectedEvent.title}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <MapPin className="h-3 w-3" />
+                      {selectedEvent.location}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      {formatDate(selectedEvent.date)} - {selectedEvent.start_time} às {selectedEvent.end_time}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Users className="h-3 w-3" />
+                      {selectedEvent.available_slots} vagas disponíveis
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Select 
+                  value={formData.event_id} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, event_id: value }))}
+                  disabled={!!selectedEventId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um evento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {events?.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {event.title}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {event.location} - {formatDate(event.date)}
+                            <span className="ml-2">({event.available_slots} vagas)</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          {event.location} - {new Date(event.date).toLocaleDateString('pt-BR')}
-                          <span className="ml-2">({event.available_slots} vagas)</span>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 

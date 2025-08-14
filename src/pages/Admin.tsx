@@ -4,10 +4,12 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { LogOut, Settings, Users, Calendar, BarChart3 } from 'lucide-react'
+import { LogOut, Settings, Users, Calendar, BarChart3, CreditCard, RefreshCw, UserCheck } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const Admin = () => {
   const { user, signOut, isAdmin } = useAuth()
+  const navigate = useNavigate()
 
   const handleSignOut = async () => {
     try {
@@ -62,8 +64,31 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin/events')}
+              >
                 Acessar Eventos
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-primary" />
+                Inscrições
+              </CardTitle>
+              <CardDescription>
+                Visualizar e gerenciar todas as inscrições
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin/registrations')}
+              >
+                Ver Inscrições
               </Button>
             </CardContent>
           </Card>
@@ -79,7 +104,11 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate('/admin/patients')}
+              >
                 Ver Pacientes
               </Button>
             </CardContent>
@@ -101,24 +130,63 @@ const Admin = () => {
               </Button>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Status da Sincronização */}
-        <div className="mt-8">
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle>Status da Sincronização - Instituto Coração Valente</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5 text-primary" />
+                Sincronização
+              </CardTitle>
               <CardDescription>
-                Monitoramento da fila de integração em tempo real
+                Monitorar fila de integração em tempo real
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Em desenvolvimento...</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Funcionalidade será implementada na próxima fase
-                </p>
-              </div>
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate('/admin/sync')}
+              >
+                Ver Sincronização
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-primary" />
+                Pagamentos
+              </CardTitle>
+              <CardDescription>
+                Gestão de pagamentos com split automático
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate('/admin/payments')}
+              >
+                Ver Pagamentos
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                Configurações
+              </CardTitle>
+              <CardDescription>
+                Chaves API e configurações gerais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" variant="outline">
+                Configurar
+              </Button>
             </CardContent>
           </Card>
         </div>
