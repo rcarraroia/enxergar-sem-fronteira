@@ -41,7 +41,7 @@ type CampaignFormData = z.infer<typeof campaignSchema>
 
 export const CampaignForm = () => {
   const { createCampaign } = useCampaigns()
-  const { events } = useEvents()
+  const { data: events } = useEvents()
   const [customAmounts, setCustomAmounts] = useState<number[]>([25, 50, 100, 200])
   const [newAmount, setNewAmount] = useState('')
   const [startDate, setStartDate] = useState<Date>()
@@ -68,8 +68,14 @@ export const CampaignForm = () => {
   const onSubmit = async (data: CampaignFormData) => {
     try {
       const submitData: CreateCampaignData = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        event_id: data.event_id,
+        goal_amount: data.goal_amount,
         suggested_amounts: customAmounts,
+        allow_custom_amount: data.allow_custom_amount,
+        allow_subscriptions: data.allow_subscriptions,
+        status: data.status,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
       }
@@ -221,6 +227,7 @@ export const CampaignForm = () => {
                     selected={startDate}
                     onSelect={setStartDate}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -247,6 +254,7 @@ export const CampaignForm = () => {
                     selected={endDate}
                     onSelect={setEndDate}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
