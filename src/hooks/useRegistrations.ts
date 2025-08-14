@@ -81,6 +81,7 @@ export const useRegistrations = (eventId?: string) => {
           query = query.in('event_date_id', eventDateIds)
         } else {
           // Se não encontrou datas para o evento, retornar array vazio
+          console.log('📭 Nenhuma data encontrada para o evento:', eventId)
           return []
         }
       }
@@ -93,6 +94,7 @@ export const useRegistrations = (eventId?: string) => {
       }
 
       console.log(`✅ Encontradas ${data?.length || 0} inscrições`)
+      console.log('📊 Dados das inscrições:', data)
       return data as Registration[]
     }
   })

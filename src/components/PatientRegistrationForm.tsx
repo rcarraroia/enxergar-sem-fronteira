@@ -31,6 +31,8 @@ interface PatientRegistrationFormProps {
 export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  console.log('🎯 PatientRegistrationForm iniciado com:', { eventId, eventDateId })
+
   const {
     register,
     handleSubmit,
@@ -47,6 +49,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
   const onSubmit = async (data: PatientFormData) => {
     try {
       setIsSubmitting(true)
+      console.log('📝 Iniciando cadastro de paciente:', data)
 
       // Inserir paciente
       const { data: patient, error: patientError } = await supabase
@@ -62,10 +65,17 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
         .select()
         .single()
 
-      if (patientError) throw patientError
+      if (patientError) {
+        console.error('❌ Erro ao criar paciente:', patientError)
+        throw patientError
+      }
+
+      console.log('✅ Paciente criado:', patient)
 
       // Se há uma data específica de evento selecionada, criar inscrição
       if (eventDateId && patient) {
+        console.log('📅 Criando inscrição para data do evento:', eventDateId)
+        
         const { error: registrationError } = await supabase
           .from('registrations')
           .insert({
@@ -74,7 +84,12 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
             status: 'confirmed',
           })
 
-        if (registrationError) throw registrationError
+        if (registrationError) {
+          console.error('❌ Erro ao criar inscrição:', registrationError)
+          throw registrationError
+        }
+
+        console.log('✅ Inscrição criada com sucesso')
 
         // Gerar token de acesso único para o paciente
         const accessToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -88,19 +103,22 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
           })
 
         if (tokenError) {
-          console.error('Erro ao criar token de acesso:', tokenError)
+          console.error('⚠️ Erro ao criar token de acesso:', tokenError)
           // Não falhar a inscrição por causa do token
+        } else {
+          console.log('🔑 Token de acesso criado')
         }
 
         toast.success('Inscrição realizada com sucesso!')
       } else {
+        console.log('📋 Cadastro sem evento específico (lista de espera)')
         toast.success('Cadastro realizado com sucesso!')
       }
 
       reset()
       onSuccess?.()
     } catch (error) {
-      console.error('Erro ao processar inscrição:', error)
+      console.error('💥 Erro ao processar inscrição:', error)
       toast.error('Erro ao processar inscrição. Tente novamente.')
     } finally {
       setIsSubmitting(false)

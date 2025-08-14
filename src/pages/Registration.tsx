@@ -41,15 +41,35 @@ export default function Registration() {
     })
   }
 
-  const handleRegisterClick = (eventId: string, eventDateId?: string) => {
-    setSelectedEventId(eventId)
-    if (eventDateId) {
-      setSelectedEventDateId(eventDateId)
+  const handleRegisterClick = (eventId: string) => {
+    console.log('🎯 Iniciando cadastro para evento:', eventId)
+    const event = events?.find(e => e.id === eventId)
+    
+    if (!event) {
+      console.error('❌ Evento não encontrado:', eventId)
+      return
     }
-    setShowRegistrationForm(true)
+
+    setSelectedEventId(eventId)
+    
+    // Se o evento tem apenas uma data, seleciona automaticamente
+    if (event.event_dates.length === 1) {
+      setSelectedEventDateId(event.event_dates[0].id)
+      setShowRegistrationForm(true)
+    } else {
+      // Se tem múltiplas datas, vai para seleção de data
+      setSelectedEventDateId(null)
+      setShowRegistrationForm(true)
+    }
+  }
+
+  const handleDateSelection = (dateId: string) => {
+    console.log('📅 Data selecionada:', dateId)
+    setSelectedEventDateId(dateId)
   }
 
   const handleFormClose = () => {
+    console.log('✅ Formulário fechado com sucesso')
     setTimeout(() => {
       setShowRegistrationForm(false)
       setSelectedEventId(null)
@@ -58,6 +78,7 @@ export default function Registration() {
   }
 
   const handleBackToEvents = () => {
+    console.log('🔙 Voltando para lista de eventos')
     setShowRegistrationForm(false)
     setSelectedEventId(null)
     setSelectedEventDateId(null)
@@ -104,7 +125,7 @@ export default function Registration() {
         </div>
 
         {showRegistrationForm ? (
-          <div className="space-y-6" key="registration-form">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Realizar Cadastro</h2>
               <Button variant="outline" onClick={handleBackToEvents}>
@@ -124,7 +145,7 @@ export default function Registration() {
                 <CardContent>
                   <div className="space-y-4">
                     <Label htmlFor="event-date">Data do Evento</Label>
-                    <Select onValueChange={setSelectedEventDateId}>
+                    <Select onValueChange={handleDateSelection}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma data" />
                       </SelectTrigger>
@@ -142,16 +163,17 @@ export default function Registration() {
               </Card>
             )}
 
+            {/* Formulário de cadastro */}
             {selectedEventDateId && (
               <PatientRegistrationForm 
-                eventId={selectedEventId} 
+                eventId={selectedEventId || undefined} 
                 eventDateId={selectedEventDateId}
                 onSuccess={handleFormClose}
               />
             )}
           </div>
         ) : (
-          <section key="events-list">
+          <section>
             <h2 className="text-2xl font-semibold text-center mb-8">
               Eventos Disponíveis
             </h2>
