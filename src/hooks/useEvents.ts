@@ -13,20 +13,28 @@ export interface EventDate {
 
 export interface Event {
   id: string
+  city: string
   title: string
-  description: string | null
+  description?: string
   location: string
   address: string
-  status: string
+  status: 'open' | 'closed' | 'full'
+  organizer_id: string
   created_at: string
+  updated_at: string
   event_dates: EventDate[]
+  organizers?: {
+    id: string
+    name: string
+    email: string
+  }
 }
 
 export const useEvents = () => {
   return useQuery({
     queryKey: ['events'],
     queryFn: async () => {
-      console.log('🔍 Buscando eventos disponíveis...')
+      console.log('🔍 Buscando eventos públicos...')
       
       const { data, error } = await supabase
         .from('events')
@@ -39,6 +47,11 @@ export const useEvents = () => {
             end_time,
             total_slots,
             available_slots
+          ),
+          organizers (
+            id,
+            name,
+            email
           )
         `)
         .eq('status', 'open')
@@ -49,25 +62,8 @@ export const useEvents = () => {
         throw error
       }
 
-      // Filtrar apenas eventos com datas futuras
-      const today = new Date().toISOString().split('T')[0]
-      const filteredEvents = data?.filter(event => 
-        event.event_dates && event.event_dates.some(date => date.date >= today)
-      ).map(event => ({
-        ...event,
-        // Ordenar as datas do evento pela data mais próxima
-        event_dates: event.event_dates.filter(date => date.date >= today).sort((a, b) => a.date.localeCompare(b.date))
-      })) || []
-
-      // Ordenar os eventos pela data mais próxima (primeira data de cada evento)
-      const sortedEvents = filteredEvents.sort((a, b) => {
-        const dateA = a.event_dates[0]?.date || '9999-12-31'
-        const dateB = b.event_dates[0]?.date || '9999-12-31'
-        return dateA.localeCompare(dateB)
-      })
-
-      console.log(`✅ Encontrados ${sortedEvents.length} eventos ordenados por data mais próxima`)
-      return sortedEvents as Event[]
+      console.log(`✅ Encontrados ${data?.length || 0} eventos públicos`)
+      return data as Event[]
     }
   })
 }

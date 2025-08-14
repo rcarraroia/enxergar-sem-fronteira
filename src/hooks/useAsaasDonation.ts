@@ -5,9 +5,11 @@ import { toast } from 'sonner'
 
 interface DonationData {
   eventId: string
-  patientId: string
   amount: number
-  description: string
+  donorName: string
+  donorEmail: string
+  donorPhone?: string
+  description?: string
 }
 
 interface DonationResponse {
