@@ -9,9 +9,9 @@ interface Organizer {
   email: string
   status: 'active' | 'inactive' | 'pending'
   created_at: string
-  invited_by?: string
-  invitation_token?: string
-  invitation_expires_at?: string
+  invited_by?: string | null
+  invitation_token?: string | null
+  invitation_expires_at?: string | null
 }
 
 export const useOrganizers = () => {
@@ -36,7 +36,15 @@ export const useOrganizers = () => {
 
       if (error) throw error
 
-      setOrganizers(data || [])
+      // Garantir que o status está correto
+      const organizersWithValidStatus = data?.map(org => ({
+        ...org,
+        status: ['active', 'inactive', 'pending'].includes(org.status) 
+          ? org.status as 'active' | 'inactive' | 'pending'
+          : 'active' as const
+      })) || []
+
+      setOrganizers(organizersWithValidStatus)
     } catch (error) {
       console.error('Erro ao buscar organizadores:', error)
       toast.error('Erro ao carregar organizadores')

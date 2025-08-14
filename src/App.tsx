@@ -22,7 +22,7 @@ import AdminOrganizers from "./pages/AdminOrganizers";
 import AdminSettings from "./pages/AdminSettings";
 import AdminSync from "./pages/AdminSync";
 import AdminPayments from "./pages/AdminPayments";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
