@@ -144,6 +144,27 @@ export default function Registration() {
               </Button>
             </div>
 
+            {/* Mostrar informações do evento selecionado */}
+            {selectedEvent && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Evento Selecionado</CardTitle>
+                  <CardDescription>{selectedEvent.city}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span>{selectedEvent.location}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedEvent.address}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Seleção de data se o evento tem múltiplas datas */}
             {selectedEvent && selectedEvent.event_dates.length > 1 && !selectedEventDateId && (
               <Card>
@@ -174,6 +195,38 @@ export default function Registration() {
               </Card>
             )}
 
+            {/* Mostrar informações da data selecionada */}
+            {selectedEvent && selectedEventDateId && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Data Selecionada</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const selectedDate = selectedEvent.event_dates.find(ed => ed.id === selectedEventDateId)
+                    if (!selectedDate) return <p>Data não encontrada</p>
+                    
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <span>{formatDate(selectedDate.date)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-primary" />
+                          <span>{formatTime(selectedDate.start_time)} às {formatTime(selectedDate.end_time)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span>{selectedDate.available_slots} vagas disponíveis</span>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Formulário de cadastro */}
             {selectedEventDateId && (
               <PatientRegistrationForm 
@@ -194,7 +247,7 @@ export default function Registration() {
                 <p className="text-muted-foreground mb-8">Nenhum evento disponível no momento</p>
                 <Card className="max-w-md mx-auto">
                   <CardHeader>
-                    <CardTitle>Lista de Espera</CardTitle>
+                    <CartTitle>Lista de Espera</CardTitle>
                     <CardDescription>
                       Cadastre-se para ser notificado sobre novos eventos
                     </CardDescription>
