@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Calendar, MapPin, Users, Clock, Loader2, UserPlus } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
+import { formatTime, formatDate } from '@/utils/timeFormat'
 
 export default function Registration() {
   const { data: events, isLoading, error } = useEvents()
@@ -17,29 +18,39 @@ export default function Registration() {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [searchParams] = useSearchParams()
 
-  // Verificar se há eventId na URL
+  // Verificar se há eventId e eventDateId na URL
   useEffect(() => {
     const eventIdFromUrl = searchParams.get('eventId')
+    const eventDateIdFromUrl = searchParams.get('eventDateId')
+    
+    console.log('🔍 Parâmetros da URL:', { eventIdFromUrl, eventDateIdFromUrl })
+    
     if (eventIdFromUrl && events) {
       const event = events.find(e => e.id === eventIdFromUrl)
       if (event) {
         setSelectedEventId(eventIdFromUrl)
-        // Se só há uma data, seleciona automaticamente
-        if (event.event_dates.length === 1) {
+        
+        // Se eventDateId foi fornecido, usar esse
+        if (eventDateIdFromUrl) {
+          const eventDate = event.event_dates.find(ed => ed.id === eventDateIdFromUrl)
+          if (eventDate) {
+            setSelectedEventDateId(eventDateIdFromUrl)
+            setShowRegistrationForm(true)
+            console.log('✅ Evento e data selecionados automaticamente da URL')
+          }
+        } else if (event.event_dates.length === 1) {
+          // Se só há uma data, seleciona automaticamente
           setSelectedEventDateId(event.event_dates[0].id)
+          setShowRegistrationForm(true)
+          console.log('✅ Única data do evento selecionada automaticamente')
+        } else {
+          // Se há múltiplas datas, mostrar seleção
+          setShowRegistrationForm(true)
+          console.log('📅 Múltiplas datas disponíveis, aguardando seleção')
         }
       }
     }
   }, [searchParams, events])
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00')
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
 
   const handleRegisterClick = (eventId: string) => {
     console.log('🎯 Iniciando cadastro para evento:', eventId)
@@ -152,7 +163,7 @@ export default function Registration() {
                       <SelectContent>
                         {selectedEvent.event_dates.map((eventDate) => (
                           <SelectItem key={eventDate.id} value={eventDate.id}>
-                            {formatDate(eventDate.date)} - {eventDate.start_time} às {eventDate.end_time} 
+                            {formatDate(eventDate.date)} - {formatTime(eventDate.start_time)} às {formatTime(eventDate.end_time)} 
                             ({eventDate.available_slots} vagas disponíveis)
                           </SelectItem>
                         ))}
@@ -230,7 +241,7 @@ export default function Registration() {
                               
                               <div className="flex items-center gap-2 text-sm">
                                 <Clock className="h-4 w-4 text-primary" />
-                                <span>{eventDate.start_time} às {eventDate.end_time}</span>
+                                <span>{formatTime(eventDate.start_time)} às {formatTime(eventDate.end_time)}</span>
                               </div>
                               
                               <div className="flex items-center gap-2 text-sm">

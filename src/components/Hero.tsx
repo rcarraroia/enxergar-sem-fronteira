@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
@@ -10,7 +9,7 @@ const Hero = () => {
   const { data: events } = useEvents();
   const navigate = useNavigate();
   
-  // Pegar o próximo evento (primeiro da lista ordenada por data)
+  // Pegar o próximo evento (primeiro da lista ordenada por data mais próxima)
   const nextEvent = events?.[0];
   const nextEventDate = nextEvent?.event_dates?.[0];
 
@@ -34,8 +33,10 @@ const Hero = () => {
   }];
 
   const handleRegisterClick = () => {
-    if (nextEvent) {
-      navigate(`/registration?eventId=${nextEvent.id}`);
+    if (nextEvent && nextEventDate) {
+      console.log('🎯 Redirecionando para cadastro do próximo evento:', nextEvent.id);
+      // Redirecionar direto para o cadastro com o evento específico
+      navigate(`/registration?eventId=${nextEvent.id}&eventDateId=${nextEventDate.id}`);
     } else {
       navigate('/registration');
     }
@@ -116,6 +117,11 @@ const Hero = () => {
                   <h3 className="text-xl font-semibold text-foreground">
                     {nextEvent ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
                   </h3>
+                  {nextEvent && (
+                    <div className="text-2xl font-bold text-primary mt-2 mb-2">
+                      {nextEvent.city}
+                    </div>
+                  )}
                   <p className="text-muted-foreground">
                     {nextEvent ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
                   </p>

@@ -62,8 +62,21 @@ export const useEvents = () => {
         throw error
       }
 
-      console.log(`✅ Encontrados ${data?.length || 0} eventos públicos`)
-      return data as Event[]
+      // Processar e ordenar eventos por data mais próxima
+      const processedEvents = data?.map(event => ({
+        ...event,
+        event_dates: event.event_dates.sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
+      })).sort((a, b) => {
+        // Ordenar eventos pela data mais próxima (primeira data de cada evento)
+        const dateA = a.event_dates.length > 0 ? new Date(a.event_dates[0].date) : new Date('9999-12-31')
+        const dateB = b.event_dates.length > 0 ? new Date(b.event_dates[0].date) : new Date('9999-12-31')
+        return dateA.getTime() - dateB.getTime()
+      }) || []
+
+      console.log(`✅ Encontrados ${processedEvents.length} eventos públicos, ordenados por data`)
+      return processedEvents as Event[]
     }
   })
 }
