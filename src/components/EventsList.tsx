@@ -35,44 +35,59 @@ export const EventsList = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {events.map((event) => (
-        <Card key={event.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <CardTitle className="text-lg">{event.title}</CardTitle>
-              <Badge variant={event.available_slots > 0 ? "default" : "secondary"}>
-                {event.available_slots > 0 ? "Vagas Disponíveis" : "Lotado"}
-              </Badge>
-            </div>
-            <CardDescription>{event.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span>{new Date(event.date).toLocaleDateString('pt-BR')}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-primary" />
-              <span>{event.start_time} às {event.end_time}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span>{event.location}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4 text-primary" />
-              <span>{event.available_slots} de {event.total_slots} vagas disponíveis</span>
-            </div>
+      {events.map((event) => {
+        // Calcular totais de todas as datas do evento
+        const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0)
+        const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0)
+        
+        return (
+          <Card key={event.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">{event.title}</CardTitle>
+                <Badge variant={totalAvailable > 0 ? "default" : "secondary"}>
+                  {totalAvailable > 0 ? "Vagas Disponíveis" : "Lotado"}
+                </Badge>
+              </div>
+              <CardDescription>{event.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Mostrar todas as datas do evento */}
+              {event.event_dates.map((eventDate, index) => (
+                <div key={eventDate.id} className="border-l-2 border-primary pl-4 space-y-2">
+                  <div className="text-sm font-medium text-foreground">
+                    Data {index + 1}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span>{new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span>{eventDate.start_time} às {eventDate.end_time}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span>{eventDate.available_slots} de {eventDate.total_slots} vagas disponíveis</span>
+                  </div>
+                </div>
+              ))}
 
-            <div className="text-xs text-muted-foreground">
-              {event.address}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+              <div className="flex items-center gap-2 text-sm pt-2 border-t">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span>{event.location}</span>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {event.address}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }

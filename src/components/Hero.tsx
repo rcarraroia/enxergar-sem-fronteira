@@ -11,6 +11,7 @@ const Hero = () => {
   
   // Pegar o próximo evento (primeiro da lista ordenada por data)
   const nextEvent = events?.[0];
+  const nextEventDate = nextEvent?.event_dates?.[0];
 
   const stats = [{
     icon: Eye,
@@ -120,21 +121,21 @@ const Hero = () => {
                   </p>
                 </div>
 
-                {nextEvent ? (
+                {nextEvent && nextEventDate ? (
                   <>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-medical-bg">
                         <Calendar className="h-5 w-5 text-primary" />
                         <div>
-                          <div className="font-medium text-foreground">{formatDate(nextEvent.date)}</div>
-                          <div className="text-sm text-muted-foreground capitalize">{formatWeekday(nextEvent.date)}</div>
+                          <div className="font-medium text-foreground">{formatDate(nextEventDate.date)}</div>
+                          <div className="text-sm text-muted-foreground capitalize">{formatWeekday(nextEventDate.date)}</div>
                         </div>
                       </div>
 
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-medical-bg">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
-                          <div className="font-medium text-foreground">{nextEvent.start_time} - {nextEvent.end_time}</div>
+                          <div className="font-medium text-foreground">{nextEventDate.start_time} - {nextEventDate.end_time}</div>
                           <div className="text-sm text-muted-foreground">Atendimento contínuo</div>
                         </div>
                       </div>
@@ -150,8 +151,8 @@ const Hero = () => {
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-secondary/10">
                         <Users className="h-5 w-5 text-secondary" />
                         <div>
-                          <div className="font-medium text-foreground">{nextEvent.available_slots} vagas disponíveis</div>
-                          <div className="text-sm text-success">{getOccupancyPercentage(nextEvent.available_slots, nextEvent.total_slots).toFixed(0)}% preenchido</div>
+                          <div className="font-medium text-foreground">{nextEventDate.available_slots} vagas disponíveis</div>
+                          <div className="text-sm text-success">{getOccupancyPercentage(nextEventDate.available_slots, nextEventDate.total_slots).toFixed(0)}% preenchido</div>
                         </div>
                       </div>
                     </div>

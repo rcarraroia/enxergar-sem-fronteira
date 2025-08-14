@@ -89,9 +89,9 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
 
         if (showEventInfo) {
           baseRow.splice(-2, 0, 
-            `"${reg.event.title}"`,
-            `"${new Date(reg.event.date).toLocaleDateString('pt-BR')}"`,
-            `"${reg.event.location}"`
+            `"${reg.event_date.event.title}"`,
+            `"${new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}"`,
+            `"${reg.event_date.event.location}"`
           )
         }
 
@@ -243,13 +243,13 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                     {showEventInfo && (
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{registration.event.title}</div>
+                          <div className="font-medium text-sm">{registration.event_date.event.title}</div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            {new Date(registration.event.date).toLocaleDateString('pt-BR')}
+                            {new Date(registration.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {registration.event.location}
+                            {registration.event_date.event.location}
                           </div>
                         </div>
                       </TableCell>
