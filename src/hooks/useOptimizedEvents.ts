@@ -83,9 +83,10 @@ export const useOptimizedEvents = (filters?: {
         throw error
       }
 
-      // Transformar dados para estrutura otimizada
+      // Transformar dados para estrutura otimizada com type assertion
       const optimizedEvents: OptimizedEvent[] = data?.map(event => ({
         ...event,
+        status: event.status as 'open' | 'closed' | 'full', // Type assertion para garantir o tipo correto
         dates: event.event_dates || []
       })) || []
 
@@ -208,6 +209,7 @@ export const useOptimizedEvent = (eventId: string) => {
 
       const optimizedEvent: OptimizedEvent = {
         ...data,
+        status: data.status as 'open' | 'closed' | 'full', // Type assertion
         dates: data.event_dates?.map(date => ({
           id: date.id,
           date: date.date,

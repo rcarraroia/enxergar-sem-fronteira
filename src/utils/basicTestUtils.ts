@@ -182,7 +182,7 @@ export const basicTestUtils = {
   }
 }
 
-// Função para executar todos os testes básicos
+// Função para executar todos os testes básicos - CORRIGIDA
 export const runBasicTests = () => {
   console.log('🧪 Executando testes básicos da aplicação...')
   
