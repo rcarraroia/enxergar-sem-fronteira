@@ -15,11 +15,19 @@ export interface Registration {
     data_nascimento: string | null
     diagnostico: string | null
   }
-  event: {
+  event_date: {
     id: string
-    title: string
     date: string
-    location: string
+    start_time: string
+    end_time: string
+    total_slots: number
+    available_slots: number
+    event: {
+      id: string
+      title: string
+      location: string
+      address: string
+    }
   }
 }
 
@@ -44,17 +52,38 @@ export const useRegistrations = (eventId?: string) => {
             data_nascimento,
             diagnostico
           ),
-          event:events (
+          event_date:event_dates (
             id,
-            title,
             date,
-            location
+            start_time,
+            end_time,
+            total_slots,
+            available_slots,
+            event:events (
+              id,
+              title,
+              location,
+              address
+            )
           )
         `)
         .order('created_at', { ascending: false })
 
       if (eventId) {
-        query = query.eq('event_id', eventId)
+        // Buscar por event_date_id relacionado ao eventId
+        const { data: eventDates } = await supabase
+          .from('event_dates')
+          .select('id')
+          .eq('event_id', eventId)
+        
+        if (eventDates && eventDates.length > 0) {
+          const eventDateIds = eventDates.map(ed => ed.id)
+          query = query.in('event_date_id', eventDateIds)
+        } else {
+          // Se não encontrou datas para o evento, retornar array vazio
+          console.log('📭 Nenhuma data encontrada para o evento:', eventId)
+          return []
+        }
       }
 
       const { data, error } = await query
@@ -65,6 +94,7 @@ export const useRegistrations = (eventId?: string) => {
       }
 
       console.log(`✅ Encontradas ${data?.length || 0} inscrições`)
+      console.log('📊 Dados das inscrições:', data)
       return data as Registration[]
     }
   })

@@ -1,103 +1,91 @@
-
 import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEventsAdmin } from '@/hooks/useEventsAdmin'
+import { useAsaasPayment } from '@/hooks/useAsaasPayment'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAsaasPayment } from '@/hooks/useAsaasPayment'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { CreditCard, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
-const PaymentForm = () => {
-  const [selectedEventId, setSelectedEventId] = useState('')
-  const [selectedPatientId, setSelectedPatientId] = useState('')
-  const [amount, setAmount] = useState('')
-  const [description, setDescription] = useState('')
-  
+export const PaymentForm = () => {
+  const { events } = useEventsAdmin()
   const { createPayment, loading } = useAsaasPayment()
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, title, date')
-        .order('date', { ascending: true })
-      
-      if (error) throw error
-      return data || []
-    }
-  })
-
-  const { data: patients = [] } = useQuery({
-    queryKey: ['patients'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('id, nome, cpf')
-        .order('nome')
-      
-      if (error) throw error
-      return data || []
-    }
+  
+  const [formData, setFormData] = useState({
+    eventId: '',
+    amount: '',
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    description: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!selectedEventId || !selectedPatientId || !amount || !description) {
+    if (!formData.eventId || !formData.amount || !formData.customerName || !formData.customerEmail) {
+      toast.error('Preencha todos os campos obrigatórios')
       return
     }
 
-    const paymentData = {
-      eventId: selectedEventId,
-      patientId: selectedPatientId,
-      amount: parseFloat(amount),
-      description
-    }
+    try {
+      await createPayment({
+        eventId: formData.eventId,
+        amount: parseFloat(formData.amount),
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        description: formData.description
+      })
 
-    const payment = await createPayment(paymentData)
-    
-    if (payment) {
-      // Abrir URL de pagamento em nova aba
-      if (payment.invoiceUrl) {
-        window.open(payment.invoiceUrl, '_blank')
-      }
-      
-      // Limpar formulário
-      setSelectedEventId('')
-      setSelectedPatientId('')
-      setAmount('')
-      setDescription('')
+      // Reset form
+      setFormData({
+        eventId: '',
+        amount: '',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        description: ''
+      })
+    } catch (error) {
+      console.error('Erro ao criar pagamento:', error)
     }
   }
+
+  const selectedEvent = events?.find(e => e.id === formData.eventId)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          Criar Pagamento Asaas
-        </CardTitle>
+        <div className="flex items-center space-x-2">
+          <CreditCard className="h-5 w-5 text-primary" />
+          <CardTitle>Novo Pagamento</CardTitle>
+        </div>
         <CardDescription>
-          Gere cobranças com split automático de 25% para cada ente
+          Crie uma cobrança para um evento específico
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="event">Evento</Label>
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+            <Label htmlFor="eventId">Evento *</Label>
+            <Select value={formData.eventId} onValueChange={(value) => setFormData(prev => ({ ...prev, eventId: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
-                {events.map((event) => (
+                {events?.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
-                    {event.title} - {new Date(event.date).toLocaleDateString('pt-BR')}
+                    {event.city} - {event.location}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -105,51 +93,64 @@ const PaymentForm = () => {
           </div>
 
           <div>
-            <Label htmlFor="patient">Paciente</Label>
-            <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um paciente" />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    {patient.nome} - {patient.cpf}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="amount">Valor *</Label>
+            <Input 
+              type="number" 
+              id="amount" 
+              value={formData.amount}
+              onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+              placeholder="R$ 0,00"
+            />
           </div>
 
           <div>
-            <Label htmlFor="amount">Valor (R$)</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
+            <Label htmlFor="customerName">Nome do Cliente *</Label>
+            <Input 
+              type="text" 
+              id="customerName" 
+              value={formData.customerName}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
+              placeholder="Nome completo"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="customerEmail">Email do Cliente *</Label>
+            <Input 
+              type="email" 
+              id="customerEmail" 
+              value={formData.customerEmail}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerEmail: e.target.value }))}
+              placeholder="email@example.com"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="customerPhone">Telefone do Cliente</Label>
+            <Input 
+              type="tel" 
+              id="customerPhone" 
+              value={formData.customerPhone}
+              onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
+              placeholder="(XX) XXXX-XXXX"
             />
           </div>
 
           <div>
             <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição do pagamento..."
-              required
+            <Textarea 
+              id="description" 
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Informações adicionais"
             />
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Criando pagamento...
+                Criando...
               </>
             ) : (
               'Criar Pagamento'
@@ -160,5 +161,3 @@ const PaymentForm = () => {
     </Card>
   )
 }
-
-export default PaymentForm

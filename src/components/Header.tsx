@@ -2,18 +2,52 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { getRedirectPath } from '@/utils/roleRedirect';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
-  const { user, signOut, isAdmin } = useAuth();
-  const { settings, loading } = useSystemSettings();
+  const {
+    user,
+    signOut,
+    userRole,
+    isAdmin,
+    isOrganizer
+  } = useAuth();
+  const {
+    settings,
+    loading
+  } = useSystemSettings();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
       await signOut();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+    }
+  };
+
+  const getDashboardLink = () => {
+    return getRedirectPath(userRole);
+  };
+
+  const getDashboardLabel = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'Admin'
+      case 'organizer':
+        return 'Painel'
+      default:
+        return 'Dashboard'
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -25,49 +59,53 @@ const Header = () => {
             {!loading && settings.logo_header ? (
               <img 
                 src={settings.logo_header} 
-                alt={settings.project_name}
-                className="h-12 object-contain"
+                alt={settings.project_name} 
+                className="h-12 object-contain" 
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                }}
+                }} 
               />
             ) : (
               <div className="w-8 h-8 bg-primary rounded-full"></div>
             )}
-            <span className="text-xl font-bold text-gray-900">
-              {loading ? 'Carregando...' : settings.project_name}
-            </span>
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
-            <a href="#home" className="text-gray-600 hover:text-primary transition-colors">
+            <button 
+              onClick={() => scrollToSection('home')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Início
-            </a>
-            <a href="#about" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => scrollToSection('about')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Sobre
-            </a>
-            <a href="#events" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => scrollToSection('events')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Eventos
-            </a>
-            <a href="/registration" className="text-gray-600 hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => navigate('/registration')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
+            >
               Cadastrar-se
-            </a>
-            {user && (
-              <a href="/admin" className="text-gray-600 hover:text-primary transition-colors">
-                Painel Admin
-              </a>
-            )}
+            </button>
           </div>
 
           <div className="flex items-center space-x-2">
             {user ? (
               <>
-                {isAdmin && (
+                {(isAdmin || isOrganizer) && (
                   <Button variant="outline" size="sm" asChild>
-                    <a href="/admin">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Admin
-                    </a>
+                    <Link to={getDashboardLink()}>
+                      {isAdmin ? <Settings className="h-4 w-4 mr-2" /> : <User className="h-4 w-4 mr-2" />}
+                      {getDashboardLabel()}
+                    </Link>
                   </Button>
                 )}
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
@@ -78,10 +116,10 @@ const Header = () => {
             ) : (
               <>
                 <Button variant="outline" asChild>
-                  <a href="/auth">Login</a>
+                  <Link to="/auth">Conecte-se</Link>
                 </Button>
                 <Button asChild>
-                  <a href="/registration">Participar</a>
+                  <Link to="/registration">Participar</Link>
                 </Button>
               </>
             )}

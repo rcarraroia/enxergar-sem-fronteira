@@ -5,13 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Clock, Users, Eye, ArrowRight } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
+import { formatTime, formatDate } from '@/utils/timeFormat';
 
 const EventsSection = () => {
   const { data: events, isLoading } = useEvents();
   const navigate = useNavigate();
 
-  const getStatusInfo = (availableSlots: number, totalSlots: number) => {
-    if (availableSlots === 0) {
+  const getStatusInfo = (totalAvailable: number, totalSlots: number) => {
+    if (totalAvailable === 0) {
       return {
         badge: 'Lotado',
         variant: 'destructive' as const,
@@ -19,7 +20,7 @@ const EventsSection = () => {
         textColor: 'text-destructive'
       };
     }
-    if (availableSlots <= totalSlots * 0.3) {
+    if (totalAvailable <= totalSlots * 0.3) {
       return {
         badge: 'Vagas Limitadas',
         variant: 'secondary' as const,
@@ -35,16 +36,8 @@ const EventsSection = () => {
     };
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
   const handleEventClick = (eventId: string) => {
+    console.log('🎯 Redirecionando para registro do evento:', eventId);
     navigate(`/registration?eventId=${eventId}`);
   };
 
@@ -85,8 +78,14 @@ const EventsSection = () => {
         {events && events.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
             {events.slice(0, 4).map((event, index) => {
-              const statusInfo = getStatusInfo(event.available_slots, event.total_slots);
-              const occupancyPercentage = ((event.total_slots - event.available_slots) / event.total_slots) * 100;
+              // Calcular totais de todas as datas do evento
+              const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0);
+              const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0);
+              const statusInfo = getStatusInfo(totalAvailable, totalSlots);
+              const occupancyPercentage = ((totalSlots - totalAvailable) / totalSlots) * 100;
+              
+              // Próxima data do evento
+              const nextDate = event.event_dates[0];
               
               return (
                 <Card key={event.id} className={`p-6 medical-card animate-slide-up stagger-${(index % 4) + 1} hover:shadow-medical transition-all duration-300`}>
@@ -98,7 +97,10 @@ const EventsSection = () => {
                           <Eye className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-foreground text-lg">{event.title}</h3>
+                          <h3 className="font-semibold text-foreground text-lg">{event.city}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Organizado por: {event.organizers?.name || 'Organizador Local'}
+                          </p>
                           <Badge variant={statusInfo.variant} className="mt-1">
                             {statusInfo.badge}
                           </Badge>
@@ -106,13 +108,13 @@ const EventsSection = () => {
                       </div>
                     </div>
 
-                    {/* Event Details */}
+                    {/* Event Details - showing next date */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3 text-muted-foreground">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span className="font-medium text-foreground">{formatDate(event.date)}</span>
+                        <span className="font-medium text-foreground">{formatDate(nextDate.date)}</span>
                         <Clock className="h-4 w-4 text-primary ml-4" />
-                        <span>{event.start_time} - {event.end_time}</span>
+                        <span>{formatTime(nextDate.start_time)} - {formatTime(nextDate.end_time)}</span>
                       </div>
 
                       <div className="space-y-1">
@@ -122,6 +124,13 @@ const EventsSection = () => {
                         </div>
                         <p className="text-sm text-muted-foreground ml-7">{event.address}</p>
                       </div>
+
+                      {/* Show multiple dates if available */}
+                      {event.event_dates.length > 1 && (
+                        <div className="text-sm text-muted-foreground">
+                          + {event.event_dates.length - 1} data(s) adicional(is)
+                        </div>
+                      )}
                     </div>
 
                     {/* Availability */}
@@ -129,10 +138,10 @@ const EventsSection = () => {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Users className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-foreground">Vagas</span>
+                          <span className="font-medium text-foreground">Vagas Totais</span>
                         </div>
                         <span className={`font-semibold ${statusInfo.textColor}`}>
-                          {event.available_slots} de {event.total_slots}
+                          {totalAvailable} de {totalSlots}
                         </span>
                       </div>
                       
@@ -150,12 +159,12 @@ const EventsSection = () => {
 
                     {/* Action Button */}
                     <Button 
-                      className={`w-full ${event.available_slots === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
-                      disabled={event.available_slots === 0}
+                      className={`w-full ${totalAvailable === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
+                      disabled={totalAvailable === 0}
                       onClick={() => handleEventClick(event.id)}
                     >
-                      {event.available_slots === 0 ? 'Evento Lotado' : 'Inscrever-se'}
-                      {event.available_slots > 0 && (
+                      {totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
+                      {totalAvailable > 0 && (
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       )}
                     </Button>

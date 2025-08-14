@@ -52,8 +52,9 @@ const AdminEvents = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredEvents = events?.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+    event.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.organizers?.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || []
 
   const handleCreateEvent = (data: EventFormData) => {
@@ -78,18 +79,31 @@ const AdminEvents = () => {
   }
 
   const handleEdit = (event: any) => {
-    setSelectedEvent(event)
+    // Converter event_dates para o formato esperado pelo formulário
+    const eventWithDates = {
+      ...event,
+      dates: event.event_dates || []
+    }
+    setSelectedEvent(eventWithDates)
     setViewMode('edit')
   }
 
-  const getStatusBadge = (status: string, availableSlots: number) => {
-    if (status === 'full' || availableSlots === 0) {
+  const getStatusBadge = (status: string, eventDates: any[]) => {
+    const totalAvailable = eventDates?.reduce((sum, date) => sum + date.available_slots, 0) || 0
+    
+    if (status === 'full' || totalAvailable === 0) {
       return <Badge variant="secondary">Lotado</Badge>
     }
     if (status === 'closed') {
       return <Badge variant="destructive">Fechado</Badge>
     }
     return <Badge variant="default">Aberto</Badge>
+  }
+
+  const formatDate = (dateString: string) => {
+    // Corrigir formatação de data para evitar problemas de fuso horário
+    const [year, month, day] = dateString.split('-')
+    return `${day}/${month}/${year}`
   }
 
   if (viewMode === 'create') {
@@ -148,9 +162,9 @@ const AdminEvents = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Gerenciamento de Eventos</h1>
+          <h1 className="text-2xl font-bold">Gerenciamento de Atendimentos</h1>
           <p className="text-muted-foreground">
-            Crie e gerencie eventos oftalmológicos
+            Crie e gerencie atendimentos oftalmológicos gratuitos com múltiplas datas
           </p>
         </div>
         <div className="flex gap-2">
@@ -160,7 +174,7 @@ const AdminEvents = () => {
           </Button>
           <Button onClick={() => setViewMode('create')}>
             <Plus className="mr-2 h-4 w-4" />
-            Novo Evento
+            Novo Atendimento
           </Button>
         </div>
       </div>
@@ -171,7 +185,7 @@ const AdminEvents = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Buscar eventos por título ou local..."
+                placeholder="Buscar por cidade, local ou organizador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -184,110 +198,126 @@ const AdminEvents = () => {
       {/* Lista de Eventos */}
       <Card>
         <CardHeader>
-          <CardTitle>Eventos Cadastrados</CardTitle>
+          <CardTitle>Atendimentos Cadastrados</CardTitle>
           <CardDescription>
-            {filteredEvents.length} evento(s) encontrado(s)
+            {filteredEvents.length} atendimento(s) encontrado(s)
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando eventos...</span>
+              <span className="ml-2">Carregando atendimentos...</span>
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm ? 'Nenhum evento encontrado com este filtro' : 'Nenhum evento cadastrado'}
+                {searchTerm ? 'Nenhum atendimento encontrado com este filtro' : 'Nenhum atendimento cadastrado'}
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Evento</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead>Cidade</TableHead>
+                  <TableHead>Datas</TableHead>
                   <TableHead>Local</TableHead>
-                  <TableHead>Vagas</TableHead>
+                  <TableHead>Vagas Totais</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{event.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {event.description?.slice(0, 60)}
-                          {event.description && event.description.length > 60 && '...'}
+                {filteredEvents.map((event) => {
+                  const totalSlots = event.event_dates?.reduce((sum, date) => sum + date.total_slots, 0) || 0
+                  const availableSlots = event.event_dates?.reduce((sum, date) => sum + date.available_slots, 0) || 0
+                  
+                  return (
+                    <TableRow key={event.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{event.city}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Org: {event.organizers?.name || 'Organizador Local'}
+                          </div>
+                          {event.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {event.description.slice(0, 60)}
+                              {event.description.length > 60 && '...'}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(event.date).toLocaleDateString('pt-BR')}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {event.start_time} - {event.end_time}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {event.location}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {event.available_slots}/{event.total_slots}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(event.status, event.available_slots)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(event)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir o evento "{event.title}"? 
-                                Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteEvent(event.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {event.event_dates?.map((date, index) => (
+                            <div key={date.id} className="text-sm">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(date.date)}
+                              </div>
+                              <div className="flex items-center gap-1 text-muted-foreground ml-4">
+                                <Clock className="h-3 w-3" />
+                                {date.start_time} - {date.end_time}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {event.location}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {availableSlots}/{totalSlots}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(event.status, event.event_dates || [])}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o atendimento em "{event.city}"? 
+                                  Esta ação não pode ser desfeita e excluirá todas as datas e inscrições associadas.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           )}

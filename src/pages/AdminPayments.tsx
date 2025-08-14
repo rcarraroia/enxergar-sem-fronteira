@@ -8,7 +8,7 @@ import { LogOut, ArrowLeft, CreditCard, DollarSign, TrendingUp, AlertCircle } fr
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import PaymentForm from '@/components/admin/PaymentForm'
+import { PaymentForm } from '@/components/admin/PaymentForm'
 
 const AdminPayments = () => {
   const { user, signOut, isAdmin } = useAuth()
@@ -22,8 +22,7 @@ const AdminPayments = () => {
         .select(`
           *,
           events:event_id (
-            title,
-            date
+            title
           )
         `)
         .order('created_at', { ascending: false })

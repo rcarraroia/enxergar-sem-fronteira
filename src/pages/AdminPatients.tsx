@@ -1,8 +1,8 @@
 
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { PatientsList } from '@/components/admin/PatientsList'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { LogOut, Users, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -38,7 +38,7 @@ const AdminPatients = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold">Pacientes</h1>
-                <p className="text-sm text-muted-foreground">Gestão de cadastros e sincronização</p>
+                <p className="text-sm text-muted-foreground">Gestão de cadastros e dados</p>
               </div>
             </div>
             
@@ -58,32 +58,7 @@ const AdminPatients = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Pacientes</CardTitle>
-              <CardDescription>
-                Visualizar todos os pacientes cadastrados
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-blue-800">Total de Cadastros</p>
-                    <p className="text-sm text-blue-600">Pacientes registrados no sistema</p>
-                  </div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">0</Badge>
-                </div>
-                
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Nenhum paciente cadastrado ainda</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <PatientsList />
       </main>
     </div>
   )

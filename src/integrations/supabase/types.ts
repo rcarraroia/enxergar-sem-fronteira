@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -55,53 +55,273 @@ export type Database = {
           },
         ]
       }
-      events: {
+      campaigns: {
         Row: {
-          address: string
+          allow_custom_amount: boolean | null
+          allow_subscriptions: boolean | null
+          created_at: string | null
+          created_by: string | null
+          current_amount: number | null
+          description: string | null
+          end_date: string | null
+          event_id: string | null
+          goal_amount: number | null
+          id: string
+          image_url: string | null
+          slug: string
+          start_date: string | null
+          status: string | null
+          suggested_amounts: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          allow_custom_amount?: boolean | null
+          allow_subscriptions?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          current_amount?: number | null
+          description?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_url?: string | null
+          slug: string
+          start_date?: string | null
+          status?: string | null
+          suggested_amounts?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          allow_custom_amount?: boolean | null
+          allow_subscriptions?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          current_amount?: number | null
+          description?: string | null
+          end_date?: string | null
+          event_id?: string | null
+          goal_amount?: number | null
+          id?: string
+          image_url?: string | null
+          slug?: string
+          start_date?: string | null
+          status?: string | null
+          suggested_amounts?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donation_subscriptions: {
+        Row: {
+          amount: number
+          asaas_subscription_id: string | null
+          campaign_id: string | null
+          created_at: string | null
+          donation_id: string | null
+          id: string
+          next_charge_date: string | null
+          status: string | null
+          subscriber_email: string
+          total_charges: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          donation_id?: string | null
+          id?: string
+          next_charge_date?: string | null
+          status?: string | null
+          subscriber_email: string
+          total_charges?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          donation_id?: string | null
+          id?: string
+          next_charge_date?: string | null
+          status?: string | null
+          subscriber_email?: string
+          total_charges?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_subscriptions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_subscriptions_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donations: {
+        Row: {
+          amount: number
+          asaas_subscription_id: string | null
+          campaign_id: string
+          created_at: string | null
+          donation_type: string
+          donor_email: string | null
+          donor_name: string | null
+          donor_phone: string | null
+          id: string
+          payment_id: string | null
+          payment_status: string | null
+          split_data: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          asaas_subscription_id?: string | null
+          campaign_id: string
+          created_at?: string | null
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          donor_phone?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_status?: string | null
+          split_data?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          asaas_subscription_id?: string | null
+          campaign_id?: string
+          created_at?: string | null
+          donation_type?: string
+          donor_email?: string | null
+          donor_name?: string | null
+          donor_phone?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_status?: string | null
+          split_data?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_dates: {
+        Row: {
           available_slots: number
           created_at: string
           date: string
-          description: string | null
           end_time: string
+          event_id: string
           id: string
-          location: string
-          organizer_id: string
           start_time: string
-          status: string
-          title: string
           total_slots: number
           updated_at: string
         }
         Insert: {
-          address: string
           available_slots?: number
           created_at?: string
           date: string
-          description?: string | null
           end_time: string
+          event_id: string
           id?: string
-          location: string
-          organizer_id: string
           start_time: string
-          status?: string
-          title: string
           total_slots?: number
           updated_at?: string
         }
         Update: {
-          address?: string
           available_slots?: number
           created_at?: string
           date?: string
-          description?: string | null
           end_time?: string
+          event_id?: string
+          id?: string
+          start_time?: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_dates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          organizer_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          city?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location: string
+          organizer_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          description?: string | null
           id?: string
           location?: string
           organizer_id?: string
-          start_time?: string
           status?: string
           title?: string
-          total_slots?: number
           updated_at?: string
         }
         Relationships: [
@@ -163,6 +383,7 @@ export type Database = {
       }
       organizers: {
         Row: {
+          address: string | null
           asaas_api_key: string | null
           created_at: string
           email: string
@@ -170,12 +391,18 @@ export type Database = {
           invitation_expires_at: string | null
           invitation_token: string | null
           invited_by: string | null
+          last_login: string | null
           name: string
+          notification_preferences: Json | null
+          organization: string | null
+          phone: string | null
+          profile_image_url: string | null
           status: string | null
           updated_at: string
           whatsapp_api_key: string | null
         }
         Insert: {
+          address?: string | null
           asaas_api_key?: string | null
           created_at?: string
           email: string
@@ -183,12 +410,18 @@ export type Database = {
           invitation_expires_at?: string | null
           invitation_token?: string | null
           invited_by?: string | null
+          last_login?: string | null
           name: string
+          notification_preferences?: Json | null
+          organization?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
           status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
         }
         Update: {
+          address?: string | null
           asaas_api_key?: string | null
           created_at?: string
           email?: string
@@ -196,7 +429,12 @@ export type Database = {
           invitation_expires_at?: string | null
           invitation_token?: string | null
           invited_by?: string | null
+          last_login?: string | null
           name?: string
+          notification_preferences?: Json | null
+          organization?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
           status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
@@ -214,7 +452,7 @@ export type Database = {
       patient_access_tokens: {
         Row: {
           created_at: string
-          event_id: string
+          event_date_id: string
           expires_at: string
           id: string
           patient_id: string
@@ -222,7 +460,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          event_id: string
+          event_date_id: string
           expires_at?: string
           id?: string
           patient_id: string
@@ -230,7 +468,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          event_id?: string
+          event_date_id?: string
           expires_at?: string
           id?: string
           patient_id?: string
@@ -238,10 +476,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patient_access_tokens_event_id_fkey"
-            columns: ["event_id"]
+            foreignKeyName: "patient_access_tokens_event_date_id_fkey"
+            columns: ["event_date_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "event_dates"
             referencedColumns: ["id"]
           },
           {
@@ -298,7 +536,7 @@ export type Database = {
       registrations: {
         Row: {
           created_at: string
-          event_id: string
+          event_date_id: string
           id: string
           patient_id: string
           status: string
@@ -306,7 +544,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          event_id: string
+          event_date_id: string
           id?: string
           patient_id: string
           status?: string
@@ -314,7 +552,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          event_id?: string
+          event_date_id?: string
           id?: string
           patient_id?: string
           status?: string
@@ -322,10 +560,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "registrations_event_id_fkey"
-            columns: ["event_id"]
+            foreignKeyName: "registrations_event_date_id_fkey"
+            columns: ["event_date_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "event_dates"
             referencedColumns: ["id"]
           },
           {
@@ -344,7 +582,7 @@ export type Database = {
           id: string
           key: string
           updated_at: string
-          value: Json
+          value: string
         }
         Insert: {
           created_at?: string
@@ -352,7 +590,7 @@ export type Database = {
           id?: string
           key: string
           updated_at?: string
-          value: Json
+          value: string
         }
         Update: {
           created_at?: string
@@ -360,7 +598,7 @@ export type Database = {
           id?: string
           key?: string
           updated_at?: string
-          value?: Json
+          value?: string
         }
         Relationships: []
       }
@@ -377,17 +615,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_organizer_email: {
+        Args: { email_to_check: string }
+        Returns: boolean
+      }
+      is_organizer_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       process_integration_queue: {
         Args: Record<PropertyKey, never>
         Returns: {
-          queue_id: string
           patient_id: string
           payload: Json
+          queue_id: string
           retries: number
         }[]
       }
       update_queue_status: {
-        Args: { queue_id: string; new_status: string; error_msg?: string }
+        Args: { error_msg?: string; new_status: string; queue_id: string }
         Returns: undefined
       }
     }

@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEventsAdmin } from '@/hooks/useEventsAdmin'
@@ -26,8 +25,8 @@ const AdminEventDetails = () => {
 
   const event = events?.find(e => e.id === eventId)
 
-  const getStatusBadge = (status: string, availableSlots: number) => {
-    if (status === 'full' || availableSlots === 0) {
+  const getStatusBadge = (status: string, totalAvailable: number) => {
+    if (status === 'full' || totalAvailable === 0) {
       return <Badge variant="secondary">Lotado</Badge>
     }
     if (status === 'closed') {
@@ -38,7 +37,7 @@ const AdminEventDetails = () => {
 
   const handleSendReminders = () => {
     // Esta funcionalidade será expandida quando tivermos acesso aos dados de inscrição
-    console.log('Enviando lembretes para participantes do evento:', event?.title)
+    console.log('Enviando lembretes para participantes do evento:', event?.city)
   }
 
   if (isLoading) {
@@ -65,7 +64,10 @@ const AdminEventDetails = () => {
     )
   }
 
-  const registeredCount = event.total_slots - event.available_slots
+  // Calcular totais de todas as datas do evento
+  const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0)
+  const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0)
+  const registeredCount = totalSlots - totalAvailable
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,7 +85,7 @@ const AdminEventDetails = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Detalhes do Evento</h1>
-                <p className="text-sm text-muted-foreground">{event.title}</p>
+                <p className="text-sm text-muted-foreground">{event.city}</p>
               </div>
             </div>
             
@@ -111,8 +113,8 @@ const AdminEventDetails = () => {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl">{event.title}</CardTitle>
-              {getStatusBadge(event.status, event.available_slots)}
+              <CardTitle className="text-2xl">{event.city}</CardTitle>
+              {getStatusBadge(event.status, totalAvailable)}
             </div>
             {event.description && (
               <CardDescription className="text-base mt-2">
@@ -121,27 +123,8 @@ const AdminEventDetails = () => {
             )}
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Data</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(event.date).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Horário</p>
-                  <p className="text-sm text-muted-foreground">
-                    {event.start_time} - {event.end_time}
-                  </p>
-                </div>
-              </div>
-
+            {/* Informações gerais do evento */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-primary" />
                 <div>
@@ -153,11 +136,59 @@ const AdminEventDetails = () => {
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="font-medium">Vagas</p>
+                  <p className="font-medium">Vagas Totais</p>
                   <p className="text-sm text-muted-foreground">
-                    {registeredCount}/{event.total_slots} inscritos
+                    {registeredCount}/{totalSlots} inscritos
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Datas do evento */}
+            <div>
+              <h3 className="font-semibold mb-4">Datas do Evento</h3>
+              <div className="grid gap-4">
+                {event.event_dates.map((eventDate, index) => (
+                  <Card key={eventDate.id} className="p-4">
+                    <div className="grid md:grid-cols-4 gap-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="font-medium">Data {index + 1}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="font-medium">Horário</p>
+                          <p className="text-sm text-muted-foreground">
+                            {eventDate.start_time} - {eventDate.end_time}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="font-medium">Vagas</p>
+                          <p className="text-sm text-muted-foreground">
+                            {eventDate.total_slots - eventDate.available_slots}/{eventDate.total_slots} inscritos
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Badge variant={eventDate.available_slots > 0 ? "default" : "secondary"}>
+                          {eventDate.available_slots > 0 ? `${eventDate.available_slots} disponíveis` : 'Lotado'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
 

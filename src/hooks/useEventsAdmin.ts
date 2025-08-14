@@ -4,24 +4,35 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from './useAuth'
 import { toast } from 'sonner'
 
-export interface EventFormData {
-  title: string
-  description?: string
-  location: string
-  address: string
+export interface EventDate {
+  id: string
   date: string
   start_time: string
   end_time: string
   total_slots: number
-  status: 'open' | 'closed' | 'full'
+  available_slots: number
 }
 
-export interface Event extends EventFormData {
+export interface EventFormData {
+  city: string
+  description?: string
+  location: string
+  address: string
+  status: 'open' | 'closed' | 'full'
+  dates: EventDate[]
+}
+
+export interface Event extends Omit<EventFormData, 'dates'> {
   id: string
-  available_slots: number
   organizer_id: string
   created_at: string
   updated_at: string
+  event_dates: EventDate[]
+  organizers?: {
+    id: string
+    name: string
+    email: string
+  }
 }
 
 export const useEventsAdmin = () => {
@@ -35,7 +46,22 @@ export const useEventsAdmin = () => {
       
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          event_dates (
+            id,
+            date,
+            start_time,
+            end_time,
+            total_slots,
+            available_slots
+          ),
+          organizers (
+            id,
+            name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -53,25 +79,49 @@ export const useEventsAdmin = () => {
     mutationFn: async (eventData: EventFormData) => {
       if (!user) throw new Error('Usuário não autenticado')
       
-      console.log('📝 Criando novo evento:', eventData.title)
+      console.log('📝 Criando novo evento:', eventData.city)
       
-      const { data, error } = await supabase
+      // Criar o evento - usar insert direto com os campos corretos
+      const { data: event, error: eventError } = await supabase
         .from('events')
         .insert({
-          ...eventData,
+          city: eventData.city,
+          description: eventData.description,
+          location: eventData.location,
+          address: eventData.address,
+          status: eventData.status,
           organizer_id: user.id,
-          available_slots: eventData.total_slots
+          title: eventData.city // Temporário para compatibilidade com a estrutura atual
         })
         .select()
         .single()
 
-      if (error) {
-        console.error('❌ Erro ao criar evento:', error)
-        throw error
+      if (eventError) {
+        console.error('❌ Erro ao criar evento:', eventError)
+        throw eventError
       }
 
-      console.log('✅ Evento criado com sucesso:', data.title)
-      return data
+      // Criar as datas do evento
+      const eventDatesData = eventData.dates.map(date => ({
+        event_id: event.id,
+        date: date.date,
+        start_time: date.start_time,
+        end_time: date.end_time,
+        total_slots: date.total_slots,
+        available_slots: date.total_slots
+      }))
+
+      const { error: datesError } = await supabase
+        .from('event_dates')
+        .insert(eventDatesData)
+
+      if (datesError) {
+        console.error('❌ Erro ao criar datas do evento:', datesError)
+        throw datesError
+      }
+
+      console.log('✅ Evento criado com sucesso:', event.city)
+      return event
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })
@@ -85,33 +135,61 @@ export const useEventsAdmin = () => {
 
   const updateEvent = useMutation({
     mutationFn: async (eventData: EventFormData & { id: string }) => {
-      console.log('📝 Atualizando evento:', eventData.title)
+      console.log('📝 Atualizando evento:', eventData.city)
       
-      const { data, error } = await supabase
+      // Atualizar o evento
+      const { data: event, error: eventError } = await supabase
         .from('events')
         .update({
-          title: eventData.title,
+          city: eventData.city,
           description: eventData.description,
           location: eventData.location,
           address: eventData.address,
-          date: eventData.date,
-          start_time: eventData.start_time,
-          end_time: eventData.end_time,
-          total_slots: eventData.total_slots,
           status: eventData.status,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          title: eventData.city // Temporário para compatibilidade
         })
         .eq('id', eventData.id)
         .select()
         .single()
 
-      if (error) {
-        console.error('❌ Erro ao atualizar evento:', error)
-        throw error
+      if (eventError) {
+        console.error('❌ Erro ao atualizar evento:', eventError)
+        throw eventError
       }
 
-      console.log('✅ Evento atualizado com sucesso:', data.title)
-      return data
+      // Remover datas antigas
+      const { error: deleteError } = await supabase
+        .from('event_dates')
+        .delete()
+        .eq('event_id', eventData.id)
+
+      if (deleteError) {
+        console.error('❌ Erro ao remover datas antigas:', deleteError)
+        throw deleteError
+      }
+
+      // Adicionar novas datas
+      const eventDatesData = eventData.dates.map(date => ({
+        event_id: eventData.id,
+        date: date.date,
+        start_time: date.start_time,
+        end_time: date.end_time,
+        total_slots: date.total_slots,
+        available_slots: date.available_slots
+      }))
+
+      const { error: datesError } = await supabase
+        .from('event_dates')
+        .insert(eventDatesData)
+
+      if (datesError) {
+        console.error('❌ Erro ao criar novas datas:', datesError)
+        throw datesError
+      }
+
+      console.log('✅ Evento atualizado com sucesso:', event.city)
+      return event
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] })

@@ -5,9 +5,11 @@ import { toast } from 'sonner'
 
 interface PaymentData {
   eventId: string
-  patientId: string
   amount: number
-  description: string
+  customerName: string
+  customerEmail: string
+  customerPhone?: string
+  description?: string
 }
 
 interface PaymentResponse {
