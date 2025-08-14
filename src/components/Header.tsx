@@ -3,9 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { LogOut, Settings } from 'lucide-react';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 const Header = () => {
   const { user, signOut, isAdmin } = useAuth();
+  const { settings, loading } = useSystemSettings();
 
   const handleSignOut = async () => {
     try {
@@ -20,8 +22,21 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-full"></div>
-            <span className="text-xl font-bold text-gray-900">Enxergar sem Fronteiras</span>
+            {!loading && settings.logo_header ? (
+              <img 
+                src={settings.logo_header} 
+                alt={settings.project_name}
+                className="h-12 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 bg-primary rounded-full"></div>
+            )}
+            <span className="text-xl font-bold text-gray-900">
+              {loading ? 'Carregando...' : settings.project_name}
+            </span>
           </div>
           
           <div className="hidden md:flex items-center space-x-6">

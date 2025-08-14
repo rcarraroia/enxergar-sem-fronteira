@@ -27,6 +27,14 @@ export default function Registration() {
   }
 
   const handleFormClose = () => {
+    // Use setTimeout to ensure DOM is stable before state changes
+    setTimeout(() => {
+      setShowRegistrationForm(false)
+      setSelectedEventId(null)
+    }, 100)
+  }
+
+  const handleBackToEvents = () => {
     setShowRegistrationForm(false)
     setSelectedEventId(null)
   }
@@ -70,20 +78,20 @@ export default function Registration() {
         </div>
 
         {showRegistrationForm ? (
-          <div className="space-y-6">
+          <div className="space-y-6" key="registration-form">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Realizar Cadastro</h2>
-              <Button variant="outline" onClick={handleFormClose}>
+              <Button variant="outline" onClick={handleBackToEvents}>
                 Voltar aos Eventos
               </Button>
             </div>
             <PatientRegistrationForm 
-              selectedEventId={selectedEventId} 
+              eventId={selectedEventId} 
               onSuccess={handleFormClose}
             />
           </div>
         ) : (
-          <section>
+          <section key="events-list">
             <h2 className="text-2xl font-semibold text-center mb-8">
               Eventos Disponíveis
             </h2>
