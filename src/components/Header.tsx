@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LogOut, Settings, User } from 'lucide-react';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { getRedirectPath } from '@/utils/roleRedirect';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const {
@@ -18,6 +19,7 @@ const Header = () => {
     settings,
     loading
   } = useSystemSettings();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
@@ -87,12 +89,12 @@ const Header = () => {
             >
               Eventos
             </button>
-            <a 
-              href="/registration" 
-              className="text-gray-600 hover:text-primary transition-colors"
+            <button 
+              onClick={() => navigate('/registration')} 
+              className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Cadastrar-se
-            </a>
+            </button>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -100,10 +102,10 @@ const Header = () => {
               <>
                 {(isAdmin || isOrganizer) && (
                   <Button variant="outline" size="sm" asChild>
-                    <a href={getDashboardLink()}>
+                    <Link to={getDashboardLink()}>
                       {isAdmin ? <Settings className="h-4 w-4 mr-2" /> : <User className="h-4 w-4 mr-2" />}
                       {getDashboardLabel()}
-                    </a>
+                    </Link>
                   </Button>
                 )}
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
@@ -114,10 +116,10 @@ const Header = () => {
             ) : (
               <>
                 <Button variant="outline" asChild>
-                  <a href="/auth">Conecte-se</a>
+                  <Link to="/auth">Conecte-se</Link>
                 </Button>
                 <Button asChild>
-                  <a href="/registration">Participar</a>
+                  <Link to="/registration">Participar</Link>
                 </Button>
               </>
             )}
