@@ -86,7 +86,7 @@ export default function Registration() {
               </Button>
             </div>
             <PatientRegistrationForm 
-              selectedEventId={selectedEventId} 
+              eventId={selectedEventId} 
               onSuccess={handleFormClose}
             />
           </div>
