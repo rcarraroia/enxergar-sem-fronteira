@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2 } from 'lucide-react'
+import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink } from 'lucide-react'
 import { useOrganizers } from '@/hooks/useOrganizers'
 import { toast } from 'sonner'
 
@@ -104,11 +104,11 @@ const AdminOrganizers = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Ativo</Badge>
+        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
       case 'inactive':
-        return <Badge variant="secondary">Inativo</Badge>
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Inativo</Badge>
       case 'pending':
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Pendente</Badge>
+        return <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">Pendente</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -116,15 +116,26 @@ const AdminOrganizers = () => {
 
   const getApiKeyBadge = (apiKey?: string | null) => {
     if (apiKey) {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Configurada</Badge>
+      return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Configurada</Badge>
     }
-    return <Badge variant="destructive">Não configurada</Badge>
+    return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Não configurada</Badge>
+  }
+
+  const generateOrganizerLink = (organizerEmail: string) => {
+    // Para acessar como organizador, o email deve conter @organizer.
+    if (organizerEmail.includes('@organizer.')) {
+      return `/organizer`
+    }
+    return null
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="text-muted-foreground">Carregando organizadores...</span>
+        </div>
       </div>
     )
   }
@@ -149,6 +160,8 @@ const AdminOrganizers = () => {
               <DialogTitle>Criar Novo Organizador</DialogTitle>
               <DialogDescription>
                 Preencha os dados do organizador. Um convite será enviado por email.
+                <br />
+                <strong>Importante:</strong> Para que o organizador possa fazer login, o email deve conter "@organizer." (ex: joao@organizer.exemplo.com)
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -169,9 +182,12 @@ const AdminOrganizers = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@exemplo.com"
+                  placeholder="exemplo@organizer.dominio.com"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  O email deve conter "@organizer." para permitir acesso ao painel
+                </p>
               </div>
               <div className="flex gap-2 pt-4">
                 <Button 
@@ -199,110 +215,113 @@ const AdminOrganizers = () => {
             </form>
           </DialogContent>
         </Dialog>
-
-        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Editar Organizador</DialogTitle>
-              <DialogDescription>
-                Atualize os dados do organizador.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleEdit} className="space-y-4">
-              <div>
-                <Label htmlFor="edit_name">Nome Completo</Label>
-                <Input
-                  id="edit_name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Nome do organizador"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit_email">Email</Label>
-                <Input
-                  id="edit_email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="email@exemplo.com"
-                  required
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setShowEditDialog(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isEditing} className="flex-1">
-                  {isEditing ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Salvar Alterações
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Configurar API Key do Asaas</DialogTitle>
-              <DialogDescription>
-                Configure a chave API do Asaas para este organizador (25% do split)
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="api_key">API Key do Asaas</Label>
-                <Input
-                  id="api_key"
-                  type="password"
-                  value={selectedOrganizerApiKey.apiKey}
-                  onChange={(e) => setSelectedOrganizerApiKey({
-                    ...selectedOrganizerApiKey,
-                    apiKey: e.target.value
-                  })}
-                  placeholder="Chave API do Asaas"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setShowApiKeyDialog(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={handleUpdateApiKey} className="flex-1">
-                  <Key className="h-4 w-4 mr-2" />
-                  Salvar API Key
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
+
+      {/* Dialogs para edição e API Key */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Organizador</DialogTitle>
+            <DialogDescription>
+              Atualize os dados do organizador.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit_name">Nome Completo</Label>
+              <Input
+                id="edit_name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Nome do organizador"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit_email">Email</Label>
+              <Input
+                id="edit_email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="email@exemplo.com"
+                required
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowEditDialog(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isEditing} className="flex-1">
+                {isEditing ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Salvar Alterações
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurar API Key do Asaas</DialogTitle>
+            <DialogDescription>
+              Configure a chave API do Asaas para este organizador (25% do split)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="api_key">API Key do Asaas</Label>
+              <Input
+                id="api_key"
+                type="password"
+                value={selectedOrganizerApiKey.apiKey}
+                onChange={(e) => setSelectedOrganizerApiKey({
+                  ...selectedOrganizerApiKey,
+                  apiKey: e.target.value
+                })}
+                placeholder="Chave API do Asaas"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowApiKeyDialog(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleUpdateApiKey} className="flex-1">
+                <Key className="h-4 w-4 mr-2" />
+                Salvar API Key
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
           <CardTitle>Organizadores Cadastrados</CardTitle>
           <CardDescription>
-            Gerencie os organizadores que podem criar e gerenciar eventos
+            Gerencie os organizadores que podem criar e gerenciar eventos.
+            <br />
+            <strong>Para acessar o painel:</strong> O organizador deve fazer login com um email que contenha "@organizer."
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -319,102 +338,127 @@ const AdminOrganizers = () => {
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>API Key Configurada</TableHead>
-                  <TableHead>Data de Criação</TableHead>
-                  <TableHead className="w-[50px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {organizers.map((organizer) => (
-                  <TableRow key={organizer.id}>
-                    <TableCell className="font-medium">{organizer.name}</TableCell>
-                    <TableCell>{organizer.email}</TableCell>
-                    <TableCell>{getStatusBadge(organizer.status)}</TableCell>
-                    <TableCell>{getApiKeyBadge(organizer.asaas_api_key)}</TableCell>
-                    <TableCell>
-                      {new Date(organizer.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditOrganizer(organizer)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEditApiKeyDialog(organizer.id)}>
-                            <Key className="h-4 w-4 mr-2" />
-                            Configurar API Key
-                          </DropdownMenuItem>
-                          {organizer.status === 'active' ? (
-                            <DropdownMenuItem 
-                              onClick={() => updateOrganizerStatus(organizer.id, 'inactive')}
-                            >
-                              <UserX className="h-4 w-4 mr-2" />
-                              Desativar
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem 
-                              onClick={() => updateOrganizerStatus(organizer.id, 'active')}
-                            >
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              Ativar
-                            </DropdownMenuItem>
-                          )}
-                          {organizer.status === 'pending' && (
-                            <DropdownMenuItem 
-                              onClick={() => resendInvitation(organizer.id)}
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Reenviar Convite
-                            </DropdownMenuItem>
-                          )}
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem 
-                                onSelect={(e) => e.preventDefault()}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o organizador "{organizer.name}"? 
-                                  Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteOrganizer(organizer.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">Como acessar o painel do organizador:</h4>
+                <ol className="text-sm text-blue-800 space-y-1">
+                  <li>1. O organizador deve ter um email que contenha "@organizer." (ex: joao@organizer.exemplo.com)</li>
+                  <li>2. Fazer logout do painel administrativo</li>
+                  <li>3. Fazer login com as credenciais do organizador na página /auth</li>
+                  <li>4. Será redirecionado automaticamente para /organizer</li>
+                </ol>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>API Key</TableHead>
+                    <TableHead>Acesso</TableHead>
+                    <TableHead>Data de Criação</TableHead>
+                    <TableHead className="w-[50px]">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {organizers.map((organizer) => (
+                    <TableRow key={organizer.id}>
+                      <TableCell className="font-medium">{organizer.name}</TableCell>
+                      <TableCell>{organizer.email}</TableCell>
+                      <TableCell>{getStatusBadge(organizer.status)}</TableCell>
+                      <TableCell>{getApiKeyBadge(organizer.asaas_api_key)}</TableCell>
+                      <TableCell>
+                        {organizer.email.includes('@organizer.') ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Pode acessar
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                            Email inválido
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(organizer.created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditOrganizer(organizer)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openEditApiKeyDialog(organizer.id)}>
+                              <Key className="h-4 w-4 mr-2" />
+                              Configurar API Key
+                            </DropdownMenuItem>
+                            {organizer.status === 'active' ? (
+                              <DropdownMenuItem 
+                                onClick={() => updateOrganizerStatus(organizer.id, 'inactive')}
+                              >
+                                <UserX className="h-4 w-4 mr-2" />
+                                Desativar
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem 
+                                onClick={() => updateOrganizerStatus(organizer.id, 'active')}
+                              >
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                Ativar
+                              </DropdownMenuItem>
+                            )}
+                            {organizer.status === 'pending' && (
+                              <DropdownMenuItem 
+                                onClick={() => resendInvitation(organizer.id)}
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                Reenviar Convite
+                              </DropdownMenuItem>
+                            )}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem 
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir o organizador "{organizer.name}"? 
+                                    Esta ação não pode ser desfeita e todos os eventos criados por este organizador serão afetados.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteOrganizer(organizer.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Excluir Definitivamente
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

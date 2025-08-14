@@ -21,6 +21,7 @@ export const useOrganizers = () => {
 
   const fetchOrganizers = async () => {
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('organizers')
         .select(`
@@ -36,7 +37,12 @@ export const useOrganizers = () => {
         `)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao buscar organizadores:', error)
+        throw error
+      }
+
+      console.log('Organizadores encontrados:', data?.length || 0)
 
       // Garantir que o status está correto
       const organizersWithValidStatus = data?.map(org => ({
@@ -57,6 +63,20 @@ export const useOrganizers = () => {
 
   const createOrganizer = async (organizerData: { name: string; email: string }) => {
     try {
+      console.log('Criando organizador:', organizerData)
+      
+      // Verificar se já existe um organizador com este email
+      const { data: existingOrganizer } = await supabase
+        .from('organizers')
+        .select('id, email')
+        .eq('email', organizerData.email)
+        .single()
+
+      if (existingOrganizer) {
+        toast.error('Já existe um organizador com este email')
+        throw new Error('Organizador já existe')
+      }
+
       // Gerar token de convite
       const invitationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       const expiresAt = new Date()
@@ -74,93 +94,133 @@ export const useOrganizers = () => {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao criar organizador:', error)
+        throw error
+      }
 
+      console.log('Organizador criado com sucesso:', data)
+      
       // TODO: Enviar email de convite
       console.log('Convite gerado para:', organizerData.email, 'Token:', invitationToken)
 
       await fetchOrganizers()
       toast.success('Organizador criado e convite enviado!')
       return data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar organizador:', error)
-      toast.error('Erro ao criar organizador')
+      
+      if (error.message === 'Organizador já existe') {
+        return // Erro já foi mostrado
+      }
+      
+      if (error.code === '23505') {
+        toast.error('Já existe um organizador com este email')
+      } else {
+        toast.error('Erro ao criar organizador: ' + (error.message || 'Erro desconhecido'))
+      }
       throw error
     }
   }
 
   const editOrganizer = async (id: string, data: { name: string; email: string }) => {
     try {
+      console.log('Editando organizador:', id, data)
+      
       const { error } = await supabase
         .from('organizers')
         .update(data)
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao atualizar organizador:', error)
+        throw error
+      }
 
+      console.log('Organizador atualizado com sucesso')
       await fetchOrganizers()
       toast.success('Organizador atualizado com sucesso!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar organizador:', error)
-      toast.error('Erro ao atualizar organizador')
+      toast.error('Erro ao atualizar organizador: ' + (error.message || 'Erro desconhecido'))
       throw error
     }
   }
 
   const deleteOrganizer = async (id: string) => {
     try {
+      console.log('Excluindo organizador:', id)
+      
       const { error } = await supabase
         .from('organizers')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao excluir organizador:', error)
+        throw error
+      }
 
+      console.log('Organizador excluído com sucesso')
       await fetchOrganizers()
       toast.success('Organizador excluído com sucesso!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir organizador:', error)
-      toast.error('Erro ao excluir organizador')
+      toast.error('Erro ao excluir organizador: ' + (error.message || 'Erro desconhecido'))
       throw error
     }
   }
 
   const updateOrganizerStatus = async (id: string, status: 'active' | 'inactive') => {
     try {
+      console.log('Atualizando status do organizador:', id, status)
+      
       const { error } = await supabase
         .from('organizers')
         .update({ status })
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao atualizar status:', error)
+        throw error
+      }
 
+      console.log('Status atualizado com sucesso')
       await fetchOrganizers()
       toast.success('Status do organizador atualizado!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar organizador:', error)
-      toast.error('Erro ao atualizar status')
+      toast.error('Erro ao atualizar status: ' + (error.message || 'Erro desconhecido'))
     }
   }
 
   const updateOrganizerApiKey = async (id: string, asaas_api_key: string) => {
     try {
+      console.log('Atualizando API Key do organizador:', id)
+      
       const { error } = await supabase
         .from('organizers')
         .update({ asaas_api_key })
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao atualizar API Key:', error)
+        throw error
+      }
 
+      console.log('API Key atualizada com sucesso')
       await fetchOrganizers()
       toast.success('API Key do organizador atualizada!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar API Key:', error)
-      toast.error('Erro ao atualizar API Key')
+      toast.error('Erro ao atualizar API Key: ' + (error.message || 'Erro desconhecido'))
     }
   }
 
   const resendInvitation = async (id: string) => {
     try {
+      console.log('Reenviando convite para organizador:', id)
+      
       const newToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + 7)
@@ -173,16 +233,19 @@ export const useOrganizers = () => {
         })
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao reenviar convite:', error)
+        throw error
+      }
 
       // TODO: Enviar email de convite
       console.log('Novo convite gerado, Token:', newToken)
 
       await fetchOrganizers()
       toast.success('Convite reenviado!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao reenviar convite:', error)
-      toast.error('Erro ao reenviar convite')
+      toast.error('Erro ao reenviar convite: ' + (error.message || 'Erro desconhecido'))
     }
   }
 
