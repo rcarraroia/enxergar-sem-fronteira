@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm'
 import { useEvents } from '@/hooks/useEvents'
@@ -247,7 +246,7 @@ export default function Registration() {
                 <p className="text-muted-foreground mb-8">Nenhum evento disponível no momento</p>
                 <Card className="max-w-md mx-auto">
                   <CardHeader>
-                    <CartTitle>Lista de Espera</CardTitle>
+                    <CardTitle>Lista de Espera</CardTitle>
                     <CardDescription>
                       Cadastre-se para ser notificado sobre novos eventos
                     </CardDescription>
