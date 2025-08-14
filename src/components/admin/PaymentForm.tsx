@@ -30,7 +30,7 @@ type PaymentFormData = z.infer<typeof paymentSchema>
 export const PaymentForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { events, isLoading: eventsLoading } = useEventsAdmin()
-  const { createPayment } = useAsaasPayment()
+  const { createPayment, loading } = useAsaasPayment()
 
   const {
     register,
@@ -69,14 +69,19 @@ export const PaymentForm = () => {
         return
       }
 
-      await createPayment.mutateAsync({
-        eventDateId: data.event_date_id,
+      const paymentData = {
+        eventId: selectedEventDate.eventId,
+        patientId: '', // This will need to be provided somehow
         amount: data.amount,
         description: data.description,
-      })
+      }
 
-      reset()
-      toast.success('Cobrança criada com sucesso!')
+      const result = await createPayment(paymentData)
+      
+      if (result) {
+        reset()
+        toast.success('Cobrança criada com sucesso!')
+      }
     } catch (error) {
       console.error('Erro ao criar cobrança:', error)
       toast.error('Erro ao criar cobrança. Tente novamente.')
@@ -174,10 +179,10 @@ export const PaymentForm = () => {
 
           <Button 
             type="submit" 
-            disabled={isSubmitting || eventsLoading} 
+            disabled={isSubmitting || loading || eventsLoading} 
             className="w-full"
           >
-            {isSubmitting ? 'Criando...' : 'Criar Cobrança'}
+            {isSubmitting || loading ? 'Criando...' : 'Criar Cobrança'}
           </Button>
         </form>
       </CardContent>
