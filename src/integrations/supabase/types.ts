@@ -55,53 +55,82 @@ export type Database = {
           },
         ]
       }
-      events: {
+      event_dates: {
         Row: {
-          address: string
           available_slots: number
           created_at: string
           date: string
-          description: string | null
           end_time: string
+          event_id: string
           id: string
-          location: string
-          organizer_id: string
           start_time: string
-          status: string
-          title: string
           total_slots: number
           updated_at: string
         }
         Insert: {
-          address: string
           available_slots?: number
           created_at?: string
           date: string
-          description?: string | null
           end_time: string
+          event_id: string
           id?: string
-          location: string
-          organizer_id: string
           start_time: string
-          status?: string
-          title: string
           total_slots?: number
           updated_at?: string
         }
         Update: {
-          address?: string
           available_slots?: number
           created_at?: string
           date?: string
-          description?: string | null
           end_time?: string
+          event_id?: string
+          id?: string
+          start_time?: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_dates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          organizer_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location: string
+          organizer_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          description?: string | null
           id?: string
           location?: string
           organizer_id?: string
-          start_time?: string
           status?: string
           title?: string
-          total_slots?: number
           updated_at?: string
         }
         Relationships: [
@@ -214,7 +243,7 @@ export type Database = {
       patient_access_tokens: {
         Row: {
           created_at: string
-          event_id: string
+          event_date_id: string
           expires_at: string
           id: string
           patient_id: string
@@ -222,7 +251,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          event_id: string
+          event_date_id: string
           expires_at?: string
           id?: string
           patient_id: string
@@ -230,7 +259,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          event_id?: string
+          event_date_id?: string
           expires_at?: string
           id?: string
           patient_id?: string
@@ -238,10 +267,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patient_access_tokens_event_id_fkey"
-            columns: ["event_id"]
+            foreignKeyName: "patient_access_tokens_event_date_id_fkey"
+            columns: ["event_date_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "event_dates"
             referencedColumns: ["id"]
           },
           {
@@ -298,7 +327,7 @@ export type Database = {
       registrations: {
         Row: {
           created_at: string
-          event_id: string
+          event_date_id: string
           id: string
           patient_id: string
           status: string
@@ -306,7 +335,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          event_id: string
+          event_date_id: string
           id?: string
           patient_id: string
           status?: string
@@ -314,7 +343,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          event_id?: string
+          event_date_id?: string
           id?: string
           patient_id?: string
           status?: string
@@ -322,10 +351,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "registrations_event_id_fkey"
-            columns: ["event_id"]
+            foreignKeyName: "registrations_event_date_id_fkey"
+            columns: ["event_date_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "event_dates"
             referencedColumns: ["id"]
           },
           {
