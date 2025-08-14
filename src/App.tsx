@@ -18,7 +18,7 @@ import AdminRegistrations from "./pages/AdminRegistrations";
 import AdminPayments from "./pages/AdminPayments";
 import AdminSync from "./pages/AdminSync";
 import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
