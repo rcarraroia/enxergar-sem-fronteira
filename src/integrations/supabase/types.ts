@@ -383,6 +383,7 @@ export type Database = {
       }
       organizers: {
         Row: {
+          address: string | null
           asaas_api_key: string | null
           created_at: string
           email: string
@@ -390,12 +391,18 @@ export type Database = {
           invitation_expires_at: string | null
           invitation_token: string | null
           invited_by: string | null
+          last_login: string | null
           name: string
+          notification_preferences: Json | null
+          organization: string | null
+          phone: string | null
+          profile_image_url: string | null
           status: string | null
           updated_at: string
           whatsapp_api_key: string | null
         }
         Insert: {
+          address?: string | null
           asaas_api_key?: string | null
           created_at?: string
           email: string
@@ -403,12 +410,18 @@ export type Database = {
           invitation_expires_at?: string | null
           invitation_token?: string | null
           invited_by?: string | null
+          last_login?: string | null
           name: string
+          notification_preferences?: Json | null
+          organization?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
           status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
         }
         Update: {
+          address?: string | null
           asaas_api_key?: string | null
           created_at?: string
           email?: string
@@ -416,7 +429,12 @@ export type Database = {
           invitation_expires_at?: string | null
           invitation_token?: string | null
           invited_by?: string | null
+          last_login?: string | null
           name?: string
+          notification_preferences?: Json | null
+          organization?: string | null
+          phone?: string | null
+          profile_image_url?: string | null
           status?: string | null
           updated_at?: string
           whatsapp_api_key?: string | null
@@ -594,6 +612,10 @@ export type Database = {
         Returns: string
       }
       is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_organizer_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

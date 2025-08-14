@@ -7,16 +7,27 @@ import { Loader2 } from 'lucide-react'
 interface ProtectedRouteProps {
   children: React.ReactNode
   requireAdmin?: boolean
+  requireOrganizer?: boolean
+  allowedRoles?: ('admin' | 'organizer' | 'user')[]
 }
 
-export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth()
+export const ProtectedRoute = ({ 
+  children, 
+  requireAdmin = false, 
+  requireOrganizer = false,
+  allowedRoles 
+}: ProtectedRouteProps) => {
+  const { user, loading, userRole, isAdmin, isOrganizer } = useAuth()
 
   console.log('🛡️ ProtectedRoute verificando:', { 
     user: user?.email || 'Nenhum', 
     loading, 
-    isAdmin, 
-    requireAdmin 
+    userRole,
+    isAdmin,
+    isOrganizer,
+    requireAdmin,
+    requireOrganizer,
+    allowedRoles
   })
 
   if (loading) {
@@ -36,13 +47,26 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/auth" replace />
   }
 
-  if (requireAdmin && !isAdmin) {
-    console.log('⛔ ProtectedRoute: Usuário não é admin, acesso negado')
+  // Verificar se tem as permissões necessárias
+  const hasPermission = () => {
+    if (requireAdmin && !isAdmin) return false
+    if (requireOrganizer && !isOrganizer && !isAdmin) return false
+    if (allowedRoles && userRole && !allowedRoles.includes(userRole)) return false
+    return true
+  }
+
+  if (!hasPermission()) {
+    console.log('⛔ ProtectedRoute: Usuário não tem permissão, acesso negado')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Acesso Negado</h1>
-          <p className="text-muted-foreground mt-2">Você não tem permissão para acessar esta página.</p>
+          <p className="text-muted-foreground mt-2">
+            Você não tem permissão para acessar esta página.
+          </p>
+          <p className="text-sm text-muted-foreground mt-4">
+            Seu papel atual: {userRole || 'Não definido'}
+          </p>
         </div>
       </div>
     )

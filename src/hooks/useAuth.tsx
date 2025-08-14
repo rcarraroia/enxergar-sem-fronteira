@@ -7,18 +7,29 @@ import { toast } from 'sonner'
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, name: string) => Promise<void>
-  signOut: () => Promise<void>
+  userRole: 'admin' | 'organizer' | 'user' | null
   isAdmin: boolean
+  isOrganizer: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, name: string, role?: string) => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const determineUserRole = (email: string): 'admin' | 'organizer' | 'user' => {
+  if (email.includes('@admin.')) return 'admin'
+  if (email.includes('@organizer.')) return 'organizer'
+  return 'user'
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [userRole, setUserRole] = useState<'admin' | 'organizer' | 'user' | null>(null)
+
+  const isAdmin = userRole === 'admin'
+  const isOrganizer = userRole === 'organizer'
 
   useEffect(() => {
     console.log('🔍 AuthProvider: Inicializando verificação de sessão...')
@@ -33,12 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null)
           
           if (session?.user) {
-            // Verificar se é admin baseado no email
-            const isUserAdmin = session.user.email?.includes('@admin.') || false
-            console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
-            setIsAdmin(isUserAdmin)
+            const role = determineUserRole(session.user.email || '')
+            console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
+            setUserRole(role)
+
+            // Atualizar last_login se for organizador
+            if (role === 'organizer') {
+              updateLastLogin(session.user.id)
+            }
           } else {
-            setIsAdmin(false)
+            setUserRole(null)
           }
           
           setLoading(false)
@@ -61,10 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          // Verificar se é admin baseado no email
-          const isUserAdmin = session.user.email?.includes('@admin.') || false
-          console.log('🔍 Verificando admin por email:', session.user.email, '-> Admin:', isUserAdmin)
-          setIsAdmin(isUserAdmin)
+          const role = determineUserRole(session.user.email || '')
+          console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
+          setUserRole(role)
+
+          // Atualizar last_login se for organizador
+          if (role === 'organizer') {
+            updateLastLogin(session.user.id)
+          }
         }
         
         setLoading(false)
@@ -78,6 +97,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  const updateLastLogin = async (userId: string) => {
+    try {
+      await supabase
+        .from('organizers')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', userId)
+    } catch (error) {
+      console.error('Erro ao atualizar last_login:', error)
+    }
+  }
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -103,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, role?: string) => {
     try {
       setLoading(true)
       
@@ -121,21 +151,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user) {
-        // Corrigir bug: verificar se a tabela organizers existe antes de inserir
-        try {
-          const { error: profileError } = await supabase
-            .from('organizers')
-            .insert({
-              id: data.user.id,
-              name,
-              email,
-            })
+        // Criar perfil na tabela organizers se for organizador
+        const userRole = role || determineUserRole(email)
+        if (userRole === 'organizer') {
+          try {
+            const { error: profileError } = await supabase
+              .from('organizers')
+              .insert({
+                id: data.user.id,
+                name,
+                email,
+                status: 'active'
+              })
 
-          if (profileError) {
-            console.warn('⚠️ Erro ao criar perfil (pode ser normal se tabela não existir):', profileError)
+            if (profileError) {
+              console.warn('⚠️ Erro ao criar perfil de organizador:', profileError)
+            }
+          } catch (profileError) {
+            console.warn('⚠️ Erro ao criar perfil de organizador:', profileError)
           }
-        } catch (profileError) {
-          console.warn('⚠️ Tabela organizers pode não existir:', profileError)
         }
       }
 
@@ -157,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Corrigir bug: limpar estados locais imediatamente
       setUser(null)
-      setIsAdmin(false)
+      setUserRole(null)
       
       toast.success('Logout realizado com sucesso!')
     } catch (error) {
@@ -169,16 +203,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
+    userRole,
+    isAdmin,
+    isOrganizer,
     signIn,
     signUp,
     signOut,
-    isAdmin,
   }
 
   console.log('🎯 AuthProvider estado atual:', { 
     user: user?.email || 'Nenhum', 
     loading, 
-    isAdmin 
+    userRole,
+    isAdmin,
+    isOrganizer
   })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

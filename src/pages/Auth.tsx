@@ -4,24 +4,27 @@ import { useNavigate } from 'react-router-dom'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { SignUpForm } from '@/components/auth/SignUpForm'
 import { useAuth } from '@/hooks/useAuth'
+import { getRedirectPath } from '@/utils/roleRedirect'
 import { Loader2 } from 'lucide-react'
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true)
-  const { user, loading } = useAuth()
+  const { user, loading, userRole } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     console.log('🔍 Auth page - Estado atual:', { 
       user: user?.email || 'Nenhum', 
-      loading 
+      loading,
+      userRole
     })
     
-    if (user && !loading) {
-      console.log('✅ Usuário autenticado, redirecionando para /admin')
-      navigate('/admin', { replace: true })
+    if (user && !loading && userRole) {
+      const redirectPath = getRedirectPath(userRole)
+      console.log(`✅ Usuário autenticado (${userRole}), redirecionando para ${redirectPath}`)
+      navigate(redirectPath, { replace: true })
     }
-  }, [user, loading, navigate])
+  }, [user, loading, userRole, navigate])
 
   if (loading) {
     console.log('⏳ Auth page: Carregando...')
