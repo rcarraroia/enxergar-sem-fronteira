@@ -10,7 +10,8 @@
 
 ## Fase 1: Infraestrutura e Autenticação
 
-- [ ] 1. Configurar projeto base no Lovable
+- [x] 1. Configurar projeto base no Lovable
+
   - **Executor:** Lovable
   - **Descrição:** Criar novo projeto React/TypeScript com Supabase
   - Configurar estrutura inicial do projeto com Vite
@@ -19,7 +20,8 @@
   - Instalar dependências necessárias (shadcn/ui, tailwind, etc.)
   - _Requirements: 9.1, 9.2_
 
-- [ ] 2. Implementar banco de dados Supabase
+- [x] 2. Implementar banco de dados Supabase
+
   - **Executor:** Lovable
   - **Descrição:** Criar estrutura completa do banco de dados
   - Criar tabelas: users, events, registrations, organizations, waitlist
@@ -28,7 +30,8 @@
   - Configurar triggers e funções do banco quando necessário
   - _Requirements: 9.1, 9.2_
 
-- [ ] 3. Desenvolver sistema de autenticação completo
+- [x] 3. Desenvolver sistema de autenticação completo
+
   - **Executor:** Lovable
   - **Descrição:** Sistema completo de login, registro e controle de acesso
   - Criar páginas de login e registro com design responsivo
@@ -40,7 +43,8 @@
 
 ## Fase 2: Sistema de Eventos (Usuário Final)
 
-- [ ] 4. Criar interface de listagem e detalhes de eventos
+- [x] 4. Criar interface de listagem e detalhes de eventos
+
   - **Executor:** Lovable
   - **Descrição:** Páginas públicas para visualização de eventos
   - Desenvolver página inicial com listagem de eventos
@@ -50,7 +54,8 @@
   - Adicionar design responsivo e acessível
   - _Requirements: 1.1, 7.1_
 
-- [ ] 5. Implementar sistema de inscrições
+- [x] 5. Implementar sistema de inscrições
+
   - **Executor:** Lovable
   - **Descrição:** Fluxo completo de inscrição em eventos
   - Criar formulário de inscrição com validação de CPF
@@ -100,7 +105,8 @@
 
 ## Fase 4: Painel Administrativo
 
-- [ ] 10. Criar dashboard administrativo global
+- [-] 10. Criar dashboard administrativo global
+
   - **Executor:** Lovable
   - **Descrição:** Visão geral de toda a plataforma
   - Implementar métricas globais e KPIs principais
@@ -158,7 +164,8 @@
 
 ## Fase 6: Integrações Externas
 
-- [ ] 16. Integrar com Instituto Coração Valente
+- [x] 16. Integrar com Instituto Coração Valente
+
   - **Executor:** Lovable
   - **Descrição:** Sincronização de dados com API externa
   - Criar Edge Functions para comunicação com API do Instituto
