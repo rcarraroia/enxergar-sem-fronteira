@@ -55,11 +55,19 @@ export const useEvents = () => {
         event.event_dates && event.event_dates.some(date => date.date >= today)
       ).map(event => ({
         ...event,
+        // Ordenar as datas do evento pela data mais próxima
         event_dates: event.event_dates.filter(date => date.date >= today).sort((a, b) => a.date.localeCompare(b.date))
       })) || []
 
-      console.log(`✅ Encontrados ${filteredEvents.length} eventos`)
-      return filteredEvents as Event[]
+      // Ordenar os eventos pela data mais próxima (primeira data de cada evento)
+      const sortedEvents = filteredEvents.sort((a, b) => {
+        const dateA = a.event_dates[0]?.date || '9999-12-31'
+        const dateB = b.event_dates[0]?.date || '9999-12-31'
+        return dateA.localeCompare(dateB)
+      })
+
+      console.log(`✅ Encontrados ${sortedEvents.length} eventos ordenados por data mais próxima`)
+      return sortedEvents as Event[]
     }
   })
 }

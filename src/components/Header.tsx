@@ -52,11 +52,6 @@ const Header = () => {
             <a href="/registration" className="text-gray-600 hover:text-primary transition-colors">
               Cadastrar-se
             </a>
-            {user && (
-              <a href="/admin" className="text-gray-600 hover:text-primary transition-colors">
-                Painel Admin
-              </a>
-            )}
           </div>
 
           <div className="flex items-center space-x-2">
