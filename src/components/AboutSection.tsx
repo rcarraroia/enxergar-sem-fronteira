@@ -1,4 +1,3 @@
-
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, Users, Shield, Target, Award } from 'lucide-react';
 
@@ -166,6 +165,7 @@ const AboutSection = () => {
                   />
                 </div>
                 <p className="text-sm font-medium text-foreground">Paróquia Cristo Libertador</p>
+                <p className="text-xs text-muted-foreground">Ipatinga-MG</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
