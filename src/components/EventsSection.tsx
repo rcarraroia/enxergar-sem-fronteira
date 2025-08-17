@@ -2,13 +2,13 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Clock, Users, Eye, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Eye, ArrowRight, RefreshCw } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
 import { formatTime, formatDate } from '@/utils/timeFormat';
 
 const EventsSection = () => {
-  const { data: events, isLoading } = useEvents();
+  const { data: events, isLoading, refetch, isFetching } = useEvents();
   const navigate = useNavigate();
 
   const getStatusInfo = (totalAvailable: number, totalSlots: number) => {
@@ -45,11 +45,17 @@ const EventsSection = () => {
     navigate('/registration');
   };
 
+  const handleRefresh = () => {
+    console.log('🔄 Atualizando lista de eventos...');
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <section id="events" className="py-20 bg-medical-bg">
         <div className="container mx-auto px-4">
           <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p>Carregando eventos...</p>
           </div>
         </div>
@@ -66,13 +72,31 @@ const EventsSection = () => {
             <span className="text-primary font-semibold text-sm">Agenda de Eventos</span>
           </div>
           
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            Próximos Atendimentos
-          </h2>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h2 className="text-4xl font-bold text-foreground">
+              Próximos Atendimentos
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isFetching}
+              className="ml-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+          
           <p className="text-subtitle text-muted-foreground max-w-2xl mx-auto">
             Confira nossa agenda de atendimentos oftalmológicos gratuitos. 
             Cadastre-se nos eventos disponíveis em sua região.
           </p>
+          
+          {isFetching && (
+            <div className="text-sm text-muted-foreground mt-2">
+              Atualizando vagas disponíveis...
+            </div>
+          )}
         </div>
 
         {events && events.length > 0 ? (
@@ -82,7 +106,7 @@ const EventsSection = () => {
               const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0);
               const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0);
               const statusInfo = getStatusInfo(totalAvailable, totalSlots);
-              const occupancyPercentage = ((totalSlots - totalAvailable) / totalSlots) * 100;
+              const occupancyPercentage = totalSlots > 0 ? ((totalSlots - totalAvailable) / totalSlots) * 100 : 0;
               
               // Próxima data do evento
               const nextDate = event.event_dates[0];
@@ -138,7 +162,7 @@ const EventsSection = () => {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Users className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-foreground">Vagas Totais</span>
+                          <span className="font-medium text-foreground">Vagas Disponíveis</span>
                         </div>
                         <span className={`font-semibold ${statusInfo.textColor}`}>
                           {totalAvailable} de {totalSlots}
