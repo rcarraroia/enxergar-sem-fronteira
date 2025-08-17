@@ -14,13 +14,34 @@ import { Calendar, MapPin, Clock, Users, AlertCircle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { formatTime, formatDate } from '@/utils/timeFormat'
+import { validateCPF, cleanCPF } from '@/utils/cpfUtils'
+import { CPFInput } from '@/components/ui/cpf-input'
+import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
 
 const patientSchema = z.object({
-  nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  telefone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
-  cpf: z.string().min(11, 'CPF deve ter 11 dígitos'),
-  data_nascimento: z.string().min(1, 'Data de nascimento é obrigatória'),
+  nome: z.string()
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres')
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
+  email: z.string()
+    .email('Email inválido')
+    .max(255, 'Email muito longo'),
+  telefone: z.string()
+    .min(10, 'Telefone deve ter pelo menos 10 dígitos')
+    .max(15, 'Telefone muito longo')
+    .regex(/^[\d\s\-\(\)]+$/, 'Formato de telefone inválido'),
+  cpf: z.string()
+    .min(11, 'CPF deve ter 11 dígitos')
+    .refine((cpf) => validateCPF(cpf), 'CPF inválido'),
+  data_nascimento: z.string()
+    .min(1, 'Data de nascimento é obrigatória')
+    .refine((date) => {
+      if (!date) return false
+      const birthDate = new Date(date)
+      const today = new Date()
+      const age = today.getFullYear() - birthDate.getFullYear()
+      return age >= 0 && age <= 120
+    }, 'Data de nascimento inválida'),
   consentimento_lgpd: z.boolean().refine(val => val === true, 'Você deve aceitar os termos da LGPD'),
 })
 
@@ -50,6 +71,8 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
   const [loadingEventInfo, setLoadingEventInfo] = useState(false)
   const [duplicateError, setDuplicateError] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [registeredPatientName, setRegisteredPatientName] = useState('')
 
   console.log('🎯 PatientRegistrationForm iniciado com:', { eventId, eventDateId })
 
@@ -60,11 +83,13 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
     setValue,
     watch,
     reset,
+    trigger,
   } = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
   })
 
   const consentimento = watch('consentimento_lgpd')
+  const cpfValue = watch('cpf')
 
   // Buscar informações do evento se eventId e eventDateId forem fornecidos
   useEffect(() => {
@@ -72,6 +97,13 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
       fetchEventInfo()
     }
   }, [eventId, eventDateId])
+
+  // Validação em tempo real do CPF
+  useEffect(() => {
+    if (cpfValue && cpfValue.length === 11) {
+      trigger('cpf')
+    }
+  }, [cpfValue, trigger])
 
   const fetchEventInfo = async () => {
     if (!eventId || !eventDateId) return
@@ -134,6 +166,9 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
       setDuplicateError(null)
       console.log('📝 Iniciando cadastro de paciente:', data)
 
+      // Limpar CPF antes de salvar no banco
+      const cleanedCPF = cleanCPF(data.cpf)
+
       // Inserir paciente
       const { data: patient, error: patientError } = await supabase
         .from('patients')
@@ -141,7 +176,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
           nome: data.nome,
           email: data.email,
           telefone: data.telefone,
-          cpf: data.cpf,
+          cpf: cleanedCPF, // Salvar CPF sempre limpo no banco
           data_nascimento: data.data_nascimento,
           consentimento_lgpd: data.consentimento_lgpd,
         })
@@ -208,7 +243,9 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
           console.log('🔑 Token de acesso criado')
         }
 
-        toast.success('Inscrição realizada com sucesso!')
+        // Mostrar modal de sucesso em vez de toast
+        setRegisteredPatientName(data.nome)
+        setShowSuccessModal(true)
       } else {
         console.log('📋 Cadastro sem evento específico (lista de espera)')
         toast.success('Cadastro realizado com sucesso!')
@@ -222,6 +259,13 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
       toast.error('Erro ao processar inscrição. Tente novamente.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleCPFChange = (cleanValue: string) => {
+    setValue('cpf', cleanValue)
+    if (cleanValue.length === 11) {
+      trigger('cpf')
     }
   }
 
@@ -347,10 +391,10 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
 
               <div>
                 <Label htmlFor="cpf">CPF</Label>
-                <Input
+                <CPFInput
                   id="cpf"
-                  {...register('cpf')}
-                  placeholder="000.000.000-00"
+                  value={cpfValue || ''}
+                  onChange={handleCPFChange}
                 />
                 {errors.cpf && (
                   <p className="text-sm text-destructive mt-1">{errors.cpf.message}</p>
@@ -394,6 +438,14 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
           </form>
         </CardContent>
       </Card>
+
+      {/* Modal de Sucesso */}
+      <RegistrationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        eventInfo={eventInfo}
+        patientName={registeredPatientName}
+      />
     </div>
   )
 }
