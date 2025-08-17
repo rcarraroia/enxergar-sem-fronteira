@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Clock, Users } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Calendar, MapPin, Clock, Users, AlertCircle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { formatTime, formatDate } from '@/utils/timeFormat'
@@ -48,6 +49,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
   const [loadingEventInfo, setLoadingEventInfo] = useState(false)
+  const [duplicateError, setDuplicateError] = useState<string | null>(null)
 
   console.log('🎯 PatientRegistrationForm iniciado com:', { eventId, eventDateId })
 
@@ -129,6 +131,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
   const onSubmit = async (data: PatientFormData) => {
     try {
       setIsSubmitting(true)
+      setDuplicateError(null)
       console.log('📝 Iniciando cadastro de paciente:', data)
 
       // Inserir paciente
@@ -147,6 +150,22 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
 
       if (patientError) {
         console.error('❌ Erro ao criar paciente:', patientError)
+        
+        // Tratar erros de duplicação
+        if (patientError.message.includes('unique constraint') || 
+            patientError.message.includes('unique_cpf') ||
+            patientError.message.includes('Já existe um paciente cadastrado')) {
+          
+          if (patientError.message.includes('CPF')) {
+            setDuplicateError('Este CPF já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
+          } else if (patientError.message.includes('email')) {
+            setDuplicateError('Este email já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
+          } else {
+            setDuplicateError('Já existe um cadastro com essas informações. Verifique seus dados ou entre em contato conosco.')
+          }
+          return
+        }
+        
         throw patientError
       }
 
@@ -196,6 +215,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
       }
 
       reset()
+      setDuplicateError(null)
       onSuccess?.()
     } catch (error) {
       console.error('💥 Erro ao processar inscrição:', error)
@@ -276,6 +296,16 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Alerta de erro de duplicação */}
+          {duplicateError && (
+            <Alert className="mb-6 border-destructive/50 text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {duplicateError}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
