@@ -1,4 +1,3 @@
-
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, Users, Shield, Target, Award } from 'lucide-react';
 
