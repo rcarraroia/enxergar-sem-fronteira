@@ -1,5 +1,5 @@
 
-import { Heart, Eye, Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Heart, Eye, Mail, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 
@@ -150,16 +150,17 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted opacity-80">Fale Conosco</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted opacity-80">(11) 9999-9999</span>
+                <a 
+                  href="mailto:coracaovalenteorg@gmail.com" 
+                  className="text-sm text-muted opacity-80 hover:opacity-100 hover:text-primary transition-colors"
+                >
+                  Fale Conosco
+                </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-primary mt-0.5" />
                 <span className="text-sm text-muted opacity-80">
-                  São Paulo, SP<br />
+                  Minas Gerais - MG<br />
                   Brasil
                 </span>
               </div>
