@@ -143,7 +143,7 @@ const AboutSection = () => {
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
                   <img 
-                    src="/lovable-uploads/6077b647-edf0-4d73-86a2-647f7c51d76c.png" 
+                    src="/lovable-uploads/coracao-valente.png" 
                     alt="Instituto Coração Valente"
                     className="w-full h-full object-cover"
                   />
@@ -176,7 +176,7 @@ const AboutSection = () => {
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
                   <img 
-                    src="/lovable-uploads/729adc6d-e9d5-4598-96df-c9180d4c769d.png" 
+                    src="/lovable-uploads/logo512x512.png" 
                     alt="Wladimir Careca"
                     className="w-full h-full object-cover"
                   />
