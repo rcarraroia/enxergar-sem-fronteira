@@ -145,7 +145,7 @@ const AboutSection = () => {
                   <img 
                     src="/lovable-uploads/coracao-valente.png" 
                     alt="Instituto Coração Valente"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                   />
                 </div>
                 <p className="text-sm font-medium text-foreground">Instituto Coração Valente</p>
@@ -178,7 +178,7 @@ const AboutSection = () => {
                   <img 
                     src="/lovable-uploads/logo512x512.png" 
                     alt="Wladimir Careca"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                   />
                 </div>
                 <p className="text-sm font-medium text-foreground">Wladimir Careca</p>
