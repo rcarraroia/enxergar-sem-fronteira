@@ -13,6 +13,17 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { 
   Users, 
   Search, 
@@ -21,18 +32,62 @@ import {
   Mail,
   Phone,
   FileText,
-  Calendar
+  Calendar,
+  Trash2
 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 
 export const PatientsList: React.FC = () => {
-  const { data: patients, isLoading } = usePatients()
+  const { data: patients, isLoading, refetch } = usePatients()
   const [searchTerm, setSearchTerm] = useState('')
+  const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
 
   const filteredPatients = patients?.filter(patient => 
     patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.cpf.includes(searchTerm.replace(/\D/g, ''))
   ) || []
+
+  const handleDeletePatient = async (patientId: string, patientName: string) => {
+    try {
+      setDeletingPatient(patientId)
+      console.log('🗑️ Excluindo paciente:', patientId, patientName)
+
+      // Primeiro, deletar todas as inscrições do paciente
+      const { error: registrationsError } = await supabase
+        .from('registrations')
+        .delete()
+        .eq('patient_id', patientId)
+
+      if (registrationsError) {
+        console.error('❌ Erro ao excluir inscrições:', registrationsError)
+        throw registrationsError
+      }
+
+      // Depois, deletar o paciente
+      const { error: patientError } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', patientId)
+
+      if (patientError) {
+        console.error('❌ Erro ao excluir paciente:', patientError)
+        throw patientError
+      }
+
+      console.log('✅ Paciente e inscrições excluídos com sucesso')
+      toast.success(`Paciente ${patientName} e suas inscrições foram excluídos com sucesso`)
+      
+      // Atualizar a lista
+      refetch()
+    } catch (error: any) {
+      console.error('❌ Erro ao excluir paciente:', error)
+      toast.error('Erro ao excluir paciente: ' + (error.message || 'Erro desconhecido'))
+    } finally {
+      setDeletingPatient(null)
+    }
+  }
 
   const handleExportCSV = () => {
     if (!filteredPatients.length) return
@@ -137,6 +192,7 @@ export const PatientsList: React.FC = () => {
                   <TableHead>Informações</TableHead>
                   <TableHead>LGPD</TableHead>
                   <TableHead>Data Cadastro</TableHead>
+                  <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -187,6 +243,54 @@ export const PatientsList: React.FC = () => {
                     <TableCell>
                       <div className="text-sm">
                         {new Date(patient.created_at).toLocaleDateString('pt-BR')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={deletingPatient === patient.id}
+                            >
+                              {deletingPatient === patient.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o paciente <strong>{patient.nome}</strong>?
+                                <br /><br />
+                                <span className="text-destructive font-medium">
+                                  ⚠️ Esta ação irá excluir permanentemente:
+                                </span>
+                                <ul className="list-disc list-inside mt-2 space-y-1">
+                                  <li>Todos os dados do paciente</li>
+                                  <li>Todas as inscrições em eventos</li>
+                                  <li>Histórico de registros</li>
+                                </ul>
+                                <br />
+                                Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeletePatient(patient.id, patient.nome)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir Permanentemente
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

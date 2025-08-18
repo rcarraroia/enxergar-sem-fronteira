@@ -1,5 +1,31 @@
-
 import { z } from 'zod'
+
+// Função para validar CPF
+const validateCPF = (cpf: string): boolean => {
+  const cleanCPF = cpf.replace(/\D/g, '')
+  
+  if (cleanCPF.length !== 11) return false
+  if (/^(\d)\1{10}$/.test(cleanCPF)) return false
+  
+  // Validação dos dígitos verificadores
+  let sum = 0
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF[i]) * (10 - i)
+  }
+  let remainder = sum % 11
+  let digit1 = remainder < 2 ? 0 : 11 - remainder
+  
+  if (parseInt(cleanCPF[9]) !== digit1) return false
+  
+  sum = 0
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF[i]) * (11 - i)
+  }
+  remainder = sum % 11
+  let digit2 = remainder < 2 ? 0 : 11 - remainder
+  
+  return parseInt(cleanCPF[10]) === digit2
+}
 
 // Schemas de validação mais robustos
 export const patientValidationSchema = z.object({
@@ -11,32 +37,7 @@ export const patientValidationSchema = z.object({
   cpf: z.string()
     .min(11, 'CPF deve ter 11 dígitos')
     .max(14, 'CPF inválido')
-    .refine((cpf) => {
-      // Remove caracteres não numéricos
-      const cleanCPF = cpf.replace(/\D/g, '')
-      
-      if (cleanCPF.length !== 11) return false
-      if (/^(\d)\1{10}$/.test(cleanCPF)) return false
-      
-      // Validação dos dígitos verificadores
-      let sum = 0
-      for (let i = 0; i < 9; i++) {
-        sum += parseInt(cleanCPF[i]) * (10 - i)
-      }
-      let remainder = sum % 11
-      let digit1 = remainder < 2 ? 0 : 11 - remainder
-      
-      if (parseInt(cleanCPF[9]) !== digit1) return false
-      
-      sum = 0
-      for (let i = 0; i < 10; i++) {
-        sum += parseInt(cleanCPF[i]) * (11 - i)
-      }
-      remainder = sum % 11
-      let digit2 = remainder < 2 ? 0 : 11 - remainder
-      
-      return parseInt(cleanCPF[10]) === digit2
-    }, 'CPF inválido'),
+    .refine((cpf) => validateCPF(cpf), 'CPF inválido'),
     
   email: z.string()
     .email('Email inválido')
@@ -189,10 +190,7 @@ export const realTimeValidators = {
   },
   
   cpf: (cpf: string) => {
-    const cleanCPF = cpf.replace(/\D/g, '')
-    if (cleanCPF.length !== 11) return false
-    if (/^(\d)\1{10}$/.test(cleanCPF)) return false
-    return true // Validação completa será feita no schema
+    return validateCPF(cpf)
   },
   
   phone: (phone: string) => {

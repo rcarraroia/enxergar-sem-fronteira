@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink } from 'lucide-react'
+import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink, Eye, EyeOff } from 'lucide-react'
 import { useOrganizers } from '@/hooks/useOrganizers'
 import { toast } from 'sonner'
 
@@ -20,7 +19,8 @@ const AdminOrganizers = () => {
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false)
   const [editingOrganizer, setEditingOrganizer] = useState<any>(null)
   const [selectedOrganizerApiKey, setSelectedOrganizerApiKey] = useState<{id: string, apiKey: string}>({id: '', apiKey: ''})
-  const [formData, setFormData] = useState({ name: '', email: '' })
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
@@ -33,8 +33,12 @@ const AdminOrganizers = () => {
 
     setIsCreating(true)
     try {
-      await createOrganizer(formData)
-      setFormData({ name: '', email: '' })
+      await createOrganizer({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password.trim() || undefined
+      })
+      setFormData({ name: '', email: '', password: '' })
       setShowCreateDialog(false)
     } catch (error) {
       // Erro já tratado no hook
@@ -52,8 +56,11 @@ const AdminOrganizers = () => {
 
     setIsEditing(true)
     try {
-      await editOrganizer(editingOrganizer.id, formData)
-      setFormData({ name: '', email: '' })
+      await editOrganizer(editingOrganizer.id, {
+        name: formData.name,
+        email: formData.email
+      })
+      setFormData({ name: '', email: '', password: '' })
       setShowEditDialog(false)
       setEditingOrganizer(null)
     } catch (error) {
@@ -65,40 +72,21 @@ const AdminOrganizers = () => {
 
   const handleEditOrganizer = (organizer: any) => {
     setEditingOrganizer(organizer)
-    setFormData({ name: organizer.name, email: organizer.email })
+    setFormData({ name: organizer.name, email: organizer.email, password: '' })
     setShowEditDialog(true)
   }
 
-  const handleDeleteOrganizer = async (id: string) => {
-    try {
-      await deleteOrganizer(id)
-    } catch (error) {
-      // Erro já tratado no hook
-    }
-  }
-
-  const handleUpdateApiKey = async () => {
-    if (!selectedOrganizerApiKey.apiKey.trim()) {
-      toast.error('Digite uma API Key válida')
+  const handleDeleteOrganizer = async (organizerId: string, organizerName: string, eventsCount?: number) => {
+    if (eventsCount && eventsCount > 0) {
+      toast.error(`Não é possível excluir "${organizerName}" pois possui ${eventsCount} evento(s) associado(s). Remova ou transfira os eventos primeiro.`)
       return
     }
 
     try {
-      await updateOrganizerApiKey(selectedOrganizerApiKey.id, selectedOrganizerApiKey.apiKey)
-      setShowApiKeyDialog(false)
-      setSelectedOrganizerApiKey({id: '', apiKey: ''})
+      await deleteOrganizer(organizerId)
     } catch (error) {
       // Erro já tratado no hook
     }
-  }
-
-  const openEditApiKeyDialog = (organizerId: string) => {
-    const organizer = organizers.find(o => o.id === organizerId)
-    setSelectedOrganizerApiKey({
-      id: organizerId,
-      apiKey: organizer?.asaas_api_key || ''
-    })
-    setShowApiKeyDialog(true)
   }
 
   const getStatusBadge = (status: string) => {
@@ -156,8 +144,8 @@ const AdminOrganizers = () => {
             <DialogHeader>
               <DialogTitle>Criar Novo Organizador</DialogTitle>
               <DialogDescription>
-                Preencha os dados do organizador. Um convite será enviado por email.
-                O organizador poderá fazer login usando qualquer email válido após ser cadastrado.
+                Preencha os dados do organizador. Se definir uma senha, uma conta será criada automaticamente.
+                O organizador poderá fazer login usando o email cadastrado.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -185,11 +173,43 @@ const AdminOrganizers = () => {
                   O organizador poderá fazer login usando este email
                 </p>
               </div>
+              <div>
+                <Label htmlFor="password">Senha (Opcional)</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Deixe em branco para enviar convite por email"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Se definir uma senha, uma conta será criada automaticamente. Caso contrário, um convite será enviado por email.
+                </p>
+              </div>
               <div className="flex gap-2 pt-4">
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setShowCreateDialog(false)}
+                  onClick={() => {
+                    setShowCreateDialog(false)
+                    setFormData({ name: '', email: '', password: '' })
+                    setShowPassword(false)
+                  }}
                   className="flex-1"
                 >
                   Cancelar
@@ -202,8 +222,8 @@ const AdminOrganizers = () => {
                     </>
                   ) : (
                     <>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Criar e Enviar Convite
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Organizador
                     </>
                   )}
                 </Button>
@@ -213,13 +233,12 @@ const AdminOrganizers = () => {
         </Dialog>
       </div>
 
-      {/* Dialogs para edição e API Key */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar Organizador</DialogTitle>
             <DialogDescription>
-              Atualize os dados do organizador.
+              Atualize os dados do organizador. Para alterar a senha, o organizador deve usar a funcionalidade "Esqueci minha senha" na página de login.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4">
@@ -244,11 +263,19 @@ const AdminOrganizers = () => {
                 required
               />
             </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Alteração de senha:</strong> Por questões de segurança, o organizador deve alterar sua própria senha usando a opção "Esqueci minha senha" na página de login.
+              </p>
+            </div>
             <div className="flex gap-2 pt-4">
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setShowEditDialog(false)}
+                onClick={() => {
+                  setShowEditDialog(false)
+                  setFormData({ name: '', email: '', password: '' })
+                }}
                 className="flex-1"
               >
                 Cancelar
@@ -302,7 +329,20 @@ const AdminOrganizers = () => {
               >
                 Cancelar
               </Button>
-              <Button onClick={handleUpdateApiKey} className="flex-1">
+              <Button onClick={async () => {
+                if (!selectedOrganizerApiKey.apiKey.trim()) {
+                  toast.error('Digite uma API Key válida')
+                  return
+                }
+
+                try {
+                  await updateOrganizerApiKey(selectedOrganizerApiKey.id, selectedOrganizerApiKey.apiKey)
+                  setShowApiKeyDialog(false)
+                  setSelectedOrganizerApiKey({id: '', apiKey: ''})
+                } catch (error) {
+                  // Erro já tratado no hook
+                }
+              }} className="flex-1">
                 <Key className="h-4 w-4 mr-2" />
                 Salvar API Key
               </Button>
@@ -351,6 +391,7 @@ const AdminOrganizers = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>API Key</TableHead>
+                    <TableHead>Eventos</TableHead>
                     <TableHead>Acesso</TableHead>
                     <TableHead>Data de Criação</TableHead>
                     <TableHead className="w-[50px]">Ações</TableHead>
@@ -361,8 +402,27 @@ const AdminOrganizers = () => {
                     <TableRow key={organizer.id}>
                       <TableCell className="font-medium">{organizer.name}</TableCell>
                       <TableCell>{organizer.email}</TableCell>
-                      <TableCell>{getStatusBadge(organizer.status)}</TableCell>
-                      <TableCell>{getApiKeyBadge(organizer.asaas_api_key)}</TableCell>
+                      <TableCell>
+                        {organizer.status === 'active' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
+                        ) : organizer.status === 'inactive' ? (
+                          <Badge variant="secondary" className="bg-gray-100 text-gray-800">Inativo</Badge>
+                        ) : (
+                          <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">Pendente</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {organizer.asaas_api_key ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Configurada</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Não configurada</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {organizer.events_count || 0} evento(s)
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         {organizer.status === 'active' ? (
                           <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
@@ -386,11 +446,22 @@ const AdminOrganizers = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditOrganizer(organizer)}>
+                            <DropdownMenuItem onClick={() => {
+                              setEditingOrganizer(organizer)
+                              setFormData({ name: organizer.name, email: organizer.email, password: '' })
+                              setShowEditDialog(true)
+                            }}>
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEditApiKeyDialog(organizer.id)}>
+                            <DropdownMenuItem onClick={() => {
+                              const org = organizers.find(o => o.id === organizer.id)
+                              setSelectedOrganizerApiKey({
+                                id: organizer.id,
+                                apiKey: org?.asaas_api_key || ''
+                              })
+                              setShowApiKeyDialog(true)
+                            }}>
                               <Key className="h-4 w-4 mr-2" />
                               Configurar API Key
                             </DropdownMenuItem>
@@ -431,18 +502,30 @@ const AdminOrganizers = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Tem certeza que deseja excluir o organizador "{organizer.name}"? 
-                                    Esta ação não pode ser desfeita e todos os eventos criados por este organizador serão afetados.
+                                    {organizer.events_count && organizer.events_count > 0 ? (
+                                      <>
+                                        Não é possível excluir o organizador "{organizer.name}" pois ele possui {organizer.events_count} evento(s) associado(s).
+                                        <br /><br />
+                                        Para excluir este organizador, primeiro remova ou transfira todos os eventos associados a ele.
+                                      </>
+                                    ) : (
+                                      <>
+                                        Tem certeza que deseja excluir o organizador "{organizer.name}"? 
+                                        Esta ação não pode ser desfeita.
+                                      </>
+                                    )}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction 
-                                    onClick={() => handleDeleteOrganizer(organizer.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
-                                    Excluir Definitivamente
-                                  </AlertDialogAction>
+                                  {(!organizer.events_count || organizer.events_count === 0) && (
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteOrganizer(organizer.id, organizer.name, organizer.events_count)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Excluir Definitivamente
+                                    </AlertDialogAction>
+                                  )}
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
