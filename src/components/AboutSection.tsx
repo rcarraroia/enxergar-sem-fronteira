@@ -1,3 +1,4 @@
+
 import { Card } from '@/components/ui/card';
 import { Eye, Heart, Users, Shield, Target, Award } from 'lucide-react';
 
@@ -140,10 +141,15 @@ const AboutSection = () => {
             <h3 className="text-2xl font-bold text-foreground mb-6">Nossos Parceiros</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
               <div className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Heart className="h-8 w-8 text-primary" />
+                <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
+                  <img 
+                    src="/lovable-uploads/6077b647-edf0-4d73-86a2-647f7c51d76c.png" 
+                    alt="Instituto Coração Valente"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <p className="text-sm font-medium text-foreground">Instituto Coração Valente</p>
+                <p className="text-xs text-muted-foreground">Ipatinga-MG</p>
               </div>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
@@ -168,10 +174,15 @@ const AboutSection = () => {
                 <p className="text-xs text-muted-foreground">Ipatinga-MG</p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Users className="h-8 w-8 text-accent" />
+                <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
+                  <img 
+                    src="/lovable-uploads/729adc6d-e9d5-4598-96df-c9180d4c769d.png" 
+                    alt="Wladimir Careca"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <p className="text-sm font-medium text-foreground">Organizadores Locais</p>
+                <p className="text-sm font-medium text-foreground">Wladimir Careca</p>
+                <p className="text-xs text-muted-foreground">Timóteo-MG</p>
               </div>
             </div>
           </Card>
