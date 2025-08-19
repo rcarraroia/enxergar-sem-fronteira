@@ -60,7 +60,7 @@ export const PatientsList: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('all')
   const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
 
-  // Debug logs
+  // Debug logs e verificação direta do banco
   React.useEffect(() => {
     console.log('🔍 Debug - Dados carregados:')
     console.log('Patients:', patients?.length || 0)
@@ -68,6 +68,35 @@ export const PatientsList: React.FC = () => {
     console.log('Events:', events?.length || 0)
     console.log('Events data:', events)
     console.log('Registrations data:', registrations)
+
+    // Verificação direta do banco
+    const checkDatabase = async () => {
+      try {
+        const { data: patientsData, error: patientsError } = await supabase
+          .from('patients')
+          .select('*')
+          .limit(5)
+
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select('*')
+          .limit(5)
+
+        const { data: registrationsData, error: registrationsError } = await supabase
+          .from('registrations')
+          .select('*')
+          .limit(5)
+
+        console.log('🔍 Verificação direta do banco:')
+        console.log('Pacientes direto:', patientsData?.length || 0, patientsError)
+        console.log('Eventos direto:', eventsData?.length || 0, eventsError)
+        console.log('Registrações direto:', registrationsData?.length || 0, registrationsError)
+      } catch (error) {
+        console.error('❌ Erro na verificação direta:', error)
+      }
+    }
+
+    checkDatabase()
   }, [patients, registrations, events])
 
   // Extrair cidades únicas dos eventos
