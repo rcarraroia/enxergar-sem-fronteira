@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   public: {
     Tables: {
       asaas_transactions: {
@@ -57,70 +52,66 @@ export type Database = {
       }
       campaigns: {
         Row: {
-          allow_custom_amount: boolean | null
-          allow_subscriptions: boolean | null
-          created_at: string | null
+          allow_custom_amount: boolean
+          allow_subscriptions: boolean
+          created_at: string
           created_by: string | null
-          current_amount: number | null
+          current_amount: number
           description: string | null
           end_date: string | null
           event_id: string | null
-          goal_amount: number | null
+          goal_amount: number
           id: string
           image_url: string | null
+          raised_amount: number
           slug: string
           start_date: string | null
-          status: string | null
+          status: string
           suggested_amounts: Json | null
           title: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          allow_custom_amount?: boolean | null
-          allow_subscriptions?: boolean | null
-          created_at?: string | null
+          allow_custom_amount?: boolean
+          allow_subscriptions?: boolean
+          created_at?: string
           created_by?: string | null
-          current_amount?: number | null
+          current_amount?: number
           description?: string | null
           end_date?: string | null
           event_id?: string | null
-          goal_amount?: number | null
+          goal_amount: number
           id?: string
           image_url?: string | null
+          raised_amount?: number
           slug: string
           start_date?: string | null
-          status?: string | null
+          status?: string
           suggested_amounts?: Json | null
           title: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          allow_custom_amount?: boolean | null
-          allow_subscriptions?: boolean | null
-          created_at?: string | null
+          allow_custom_amount?: boolean
+          allow_subscriptions?: boolean
+          created_at?: string
           created_by?: string | null
-          current_amount?: number | null
+          current_amount?: number
           description?: string | null
           end_date?: string | null
           event_id?: string | null
-          goal_amount?: number | null
+          goal_amount?: number
           id?: string
           image_url?: string | null
+          raised_amount?: number
           slug?: string
           start_date?: string | null
-          status?: string | null
+          status?: string
           suggested_amounts?: Json | null
           title?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "campaigns_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "organizers"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "campaigns_event_id_fkey"
             columns: ["event_id"]
@@ -133,42 +124,33 @@ export type Database = {
       donation_subscriptions: {
         Row: {
           amount: number
-          asaas_subscription_id: string | null
-          campaign_id: string | null
-          created_at: string | null
-          donation_id: string | null
+          campaign_id: string
+          created_at: string
+          donor_email: string
+          donor_name: string
           id: string
-          next_charge_date: string | null
-          status: string | null
-          subscriber_email: string
-          total_charges: number | null
-          updated_at: string | null
+          status: string
+          updated_at: string
         }
         Insert: {
           amount: number
-          asaas_subscription_id?: string | null
-          campaign_id?: string | null
-          created_at?: string | null
-          donation_id?: string | null
+          campaign_id: string
+          created_at?: string
+          donor_email: string
+          donor_name: string
           id?: string
-          next_charge_date?: string | null
-          status?: string | null
-          subscriber_email: string
-          total_charges?: number | null
-          updated_at?: string | null
+          status?: string
+          updated_at?: string
         }
         Update: {
           amount?: number
-          asaas_subscription_id?: string | null
-          campaign_id?: string | null
-          created_at?: string | null
-          donation_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          donor_email?: string
+          donor_name?: string
           id?: string
-          next_charge_date?: string | null
-          status?: string | null
-          subscriber_email?: string
-          total_charges?: number | null
-          updated_at?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -178,60 +160,44 @@ export type Database = {
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "donation_subscriptions_donation_id_fkey"
-            columns: ["donation_id"]
-            isOneToOne: false
-            referencedRelation: "donations"
-            referencedColumns: ["id"]
-          },
         ]
       }
       donations: {
         Row: {
           amount: number
-          asaas_subscription_id: string | null
           campaign_id: string
-          created_at: string | null
+          created_at: string
           donation_type: string
-          donor_email: string | null
-          donor_name: string | null
+          donor_email: string
+          donor_name: string
           donor_phone: string | null
           id: string
-          payment_id: string | null
-          payment_status: string | null
-          split_data: Json | null
-          updated_at: string | null
+          payment_status: string
+          updated_at: string
         }
         Insert: {
           amount: number
-          asaas_subscription_id?: string | null
           campaign_id: string
-          created_at?: string | null
+          created_at?: string
           donation_type?: string
-          donor_email?: string | null
-          donor_name?: string | null
+          donor_email: string
+          donor_name: string
           donor_phone?: string | null
           id?: string
-          payment_id?: string | null
-          payment_status?: string | null
-          split_data?: Json | null
-          updated_at?: string | null
+          payment_status?: string
+          updated_at?: string
         }
         Update: {
           amount?: number
-          asaas_subscription_id?: string | null
           campaign_id?: string
-          created_at?: string | null
+          created_at?: string
           donation_type?: string
-          donor_email?: string | null
-          donor_name?: string | null
+          donor_email?: string
+          donor_name?: string
           donor_phone?: string | null
           id?: string
-          payment_id?: string | null
-          payment_status?: string | null
-          split_data?: Json | null
-          updated_at?: string | null
+          payment_status?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -339,47 +305,30 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
-          last_attempt_at: string | null
-          max_retries: number
-          patient_id: string
           payload: Json
-          retries: number
+          processed_at: string | null
+          retry_count: number
           status: string
-          updated_at: string
         }
         Insert: {
           created_at?: string
           error_message?: string | null
           id?: string
-          last_attempt_at?: string | null
-          max_retries?: number
-          patient_id: string
           payload: Json
-          retries?: number
+          processed_at?: string | null
+          retry_count?: number
           status?: string
-          updated_at?: string
         }
         Update: {
           created_at?: string
           error_message?: string | null
           id?: string
-          last_attempt_at?: string | null
-          max_retries?: number
-          patient_id?: string
           payload?: Json
-          retries?: number
+          processed_at?: string | null
+          retry_count?: number
           status?: string
-          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "instituto_integration_queue_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       organizers: {
         Row: {
@@ -453,26 +402,29 @@ export type Database = {
         Row: {
           created_at: string
           event_date_id: string
-          expires_at: string
+          expires_at: string | null
           id: string
           patient_id: string
           token: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
           event_date_id: string
-          expires_at?: string
+          expires_at?: string | null
           id?: string
           patient_id: string
           token: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
           event_date_id?: string
-          expires_at?: string
+          expires_at?: string | null
           id?: string
           patient_id?: string
           token?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -575,6 +527,33 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           created_at: string
@@ -582,7 +561,7 @@ export type Database = {
           id: string
           key: string
           updated_at: string
-          value: string
+          value: Json | null
         }
         Insert: {
           created_at?: string
@@ -590,7 +569,7 @@ export type Database = {
           id?: string
           key: string
           updated_at?: string
-          value: string
+          value?: Json | null
         }
         Update: {
           created_at?: string
@@ -598,7 +577,7 @@ export type Database = {
           id?: string
           key?: string
           updated_at?: string
-          value?: string
+          value?: Json | null
         }
         Relationships: []
       }
@@ -615,27 +594,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_organizer_email: {
-        Args: { email_to_check: string }
-        Returns: boolean
-      }
-      is_organizer_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      process_integration_queue: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          patient_id: string
-          payload: Json
-          queue_id: string
-          retries: number
-        }[]
-      }
-      update_queue_status: {
-        Args: { error_msg?: string; new_status: string; queue_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
       [_ in never]: never
@@ -645,126 +603,3 @@ export type Database = {
     }
   }
 }
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
