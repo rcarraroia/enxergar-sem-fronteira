@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Clock, Users, Eye, ArrowRight, RefreshCw } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
-import { formatTime, formatDate } from '@/utils/timeFormat';
+import { formatTime, formatDate } from '@/utils/dateUtils';
 
 const EventsSection = () => {
   const { data: events, isLoading, refetch, isFetching } = useEvents();

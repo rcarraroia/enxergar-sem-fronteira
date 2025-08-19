@@ -39,6 +39,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { formatDate, formatTimeRange } from '@/utils/dateUtils'
 
 type ViewMode = 'list' | 'create' | 'edit'
 
@@ -100,11 +101,7 @@ const AdminEvents = () => {
     return <Badge variant="default">Aberto</Badge>
   }
 
-  const formatDate = (dateString: string) => {
-    // Corrigir formatação de data para evitar problemas de fuso horário
-    const [year, month, day] = dateString.split('-')
-    return `${day}/${month}/${year}`
-  }
+
 
   if (viewMode === 'create') {
     return (
@@ -258,7 +255,7 @@ const AdminEvents = () => {
                               </div>
                               <div className="flex items-center gap-1 text-muted-foreground ml-4">
                                 <Clock className="h-3 w-3" />
-                                {date.start_time} - {date.end_time}
+                                {formatTimeRange(date.start_time, date.end_time)}
                               </div>
                             </div>
                           ))}

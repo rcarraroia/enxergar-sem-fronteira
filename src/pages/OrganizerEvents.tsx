@@ -21,8 +21,7 @@ import {
 } from 'lucide-react'
 import { useOrganizerEvents } from '@/hooks/useOrganizerEvents'
 import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { formatDate, formatTimeRange } from '@/utils/dateUtils'
 import { 
   Select,
   SelectContent,
@@ -168,7 +167,7 @@ const OrganizerEvents = () => {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span>
-                          {format(new Date(event.event_dates[0].date), 'dd/MM/yyyy', { locale: ptBR })}
+                          {formatDate(event.event_dates[0].date)}
                         </span>
                       </div>
                     )}

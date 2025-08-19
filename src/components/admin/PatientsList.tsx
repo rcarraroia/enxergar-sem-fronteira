@@ -50,6 +50,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { formatDate, formatTimeRange, formatDateTimeRange } from '@/utils/dateUtils'
 
 export const PatientsList: React.FC = () => {
   const { data: patients, isLoading, refetch } = usePatients()
@@ -272,7 +273,7 @@ export const PatientsList: React.FC = () => {
       <body>
         <div class="header">
           <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
-          <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+          <p>Gerado em: ${formatDate(new Date().toISOString().split('T')[0])} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
         </div>
         
         <div class="filters">
@@ -307,7 +308,7 @@ export const PatientsList: React.FC = () => {
                   <div>📞 ${patient.telefone}</div>
                 </td>
                 <td>
-                  ${patient.data_nascimento ? new Date(patient.data_nascimento).toLocaleDateString('pt-BR') : '-'}
+                  ${patient.data_nascimento ? formatDate(patient.data_nascimento) : '-'}
                   ${patient.diagnostico ? `<br><small>${patient.diagnostico.slice(0, 50)}${patient.diagnostico.length > 50 ? '...' : ''}</small>` : ''}
                 </td>
                 <td>
@@ -316,8 +317,8 @@ export const PatientsList: React.FC = () => {
                       <div class="registration">
                         <strong>${reg.event_date?.event?.title || 'N/A'}</strong><br>
                         📍 ${reg.event_date?.event?.city?.trim() || 'N/A'}<br>
-                        📅 ${reg.event_date?.date ? new Date(reg.event_date.date).toLocaleDateString('pt-BR') : 'N/A'} 
-                        ⏰ ${reg.event_date?.start_time?.slice(0, 5) || ''}-${reg.event_date?.end_time?.slice(0, 5) || ''}<br>
+                        📅 ${reg.event_date?.date ? formatDate(reg.event_date.date) : 'N/A'} 
+                        ⏰ ${formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}<br>
                         <span class="badge ${reg.status === 'confirmed' ? 'badge-confirmed' : 'badge-pending'}">
                           ${reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
                         </span>
@@ -330,7 +331,7 @@ export const PatientsList: React.FC = () => {
                     ${patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
                   </span>
                 </td>
-                <td>${new Date(patient.created_at).toLocaleDateString('pt-BR')}</td>
+                <td>${formatDate(patient.created_at.split('T')[0])}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -377,7 +378,7 @@ export const PatientsList: React.FC = () => {
       headers.join(','),
       ...filteredPatients.map(patient => {
         const inscricoes = patient.registrations.map(reg => 
-          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${new Date(reg.event_date?.date || '').toLocaleDateString('pt-BR')} ${reg.event_date?.start_time?.slice(0, 5)}-${reg.event_date?.end_time?.slice(0, 5)}`
+          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${formatDateTimeRange(reg.event_date?.date || '', reg.event_date?.start_time || '', reg.event_date?.end_time || '')}`
         ).join('; ')
         
         return [
@@ -385,10 +386,10 @@ export const PatientsList: React.FC = () => {
           `"${patient.cpf}"`,
           `"${patient.email}"`,
           `"${patient.telefone}"`,
-          patient.data_nascimento ? `"${new Date(patient.data_nascimento).toLocaleDateString('pt-BR')}"` : '""',
+          patient.data_nascimento ? `"${formatDate(patient.data_nascimento)}"` : '""',
           `"${patient.diagnostico || ''}"`,
           `"${patient.consentimento_lgpd ? 'Sim' : 'Não'}"`,
-          `"${new Date(patient.created_at).toLocaleDateString('pt-BR')}"`,
+          `"${formatDate(patient.created_at.split('T')[0])}"`,
           `"${inscricoes}"`
         ].join(',')
       })
@@ -404,7 +405,7 @@ export const PatientsList: React.FC = () => {
     if (selectedCity !== 'all') fileName += `_${selectedCity}`
     if (selectedEvent !== 'all') fileName += '_evento'
     if (selectedDate !== 'all') fileName += '_data'
-    fileName += `_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`
+    fileName += `_${formatDate(new Date().toISOString().split('T')[0]).replace(/\//g, '-')}.csv`
     
     link.setAttribute('download', fileName)
     link.style.visibility = 'hidden'
@@ -508,9 +509,9 @@ export const PatientsList: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Clock className="h-3 w-3" />
                       <div className="flex flex-col">
-                        <span>{new Date(date.date).toLocaleDateString('pt-BR')}</span>
+                        <span>{formatDate(date.date)}</span>
                         <span className="text-xs text-muted-foreground">
-                          {date.start_time.slice(0, 5)} - {date.end_time.slice(0, 5)}
+                          {formatTimeRange(date.start_time, date.end_time)}
                         </span>
                       </div>
                     </div>
@@ -626,7 +627,7 @@ export const PatientsList: React.FC = () => {
                         {patient.data_nascimento && (
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(patient.data_nascimento).toLocaleDateString('pt-BR')}
+                            {formatDate(patient.data_nascimento)}
                           </div>
                         )}
                         {patient.diagnostico && (
@@ -652,10 +653,10 @@ export const PatientsList: React.FC = () => {
                               </div>
                               <div className="text-muted-foreground flex items-center gap-1">
                                 <Calendar className="h-2 w-2" />
-                                {new Date(reg.event_date?.date || '').toLocaleDateString('pt-BR')}
+                                {formatDate(reg.event_date?.date || '')}
                                 <span className="mx-1">•</span>
                                 <Clock className="h-2 w-2" />
-                                {reg.event_date?.start_time?.slice(0, 5)} - {reg.event_date?.end_time?.slice(0, 5)}
+                                {formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}
                               </div>
                               <Badge 
                                 variant={reg.status === 'confirmed' ? 'default' : 'secondary'}
@@ -680,7 +681,7 @@ export const PatientsList: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(patient.created_at).toLocaleDateString('pt-BR')}
+                        {formatDate(patient.created_at.split('T')[0])}
                       </div>
                     </TableCell>
                     <TableCell>
