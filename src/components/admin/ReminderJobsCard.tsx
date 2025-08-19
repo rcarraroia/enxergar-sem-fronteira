@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -42,9 +41,9 @@ export const ReminderJobsCard = () => {
   const handleCreateReminders = async () => {
     try {
       await triggerReminders.mutateAsync({
-        type: 'reminder',
+        type: reminderType === 'confirmation' ? 'confirmation' : 'reminder',
         timestamp: new Date().toISOString(),
-        reminderType
+        reminderType: reminderType === 'confirmation' ? '24h' : reminderType
       })
       setIsCreateDialogOpen(false)
     } catch (error) {
@@ -92,7 +91,10 @@ export const ReminderJobsCard = () => {
                 <div className="space-y-4 py-4">
                   <div>
                     <Label htmlFor="reminderType">Tipo de Lembrete</Label>
-                    <Select value={reminderType} onValueChange={(value: '24h' | '48h' | 'confirmation') => setReminderType(value)}>
+                    <Select 
+                      value={reminderType} 
+                      onValueChange={(value: '24h' | '48h' | 'confirmation') => setReminderType(value)}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
