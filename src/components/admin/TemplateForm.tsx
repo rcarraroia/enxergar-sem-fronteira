@@ -1,4 +1,3 @@
-
 /**
  * Template Form Component
  * Form for creating and editing notification templates
@@ -139,40 +138,116 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
       let response
       
       if (formData.type === 'email') {
-        // Use the existing send-email function
+        // Create temporary template in database for testing
+        const tempTemplate = {
+          name: `test_template_${Date.now()}`,
+          type: 'email' as const,
+          subject: formData.subject,
+          content: formData.content,
+          is_active: true
+        }
+
+        // Insert temporary template
+        const { data: insertedTemplate, error: insertError } = await supabase
+          .from('notification_templates')
+          .insert(tempTemplate)
+          .select()
+          .single()
+
+        if (insertError) {
+          throw new Error(`Erro ao criar template temporário: ${insertError.message}`)
+        }
+
+        // Send email using the template
         response = await supabase.functions.invoke('send-email', {
           body: {
-            templateName: `test_${formData.name}`,
+            templateId: insertedTemplate.id,
             templateData: testData,
             recipientEmail: testContact,
             recipientName: testData.patient_name,
-            testMode: true,
-            customTemplate: {
-              subject: formData.subject,
-              content: formData.content
-            }
+            testMode: true
           }
         })
+
+        // Clean up temporary template
+        await supabase
+          .from('notification_templates')
+          .delete()
+          .eq('id', insertedTemplate.id)
+
       } else if (formData.type === 'sms') {
-        // Use the existing send-sms function
+        // Create temporary SMS template
+        const tempTemplate = {
+          name: `test_sms_template_${Date.now()}`,
+          type: 'sms' as const,
+          content: formData.content,
+          is_active: true
+        }
+
+        // Insert temporary template
+        const { data: insertedTemplate, error: insertError } = await supabase
+          .from('notification_templates')
+          .insert(tempTemplate)
+          .select()
+          .single()
+
+        if (insertError) {
+          throw new Error(`Erro ao criar template temporário: ${insertError.message}`)
+        }
+
+        // Send SMS using the template
         response = await supabase.functions.invoke('send-sms', {
           body: {
-            to: testContact,
-            message: formData.content,
+            templateId: insertedTemplate.id,
             templateData: testData,
+            recipientPhone: testContact,
+            recipientName: testData.patient_name,
             testMode: true
           }
         })
+
+        // Clean up temporary template
+        await supabase
+          .from('notification_templates')
+          .delete()
+          .eq('id', insertedTemplate.id)
+
       } else if (formData.type === 'whatsapp') {
-        // Use the existing send-whatsapp function
+        // Create temporary WhatsApp template
+        const tempTemplate = {
+          name: `test_whatsapp_template_${Date.now()}`,
+          type: 'whatsapp' as const,
+          content: formData.content,
+          is_active: true
+        }
+
+        // Insert temporary template
+        const { data: insertedTemplate, error: insertError } = await supabase
+          .from('notification_templates')
+          .insert(tempTemplate)
+          .select()
+          .single()
+
+        if (insertError) {
+          throw new Error(`Erro ao criar template temporário: ${insertError.message}`)
+        }
+
+        // Send WhatsApp using the template
         response = await supabase.functions.invoke('send-whatsapp', {
           body: {
-            to: testContact,
-            message: formData.content,
+            templateId: insertedTemplate.id,
             templateData: testData,
+            recipientPhone: testContact,
+            recipientName: testData.patient_name,
             testMode: true
           }
         })
+
+        // Clean up temporary template
+        await supabase
+          .from('notification_templates')
+          .delete()
+          .eq('id', insertedTemplate.id)
       }
 
       if (response?.error) {
