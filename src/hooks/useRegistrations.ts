@@ -27,6 +27,7 @@ export interface Registration {
       title: string
       location: string
       address: string
+      city: string
     }
   }
 }
@@ -63,7 +64,8 @@ export const useRegistrations = (eventId?: string) => {
               id,
               title,
               location,
-              address
+              address,
+              city
             )
           )
         `)

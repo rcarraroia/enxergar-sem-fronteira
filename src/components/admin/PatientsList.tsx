@@ -60,43 +60,9 @@ export const PatientsList: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('all')
   const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
 
-  // Debug logs e verificação direta do banco
+  // Debug logs
   React.useEffect(() => {
-    console.log('🔍 Debug - Dados carregados:')
-    console.log('Patients:', patients?.length || 0)
-    console.log('Registrations:', registrations?.length || 0)
-    console.log('Events:', events?.length || 0)
-    console.log('Events data:', events)
-    console.log('Registrations data:', registrations)
-
-    // Verificação direta do banco
-    const checkDatabase = async () => {
-      try {
-        const { data: patientsData, error: patientsError } = await supabase
-          .from('patients')
-          .select('*')
-          .limit(5)
-
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('events')
-          .select('*')
-          .limit(5)
-
-        const { data: registrationsData, error: registrationsError } = await supabase
-          .from('registrations')
-          .select('*')
-          .limit(5)
-
-        console.log('🔍 Verificação direta do banco:')
-        console.log('Pacientes direto:', patientsData?.length || 0, patientsError)
-        console.log('Eventos direto:', eventsData?.length || 0, eventsError)
-        console.log('Registrações direto:', registrationsData?.length || 0, registrationsError)
-      } catch (error) {
-        console.error('❌ Erro na verificação direta:', error)
-      }
-    }
-
-    checkDatabase()
+    console.log('🔍 Dados carregados - Patients:', patients?.length || 0, 'Registrations:', registrations?.length || 0, 'Events:', events?.length || 0)
   }, [patients, registrations, events])
 
   // Extrair cidades únicas dos eventos
@@ -145,7 +111,7 @@ export const PatientsList: React.FC = () => {
     if (!patients || !registrations) return []
     
     const result = patients.map(patient => {
-      const patientRegistrations = registrations.filter(reg => reg.patient.id === patient.id)
+      const patientRegistrations = registrations.filter(reg => reg.patient?.id === patient.id)
       return {
         ...patient,
         registrations: patientRegistrations
@@ -154,6 +120,12 @@ export const PatientsList: React.FC = () => {
     
     console.log('👥 Pacientes com inscrições:', result.length)
     console.log('Exemplo de paciente com inscrições:', result[0])
+    console.log('Exemplo de registração:', registrations[0])
+    console.log('Estrutura da registração:', {
+      patient: registrations[0]?.patient,
+      event_date: registrations[0]?.event_date,
+      event: registrations[0]?.event_date?.event
+    })
     return result
   }, [patients, registrations])
 
@@ -161,42 +133,61 @@ export const PatientsList: React.FC = () => {
   const filteredPatients = React.useMemo(() => {
     let filtered = patientsWithRegistrations
 
+    console.log('🔍 Iniciando filtros com', filtered.length, 'pacientes')
+    console.log('Filtros ativos:', { searchTerm, selectedCity, selectedEvent, selectedDate })
+
     // Filtro por texto
     if (searchTerm) {
+      const beforeCount = filtered.length
       filtered = filtered.filter(patient => 
         patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.cpf.includes(searchTerm.replace(/\D/g, ''))
       )
+      console.log(`📝 Filtro por texto: ${beforeCount} → ${filtered.length}`)
     }
 
     // Filtro por cidade
     if (selectedCity !== 'all') {
-      filtered = filtered.filter(patient => 
-        patient.registrations.some(reg => 
-          reg.event_date?.event?.city === selectedCity
-        )
-      )
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasCity = patient.registrations.some(reg => {
+          const eventCity = reg.event_date?.event?.city
+          console.log(`Comparando cidade: "${eventCity}" === "${selectedCity}"`)
+          return eventCity === selectedCity
+        })
+        return hasCity
+      })
+      console.log(`🏙️ Filtro por cidade "${selectedCity}": ${beforeCount} → ${filtered.length}`)
     }
 
     // Filtro por evento
     if (selectedEvent !== 'all') {
-      filtered = filtered.filter(patient => 
-        patient.registrations.some(reg => 
-          reg.event_date?.event?.id === selectedEvent
-        )
-      )
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasEvent = patient.registrations.some(reg => {
+          const eventId = reg.event_date?.event?.id
+          return eventId === selectedEvent
+        })
+        return hasEvent
+      })
+      console.log(`📅 Filtro por evento "${selectedEvent}": ${beforeCount} → ${filtered.length}`)
     }
 
     // Filtro por data específica
     if (selectedDate !== 'all') {
-      filtered = filtered.filter(patient => 
-        patient.registrations.some(reg => 
-          reg.event_date?.id === selectedDate
-        )
-      )
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasDate = patient.registrations.some(reg => {
+          const dateId = reg.event_date?.id
+          return dateId === selectedDate
+        })
+        return hasDate
+      })
+      console.log(`📆 Filtro por data "${selectedDate}": ${beforeCount} → ${filtered.length}`)
     }
 
+    console.log('✅ Resultado final dos filtros:', filtered.length, 'pacientes')
     return filtered
   }, [patientsWithRegistrations, searchTerm, selectedCity, selectedEvent, selectedDate])
 
