@@ -45,7 +45,8 @@ import {
   Trash2,
   MapPin,
   Clock,
-  Filter
+  Filter,
+  FileDown
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -243,6 +244,120 @@ export const PatientsList: React.FC = () => {
     }
   }
 
+  const handleExportPDF = () => {
+    if (!filteredPatients.length) return
+
+    // Criar conteúdo HTML para o PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Lista de Pacientes</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+          th { background-color: #f2f2f2; font-weight: bold; }
+          .patient-name { font-weight: bold; }
+          .registration { margin-bottom: 5px; font-size: 10px; }
+          .badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+          .badge-confirmed { background: #d4edda; color: #155724; }
+          .badge-pending { background: #f8d7da; color: #721c24; }
+          .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
+          <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+        </div>
+        
+        <div class="filters">
+          <strong>Filtros aplicados:</strong>
+          ${selectedCity !== 'all' ? `Cidade: ${selectedCity} | ` : ''}
+          ${selectedEvent !== 'all' ? `Evento específico | ` : ''}
+          ${selectedDate !== 'all' ? `Data específica | ` : ''}
+          ${searchTerm ? `Busca: "${searchTerm}" | ` : ''}
+          <strong>Total: ${filteredPatients.length} paciente(s)</strong>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Contato</th>
+              <th>Data Nasc.</th>
+              <th>Inscrições</th>
+              <th>LGPD</th>
+              <th>Cadastro</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredPatients.map(patient => `
+              <tr>
+                <td>
+                  <div class="patient-name">${patient.nome}</div>
+                  <div>CPF: ${patient.cpf}</div>
+                </td>
+                <td>
+                  <div>📧 ${patient.email}</div>
+                  <div>📞 ${patient.telefone}</div>
+                </td>
+                <td>
+                  ${patient.data_nascimento ? new Date(patient.data_nascimento).toLocaleDateString('pt-BR') : '-'}
+                  ${patient.diagnostico ? `<br><small>${patient.diagnostico.slice(0, 50)}${patient.diagnostico.length > 50 ? '...' : ''}</small>` : ''}
+                </td>
+                <td>
+                  ${patient.registrations.length === 0 ? 'Nenhuma inscrição' : 
+                    patient.registrations.map(reg => `
+                      <div class="registration">
+                        <strong>${reg.event_date?.event?.title || 'N/A'}</strong><br>
+                        📍 ${reg.event_date?.event?.city?.trim() || 'N/A'}<br>
+                        📅 ${reg.event_date?.date ? new Date(reg.event_date.date).toLocaleDateString('pt-BR') : 'N/A'} 
+                        ⏰ ${reg.event_date?.start_time?.slice(0, 5) || ''}-${reg.event_date?.end_time?.slice(0, 5) || ''}<br>
+                        <span class="badge ${reg.status === 'confirmed' ? 'badge-confirmed' : 'badge-pending'}">
+                          ${reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                        </span>
+                      </div>
+                    `).join('')
+                  }
+                </td>
+                <td>
+                  <span class="badge ${patient.consentimento_lgpd ? 'badge-confirmed' : 'badge-pending'}">
+                    ${patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
+                  </span>
+                </td>
+                <td>${new Date(patient.created_at).toLocaleDateString('pt-BR')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>Documento gerado automaticamente pelo sistema Enxergar sem Fronteiras</p>
+          <p>Total de registros: ${filteredPatients.length}</p>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Criar e baixar o PDF
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+      
+      // Aguardar o carregamento e imprimir
+      printWindow.onload = () => {
+        printWindow.print()
+        printWindow.close()
+      }
+    }
+  }
+
   const handleExportCSV = () => {
     if (!filteredPatients.length) return
 
@@ -424,10 +539,16 @@ export const PatientsList: React.FC = () => {
                 </Button>
               )}
             </div>
-            <Button onClick={handleExportCSV} variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar CSV
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleExportCSV} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                CSV
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FileDown className="h-4 w-4 mr-2" />
+                PDF
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -470,7 +591,7 @@ export const PatientsList: React.FC = () => {
                 <TableRow>
                   <TableHead>Paciente</TableHead>
                   <TableHead>Contato</TableHead>
-                  <TableHead>Informações</TableHead>
+                  <TableHead>Data de Nasc.</TableHead>
                   <TableHead>Inscrições</TableHead>
                   <TableHead>LGPD</TableHead>
                   <TableHead>Data Cadastro</TableHead>
