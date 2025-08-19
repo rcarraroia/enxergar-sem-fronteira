@@ -29,7 +29,7 @@ const patientSchema = z.object({
   telefone: z.string()
     .min(10, 'Telefone deve ter pelo menos 10 dígitos')
     .max(15, 'Telefone muito longo')
-    .regex(/^[\d\s\-\(\)]+$/, 'Formato de telefone inválido'),
+    .regex(/^[\d\s\-()]+$/, 'Formato de telefone inválido'),
   cpf: z.string()
     .min(11, 'CPF deve ter 11 dígitos')
     .refine((cpf) => validateCPF(cpf), 'CPF inválido'),
@@ -96,7 +96,7 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
     if (eventId && eventDateId) {
       fetchEventInfo()
     }
-  }, [eventId, eventDateId])
+  }, [eventId, eventDateId, fetchEventInfo])
 
   // Validação em tempo real do CPF
   useEffect(() => {

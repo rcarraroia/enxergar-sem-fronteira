@@ -13,7 +13,7 @@ const validateCPF = (cpf: string): boolean => {
     sum += parseInt(cleanCPF[i]) * (10 - i)
   }
   let remainder = sum % 11
-  let digit1 = remainder < 2 ? 0 : 11 - remainder
+  const digit1 = remainder < 2 ? 0 : 11 - remainder
   
   if (parseInt(cleanCPF[9]) !== digit1) return false
   
@@ -22,7 +22,7 @@ const validateCPF = (cpf: string): boolean => {
     sum += parseInt(cleanCPF[i]) * (11 - i)
   }
   remainder = sum % 11
-  let digit2 = remainder < 2 ? 0 : 11 - remainder
+  const digit2 = remainder < 2 ? 0 : 11 - remainder
   
   return parseInt(cleanCPF[10]) === digit2
 }
@@ -46,7 +46,7 @@ export const patientValidationSchema = z.object({
   telefone: z.string()
     .min(10, 'Telefone deve ter pelo menos 10 dígitos')
     .max(15, 'Telefone muito longo')
-    .regex(/^[\d\s\-\(\)]+$/, 'Formato de telefone inválido'),
+    .regex(/^[\d\s\-()]+$/, 'Formato de telefone inválido'),
     
   data_nascimento: z.string()
     .optional()
@@ -127,7 +127,7 @@ export const organizerValidationSchema = z.object({
   phone: z.string()
     .min(10, 'Telefone deve ter pelo menos 10 dígitos')
     .max(15, 'Telefone muito longo')
-    .regex(/^[\d\s\-\(\)]+$/, 'Formato de telefone inválido')
+    .regex(/^[\d\s\-()]+$/, 'Formato de telefone inválido')
     .optional(),
     
   address: z.string()
@@ -162,11 +162,13 @@ export const validateData = <T>(schema: z.ZodSchema<T>, data: unknown): {
 // Formatadores melhorados
 export const formatters = {
   cpf: (value: string): string => {
+    if (!value) return ''
     const cleanValue = value.replace(/\D/g, '')
     return cleanValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
   },
   
   phone: (value: string): string => {
+    if (!value) return ''
     const cleanValue = value.replace(/\D/g, '')
     if (cleanValue.length === 11) {
       return cleanValue.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')

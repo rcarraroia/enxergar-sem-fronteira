@@ -76,7 +76,7 @@ serve(async (req) => {
     }
 
     let jobsCreated = 0
-    let errors: string[] = []
+    const errors: string[] = []
 
     if (body.type === 'reminder') {
       // Find upcoming events that need reminders

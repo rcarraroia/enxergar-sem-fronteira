@@ -88,7 +88,7 @@ serve(async (req) => {
     }
 
     let processed = 0
-    let errors: string[] = []
+    const errors: string[] = []
 
     // Process each job
     for (const job of jobs) {

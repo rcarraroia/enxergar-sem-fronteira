@@ -13,7 +13,7 @@ export interface Patient {
   consentimento_lgpd: boolean
   created_at: string
   updated_at: string
-  tags: any
+  tags: Record<string, unknown> | null
 }
 
 export const usePatients = () => {

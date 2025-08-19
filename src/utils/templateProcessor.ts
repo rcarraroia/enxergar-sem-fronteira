@@ -161,7 +161,7 @@ export function validateVariables(content: string, subject?: string): TemplateEr
   const variables = extractVariables(allContent)
   
   for (const variable of variables) {
-    if (!AVAILABLE_VARIABLES.hasOwnProperty(variable)) {
+    if (!Object.prototype.hasOwnProperty.call(AVAILABLE_VARIABLES, variable)) {
       errors.push({
         type: TemplateErrorType.VARIABLE_ERROR,
         message: `Variável desconhecida: {{${variable}}}`,

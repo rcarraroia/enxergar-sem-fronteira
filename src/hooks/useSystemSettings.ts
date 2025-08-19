@@ -80,7 +80,7 @@ export const useSystemSettings = () => {
     }
   }
 
-  const getSettingJSON = (key: string, defaultValue: any = {}): any => {
+  const getSettingJSON = (key: string, defaultValue: Record<string, unknown> = {}): Record<string, unknown> => {
     const setting = settings?.find(s => s.key === key)
     if (!setting) return defaultValue
     

@@ -237,9 +237,9 @@ export const PatientsList: React.FC = () => {
       
       // Atualizar a lista
       refetch()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Erro ao excluir paciente:', error)
-      toast.error('Erro ao excluir paciente: ' + (error.message || 'Erro desconhecido'))
+      toast.error('Erro ao excluir paciente: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
     } finally {
       setDeletingPatient(null)
     }

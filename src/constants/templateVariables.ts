@@ -234,7 +234,7 @@ export const getRequiredVariablesForType = (type: 'email' | 'whatsapp' | 'sms'):
 }
 
 export const isValidVariable = (variableName: string): boolean => {
-  return VARIABLE_VALIDATION_MAP.hasOwnProperty(variableName)
+  return Object.prototype.hasOwnProperty.call(VARIABLE_VALIDATION_MAP, variableName)
 }
 
 export const getVariableInfo = (variableName: string): TemplateVariable | undefined => {
