@@ -19,7 +19,7 @@ import { useSystemSettings } from '@/hooks/useSystemSettings'
 export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { user, signOut } = useAuth()
-  const { settings } = useSystemSettings()
+  const { getSettingValue } = useSystemSettings()
   const location = useLocation()
 
   const handleSignOut = async () => {
@@ -57,16 +57,19 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
     }
   ]
 
+  const logoHeader = getSettingValue('logo_header')
+  const projectName = getSettingValue('project_name', 'Organizador')
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar para desktop */}
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-grow pt-5 bg-white border-r border-gray-200 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4">
-            {settings.logo_header ? (
+            {logoHeader ? (
               <img 
-                src={settings.logo_header} 
-                alt={settings.project_name || 'Logo'} 
+                src={logoHeader} 
+                alt={projectName} 
                 className="h-8 w-auto"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
@@ -146,10 +149,10 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
             </div>
             <div className="flex-1 h-0 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4 py-5">
-                {settings.logo_header ? (
+                {logoHeader ? (
                   <img 
-                    src={settings.logo_header} 
-                    alt={settings.project_name || 'Logo'} 
+                    src={logoHeader} 
+                    alt={projectName} 
                     className="h-8 w-auto"
                   />
                 ) : (

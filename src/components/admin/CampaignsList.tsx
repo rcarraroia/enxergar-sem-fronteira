@@ -31,9 +31,16 @@ export const CampaignsList = () => {
     toast.success('Link da campanha copiado!')
   }
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active'
-    await updateCampaign.mutateAsync({ id, status: newStatus })
+  const handleToggleStatus = async (campaign: any) => {
+    const newStatus = campaign.status === 'active' ? 'paused' : 'active'
+    await updateCampaign.mutateAsync({ 
+      id: campaign.id, 
+      status: newStatus,
+      // Include required fields from the original campaign
+      slug: campaign.slug,
+      title: campaign.title,
+      goal_amount: campaign.goal_amount
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -172,7 +179,7 @@ export const CampaignsList = () => {
                             Ver Página
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleToggleStatus(campaign.id, campaign.status)}
+                            onClick={() => handleToggleStatus(campaign)}
                           >
                             {campaign.status === 'active' ? (
                               <>
@@ -205,4 +212,29 @@ export const CampaignsList = () => {
       </CardContent>
     </Card>
   )
+
+  function getStatusBadge(status: string) {
+    const variants = {
+      active: 'default',
+      paused: 'secondary',
+      ended: 'destructive'
+    } as const
+
+    const labels = {
+      active: 'Ativa',
+      paused: 'Pausada',
+      ended: 'Encerrada'
+    }
+
+    return (
+      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+        {labels[status as keyof typeof labels] || status}
+      </Badge>
+    )
+  }
+
+  function getProgressPercentage(current: number, goal: number | null) {
+    if (!goal || goal === 0) return 0
+    return Math.min((current / goal) * 100, 100)
+  }
 }

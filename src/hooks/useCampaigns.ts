@@ -21,6 +21,13 @@ interface Campaign {
   created_by?: string
   created_at: string
   updated_at: string
+  // Join with events table
+  events?: {
+    id: string
+    title: string
+    city: string
+    location: string
+  }
 }
 
 export interface CampaignFormData {
@@ -59,7 +66,15 @@ export const useCampaigns = () => {
     queryFn: async (): Promise<Campaign[]> => {
       const { data, error } = await supabase
         .from('campaigns')
-        .select('*')
+        .select(`
+          *,
+          events (
+            id,
+            title,
+            city,
+            location
+          )
+        `)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -121,13 +136,10 @@ export const useCampaigns = () => {
   })
 
   const updateCampaignMutation = useMutation({
-    mutationFn: async ({ id, ...campaignData }: CampaignFormData & { id: string }) => {
+    mutationFn: async ({ id, ...campaignData }: Partial<CampaignFormData> & { id: string }) => {
       const { data, error } = await supabase
         .from('campaigns')
-        .update({
-          ...campaignData,
-          suggested_amounts: campaignData.suggested_amounts || [25, 50, 100, 200]
-        })
+        .update(campaignData)
         .eq('id', id)
         .select()
         .single()
