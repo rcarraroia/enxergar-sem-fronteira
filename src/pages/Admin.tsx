@@ -1,23 +1,39 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { MetricCard } from '@/components/admin/MetricCard';
 import { QuickActions } from '@/components/admin/QuickActions';
 import { ActivityFeed } from '@/components/admin/ActivityFeed';
 import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard';
 import { ReminderJobsCard } from '@/components/admin/ReminderJobsCard';
 import { SystemHealthCard } from '@/components/admin/SystemHealthCard';
-import { AlertBanner } from '@/components/admin/AlertBanner';
 import { useAdminMetrics } from '@/hooks/useAdminMetrics';
+import { useRecentActivity } from '@/hooks/useRecentActivity';
 import { Users, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const { user } = useAuth();
-  const { metrics, isLoading } = useAdminMetrics();
+  const { data: metrics, isLoading } = useAdminMetrics();
+  const { data: activities = [] } = useRecentActivity();
+  const navigate = useNavigate();
 
   if (!user) return null;
+
+  const handleCreateEvent = () => {
+    navigate('/admin/events/new');
+  };
+
+  const handleViewTodayRegistrations = () => {
+    navigate('/admin/registrations?filter=today');
+  };
+
+  const handleExportReports = () => {
+    toast.info('Funcionalidade de exportação em desenvolvimento');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,38 +51,47 @@ const Admin = () => {
             </p>
           </div>
 
-          {/* System Alerts */}
-          <AlertBanner />
-
           {/* Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <MetricCard
               title="Total de Pacientes"
               value={metrics?.totalPatients || 0}
               icon={Users}
-              trend={5.2}
-              isLoading={isLoading}
+              trend={{
+                value: 5.2,
+                label: "vs mês anterior",
+                isPositive: true
+              }}
             />
             <MetricCard
               title="Eventos Ativos"
               value={metrics?.activeEvents || 0}
               icon={Calendar}
-              trend={2.1}
-              isLoading={isLoading}
+              trend={{
+                value: 2.1,
+                label: "vs semana anterior",
+                isPositive: true
+              }}
             />
             <MetricCard
               title="Inscrições Este Mês"
-              value={metrics?.registrationsThisMonth || 0}
+              value={metrics?.thisWeekRegistrations || 0}
               icon={TrendingUp}
-              trend={12.5}
-              isLoading={isLoading}
+              trend={{
+                value: 12.5,
+                label: "vs mês anterior",
+                isPositive: true
+              }}
             />
             <MetricCard
-              title="Notificações Enviadas"
-              value={metrics?.notificationsSent || 0}
+              title="Taxa de Ocupação"
+              value={`${metrics?.occupancyRate || 0}%`}
               icon={MessageSquare}
-              trend={8.3}
-              isLoading={isLoading}
+              trend={{
+                value: 8.3,
+                label: "vs média anterior",
+                isPositive: true
+              }}
             />
           </div>
 
@@ -74,13 +99,17 @@ const Admin = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Actions & Health */}
             <div className="space-y-6">
-              <QuickActions />
+              <QuickActions 
+                onCreateEvent={handleCreateEvent}
+                onViewTodayRegistrations={handleViewTodayRegistrations}
+                onExportReports={handleExportReports}
+              />
               <SystemHealthCard />
             </div>
 
             {/* Middle Column - Activity Feed */}
             <div>
-              <ActivityFeed />
+              <ActivityFeed activities={activities} />
             </div>
 
             {/* Right Column - Templates & Jobs */}
