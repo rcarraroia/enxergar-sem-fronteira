@@ -89,26 +89,6 @@ export const useOrganizers = () => {
         throw new Error('Organizador já existe')
       }
 
-      // Se foi fornecida uma senha, criar conta de usuário no Supabase Auth
-      let userId = null
-      if (organizerData.password) {
-        console.log('🔐 Criando conta de usuário com senha...')
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: organizerData.email,
-          password: organizerData.password,
-          email_confirm: true
-        })
-
-        if (authError) {
-          console.error('❌ Erro ao criar usuário:', authError)
-          toast.error('Erro ao criar conta de usuário: ' + authError.message)
-          throw authError
-        }
-
-        userId = authData.user?.id
-        console.log('✅ Usuário criado com ID:', userId)
-      }
-
       // Gerar token de convite
       const invitationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       const expiresAt = new Date()
@@ -117,10 +97,9 @@ export const useOrganizers = () => {
       const { data, error } = await supabase
         .from('organizers')
         .insert({
-          id: userId || undefined, // Usar o ID do usuário criado se disponível
           name: organizerData.name,
           email: organizerData.email,
-          status: 'active',
+          status: 'active', // Criar como ativo para que possa fazer login imediatamente
           invitation_token: invitationToken,
           invitation_expires_at: expiresAt.toISOString()
         })
@@ -135,9 +114,9 @@ export const useOrganizers = () => {
       console.log('✅ Organizador criado com sucesso:', data)
       
       if (organizerData.password) {
-        toast.success('Organizador criado com sucesso! Conta de usuário também foi criada.')
+        toast.success('Organizador criado com sucesso! O organizador pode fazer login usando o email cadastrado e a opção "Esqueci minha senha" para definir uma nova senha.')
       } else {
-        toast.success('Organizador criado com sucesso! Convite enviado por email.')
+        toast.success('Organizador criado com sucesso! O organizador pode fazer login usando o email cadastrado.')
       }
 
       await fetchOrganizers()

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink, Eye, EyeOff } from 'lucide-react'
+import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink, Eye, EyeOff, Info } from 'lucide-react'
 import { useOrganizers } from '@/hooks/useOrganizers'
 import { toast } from 'sonner'
 
@@ -144,8 +144,7 @@ const AdminOrganizers = () => {
             <DialogHeader>
               <DialogTitle>Criar Novo Organizador</DialogTitle>
               <DialogDescription>
-                Preencha os dados do organizador. Se definir uma senha, uma conta será criada automaticamente.
-                O organizador poderá fazer login usando o email cadastrado.
+                Preencha os dados do organizador. O organizador poderá fazer login usando o email cadastrado.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -170,37 +169,25 @@ const AdminOrganizers = () => {
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  O organizador poderá fazer login usando este email
+                  O organizador poderá fazer login usando este email e a opção "Esqueci minha senha"
                 </p>
               </div>
-              <div>
-                <Label htmlFor="password">Senha (Opcional)</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="Deixe em branco para enviar convite por email"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Como o organizador vai acessar:</p>
+                    <ol className="space-y-1 text-xs">
+                      <li>1. Acesse /auth com o email cadastrado</li>
+                      <li>2. Clique em "Esqueci minha senha"</li>
+                      <li>3. Defina uma nova senha pelo email</li>
+                      <li>4. Faça login normalmente</li>
+                    </ol>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Se definir uma senha, uma conta será criada automaticamente. Caso contrário, um convite será enviado por email.
-                </p>
               </div>
+
               <div className="flex gap-2 pt-4">
                 <Button 
                   type="button" 
@@ -379,8 +366,9 @@ const AdminOrganizers = () => {
                 <ol className="text-sm text-blue-800 space-y-1">
                   <li>1. O organizador deve estar cadastrado na tabela com status "Ativo"</li>
                   <li>2. Fazer login na página /auth usando o email cadastrado</li>
-                  <li>3. Será redirecionado automaticamente para /organizer</li>
-                  <li>4. O sistema identifica automaticamente o papel baseado no cadastro</li>
+                  <li>3. Se for o primeiro acesso, usar "Esqueci minha senha" para definir senha</li>
+                  <li>4. Será redirecionado automaticamente para /organizer</li>
+                  <li>5. O sistema identifica automaticamente o papel baseado no cadastro</li>
                 </ol>
               </div>
               
