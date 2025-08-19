@@ -25,7 +25,7 @@ export const useRecentActivity = () => {
           .from('registrations')
           .select('id, created_at, patient_id, event_date_id')
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(3)
 
         // Para cada inscrição, buscar dados do paciente e evento separadamente
         if (registrations) {
@@ -73,7 +73,7 @@ export const useRecentActivity = () => {
           .from('events')
           .select('id, title, created_at')
           .order('created_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         events?.forEach(event => {
           activities.push({
@@ -91,7 +91,7 @@ export const useRecentActivity = () => {
           .from('patients')
           .select('id, nome, created_at')
           .order('created_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         patients?.forEach(patient => {
           activities.push({
@@ -109,7 +109,7 @@ export const useRecentActivity = () => {
           .from('notification_templates')
           .select('id, name, type, created_at, updated_at')
           .order('updated_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         templates?.forEach(template => {
           // Check if template was recently created (within last 24 hours)
@@ -137,10 +137,10 @@ export const useRecentActivity = () => {
           }
         })
 
-        // Ordenar por timestamp e limitar a 10 itens
+        // Ordenar por timestamp e limitar a 4 itens
         const sortedActivities = activities
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .slice(0, 10)
+          .slice(0, 4)
 
         console.log('📋 Atividades carregadas:', sortedActivities.length)
         return sortedActivities

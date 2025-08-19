@@ -27,6 +27,10 @@ const Admin = () => {
     navigate('/admin/events/new');
   };
 
+  const handleCreateOrganizer = () => {
+    navigate('/admin/organizers');
+  };
+
   const handleViewTodayRegistrations = () => {
     navigate('/admin/registrations?filter=today');
   };
@@ -34,6 +38,9 @@ const Admin = () => {
   const handleExportReports = () => {
     toast.info('Funcionalidade de exportação em desenvolvimento');
   };
+
+  // Limitar atividades recentes a 4 itens
+  const recentActivities = activities.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,6 +108,7 @@ const Admin = () => {
             <div className="space-y-6">
               <QuickActions 
                 onCreateEvent={handleCreateEvent}
+                onCreateOrganizer={handleCreateOrganizer}
                 onViewTodayRegistrations={handleViewTodayRegistrations}
                 onExportReports={handleExportReports}
               />
@@ -109,7 +117,7 @@ const Admin = () => {
 
             {/* Middle Column - Activity Feed */}
             <div>
-              <ActivityFeed activities={activities} />
+              <ActivityFeed activities={recentActivities} />
             </div>
 
             {/* Right Column - Templates & Jobs */}

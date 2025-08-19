@@ -16,15 +16,19 @@ import {
   ArrowLeft,
   Users,
   Calendar,
-  BarChart3
+  BarChart3,
+  Download,
+  FileText
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const AdminRegistrations = () => {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { events } = useEventsAdmin()
   const [selectedEventId, setSelectedEventId] = useState<string>('all')
+  const [selectedCity, setSelectedCity] = useState<string>('all')
 
   const handleSignOut = async () => {
     try {
@@ -36,7 +40,20 @@ const AdminRegistrations = () => {
 
   const getTotalRegistrations = () => {
     if (!events) return 0
-    return events.reduce((total, event) => {
+    
+    let filteredEvents = events
+    
+    // Filtrar por cidade se selecionada
+    if (selectedCity !== 'all') {
+      filteredEvents = events.filter(event => event.city === selectedCity)
+    }
+    
+    // Filtrar por evento específico se selecionado
+    if (selectedEventId !== 'all') {
+      filteredEvents = events.filter(event => event.id === selectedEventId)
+    }
+    
+    return filteredEvents.reduce((total, event) => {
       const eventTotal = event.event_dates.reduce((sum, date) => sum + (date.total_slots - date.available_slots), 0)
       return total + eventTotal
     }, 0)
@@ -52,17 +69,34 @@ const AdminRegistrations = () => {
     }
   }
 
+  const handleExportCSV = () => {
+    // Implementar exportação CSV
+    toast.info('Exportando relatório em CSV...')
+  }
+
+  const handleExportPDF = () => {
+    // Implementar exportação PDF
+    toast.info('Gerando relatório em PDF...')
+  }
+
   const stats = getEventStats()
 
-  // Criar opções do select com informações das datas
+  // Criar opções do select com informações das datas e cidades
   const eventOptions = events?.map(event => {
-    const firstDate = event.event_dates[0]
+    const dates = event.event_dates.map(ed => 
+      new Date(ed.date + 'T00:00:00').toLocaleDateString('pt-BR')
+    ).join(', ')
+    
     return {
       id: event.id,
       city: event.city,
-      date: firstDate ? new Date(firstDate.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data'
+      dates: dates,
+      label: `${event.city} - ${dates}`
     }
   }) || []
+
+  // Obter cidades únicas
+  const cities = [...new Set(events?.map(event => event.city) || [])]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,28 +181,57 @@ const AdminRegistrations = () => {
           </Card>
         </div>
 
-        {/* Filtro de Eventos */}
+        {/* Filtros e Relatórios */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filtrar por Evento</CardTitle>
+            <CardTitle>Filtros e Relatórios</CardTitle>
             <CardDescription>
-              Selecione um evento específico ou visualize todas as inscrições
+              Selecione os filtros para visualizar inscrições específicas e gere relatórios
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-              <SelectTrigger className="max-w-md">
-                <SelectValue placeholder="Selecione um evento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Eventos</SelectItem>
-                {eventOptions.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.city} - {event.date}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Filtro por Cidade */}
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por cidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Cidades</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Filtro por Evento */}
+              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por evento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Eventos</SelectItem>
+                  {eventOptions.map((event) => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Botões de Exportação */}
+              <Button variant="outline" onClick={handleExportCSV}>
+                <Download className="h-4 w-4 mr-2" />
+                Exportar CSV
+              </Button>
+
+              <Button variant="outline" onClick={handleExportPDF}>
+                <FileText className="h-4 w-4 mr-2" />
+                Gerar PDF
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
