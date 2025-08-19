@@ -119,13 +119,25 @@ export const PatientsList: React.FC = () => {
     })
     
     console.log('👥 Pacientes com inscrições:', result.length)
-    console.log('Exemplo de paciente com inscrições:', result[0])
-    console.log('Exemplo de registração:', registrations[0])
-    console.log('Estrutura da registração:', {
-      patient: registrations[0]?.patient,
-      event_date: registrations[0]?.event_date,
-      event: registrations[0]?.event_date?.event
-    })
+    console.log('🔍 Exemplo de registração completa:', registrations[0])
+    
+    // Log detalhado da estrutura
+    if (registrations[0]) {
+      console.log('📋 Estrutura da registração:')
+      console.log('- patient:', registrations[0].patient)
+      console.log('- event_date:', registrations[0].event_date)
+      console.log('- event_date.event:', registrations[0].event_date?.event)
+      console.log('- event_date.event.city:', registrations[0].event_date?.event?.city)
+    }
+    
+    // Log de paciente com registrações
+    const patientWithRegs = result.find(p => p.registrations.length > 0)
+    if (patientWithRegs) {
+      console.log('👤 Paciente com registrações:', patientWithRegs.nome)
+      console.log('📝 Suas registrações:', patientWithRegs.registrations.length)
+      console.log('🏙️ Cidade da primeira registração:', patientWithRegs.registrations[0]?.event_date?.event?.city)
+    }
+    
     return result
   }, [patients, registrations])
 
@@ -242,28 +254,44 @@ export const PatientsList: React.FC = () => {
       'Data Nascimento',
       'Diagnóstico',
       'LGPD',
-      'Data Cadastro'
+      'Data Cadastro',
+      'Inscrições'
     ]
 
     const csvContent = [
       headers.join(','),
-      ...filteredPatients.map(patient => [
-        `"${patient.nome}"`,
-        `"${patient.cpf}"`,
-        `"${patient.email}"`,
-        `"${patient.telefone}"`,
-        patient.data_nascimento ? `"${new Date(patient.data_nascimento).toLocaleDateString('pt-BR')}"` : '""',
-        `"${patient.diagnostico || ''}"`,
-        `"${patient.consentimento_lgpd ? 'Sim' : 'Não'}"`,
-        `"${new Date(patient.created_at).toLocaleDateString('pt-BR')}"`
-      ].join(','))
+      ...filteredPatients.map(patient => {
+        const inscricoes = patient.registrations.map(reg => 
+          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${new Date(reg.event_date?.date || '').toLocaleDateString('pt-BR')} ${reg.event_date?.start_time?.slice(0, 5)}-${reg.event_date?.end_time?.slice(0, 5)}`
+        ).join('; ')
+        
+        return [
+          `"${patient.nome}"`,
+          `"${patient.cpf}"`,
+          `"${patient.email}"`,
+          `"${patient.telefone}"`,
+          patient.data_nascimento ? `"${new Date(patient.data_nascimento).toLocaleDateString('pt-BR')}"` : '""',
+          `"${patient.diagnostico || ''}"`,
+          `"${patient.consentimento_lgpd ? 'Sim' : 'Não'}"`,
+          `"${new Date(patient.created_at).toLocaleDateString('pt-BR')}"`,
+          `"${inscricoes}"`
+        ].join(',')
+      })
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `pacientes_${new Date().getTime()}.csv`)
+    
+    // Nome do arquivo mais descritivo baseado nos filtros
+    let fileName = 'pacientes'
+    if (selectedCity !== 'all') fileName += `_${selectedCity}`
+    if (selectedEvent !== 'all') fileName += '_evento'
+    if (selectedDate !== 'all') fileName += '_data'
+    fileName += `_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`
+    
+    link.setAttribute('download', fileName)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -367,7 +395,7 @@ export const PatientsList: React.FC = () => {
                       <div className="flex flex-col">
                         <span>{new Date(date.date).toLocaleDateString('pt-BR')}</span>
                         <span className="text-xs text-muted-foreground">
-                          {date.start_time} - {date.end_time}
+                          {date.start_time.slice(0, 5)} - {date.end_time.slice(0, 5)}
                         </span>
                       </div>
                     </div>
@@ -495,13 +523,18 @@ export const PatientsList: React.FC = () => {
                           <span className="text-xs text-muted-foreground">Nenhuma inscrição</span>
                         ) : (
                           patient.registrations.slice(0, 2).map((reg, index) => (
-                            <div key={reg.id} className="text-xs">
+                            <div key={reg.id} className="text-xs space-y-1">
                               <div className="font-medium">{reg.event_date?.event?.title}</div>
                               <div className="text-muted-foreground flex items-center gap-1">
                                 <MapPin className="h-2 w-2" />
-                                {reg.event_date?.event?.city}
-                                <span className="mx-1">•</span>
+                                {reg.event_date?.event?.city?.trim()}
+                              </div>
+                              <div className="text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-2 w-2" />
                                 {new Date(reg.event_date?.date || '').toLocaleDateString('pt-BR')}
+                                <span className="mx-1">•</span>
+                                <Clock className="h-2 w-2" />
+                                {reg.event_date?.start_time?.slice(0, 5)} - {reg.event_date?.end_time?.slice(0, 5)}
                               </div>
                               <Badge 
                                 variant={reg.status === 'confirmed' ? 'default' : 'secondary'}
