@@ -608,6 +608,75 @@ export type Database = {
           },
         ]
       }
+      reminder_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          email_sent: boolean | null
+          error_message: string | null
+          event_date_id: string
+          id: string
+          patient_id: string
+          reminder_type: string
+          retry_count: number | null
+          scheduled_for: string
+          sent_at: string | null
+          sms_sent: boolean | null
+          status: string
+          updated_at: string | null
+          whatsapp_sent: boolean | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          event_date_id: string
+          id?: string
+          patient_id: string
+          reminder_type: string
+          retry_count?: number | null
+          scheduled_for: string
+          sent_at?: string | null
+          sms_sent?: boolean | null
+          status?: string
+          updated_at?: string | null
+          whatsapp_sent?: boolean | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          event_date_id?: string
+          id?: string
+          patient_id?: string
+          reminder_type?: string
+          retry_count?: number | null
+          scheduled_for?: string
+          sent_at?: string | null
+          sms_sent?: boolean | null
+          status?: string
+          updated_at?: string | null
+          whatsapp_sent?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_jobs_event_date_id_fkey"
+            columns: ["event_date_id"]
+            isOneToOne: false
+            referencedRelation: "event_dates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_jobs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           created_at: string
