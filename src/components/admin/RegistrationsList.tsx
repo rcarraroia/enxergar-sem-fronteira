@@ -33,14 +33,16 @@ import {
 
 interface RegistrationsListProps {
   eventId?: string
+  eventDateId?: string
   showEventInfo?: boolean
 }
 
 export const RegistrationsList: React.FC<RegistrationsListProps> = ({ 
-  eventId, 
+  eventId,
+  eventDateId, 
   showEventInfo = false 
 }) => {
-  const { data: registrations, isLoading } = useRegistrations(eventId)
+  const { data: registrations, isLoading } = useRegistrations(eventId, eventDateId)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -54,6 +56,119 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
 
     return matchesSearch && matchesStatus
   }) || []
+
+  const handleExportPDF = async () => {
+    if (!filteredRegistrations.length) {
+      alert('Nenhuma inscrição para exportar')
+      return
+    }
+
+    try {
+      // Preparar dados para PDF
+      const pdfData = {
+        titulo: 'Relatório de Inscrições',
+        data: new Date().toLocaleDateString('pt-BR'),
+        filtros: {
+          evento: eventId || 'Todos os eventos',
+          status: statusFilter === 'all' ? 'Todos os status' : statusFilter,
+          busca: searchTerm || 'Sem filtro'
+        },
+        total: filteredRegistrations.length,
+        pacientes: filteredRegistrations.map(reg => ({
+          nome: reg.patient.nome,
+          cpf: reg.patient.cpf,
+          email: reg.patient.email,
+          telefone: reg.patient.telefone,
+          nascimento: reg.patient.data_nascimento ? 
+            new Date(reg.patient.data_nascimento).toLocaleDateString('pt-BR') : '',
+          diagnostico: reg.patient.diagnostico || '',
+          status: reg.status,
+          inscricao: new Date(reg.created_at).toLocaleDateString('pt-BR'),
+          evento: showEventInfo ? reg.event_date.event.title : '',
+          dataEvento: showEventInfo ? 
+            new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR') : '',
+          local: showEventInfo ? reg.event_date.event.location : ''
+        }))
+      }
+
+      // Criar HTML para PDF
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${pdfData.titulo}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .total { font-weight: bold; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${pdfData.titulo}</h1>
+            <p>Gerado em: ${pdfData.data}</p>
+          </div>
+          
+          <div class="filters">
+            <h3>Filtros Aplicados:</h3>
+            <p><strong>Evento:</strong> ${pdfData.filtros.evento}</p>
+            <p><strong>Status:</strong> ${pdfData.filtros.status}</p>
+            <p><strong>Busca:</strong> ${pdfData.filtros.busca}</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th>Data Inscrição</th>
+                ${showEventInfo ? '<th>Evento</th><th>Data Evento</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${pdfData.pacientes.map(p => `
+                <tr>
+                  <td>${p.nome}</td>
+                  <td>${p.cpf}</td>
+                  <td>${p.email}</td>
+                  <td>${p.telefone}</td>
+                  <td>${p.status}</td>
+                  <td>${p.inscricao}</td>
+                  ${showEventInfo ? `<td>${p.evento}</td><td>${p.dataEvento}</td>` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="total">
+            <p>Total de inscrições: ${pdfData.total}</p>
+          </div>
+        </body>
+        </html>
+      `
+
+      // Abrir em nova janela para impressão/PDF
+      const printWindow = window.open('', '_blank')
+      if (printWindow) {
+        printWindow.document.write(htmlContent)
+        printWindow.document.close()
+        printWindow.focus()
+        printWindow.print()
+      }
+
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error)
+      alert('Erro ao gerar PDF. Tente novamente.')
+    }
+  }
 
   const handleExportCSV = () => {
     if (!filteredRegistrations.length) return
@@ -175,6 +290,10 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
           <Button onClick={handleExportCSV} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Exportar CSV
+          </Button>
+          <Button onClick={handleExportPDF} variant="outline">
+            <FileText className="h-4 w-4 mr-2" />
+            Exportar PDF
           </Button>
         </div>
 

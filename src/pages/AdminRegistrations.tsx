@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useEventsAdmin } from '@/hooks/useEventsAdmin'
+import { useRegistrations } from '@/hooks/useRegistrations'
 import { RegistrationsList } from '@/components/admin/RegistrationsList'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,7 +17,9 @@ import {
   ArrowLeft,
   Users,
   Calendar,
-  BarChart3
+  BarChart3,
+  CheckCircle,
+  Clock
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -24,6 +27,7 @@ const AdminRegistrations = () => {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { events } = useEventsAdmin()
+  const { data: allRegistrations } = useRegistrations()
   const [selectedEventId, setSelectedEventId] = useState<string>('all')
 
   const handleSignOut = async () => {
@@ -35,11 +39,13 @@ const AdminRegistrations = () => {
   }
 
   const getTotalRegistrations = () => {
-    if (!events) return 0
-    return events.reduce((total, event) => {
-      const eventTotal = event.event_dates.reduce((sum, date) => sum + (date.total_slots - date.available_slots), 0)
-      return total + eventTotal
-    }, 0)
+    if (!allRegistrations) return 0
+    return allRegistrations.length
+  }
+
+  const getRegistrationsByStatus = (status: string) => {
+    if (!allRegistrations) return 0
+    return allRegistrations.filter(reg => reg.status === status).length
   }
 
   const getEventStats = () => {
@@ -54,15 +60,19 @@ const AdminRegistrations = () => {
 
   const stats = getEventStats()
 
-  // Criar opções do select com informações das datas
-  const eventOptions = events?.map(event => {
-    const firstDate = event.event_dates[0]
-    return {
-      id: event.id,
+  // Criar opções do select com informações detalhadas das datas
+  const eventOptions = events?.flatMap(event => 
+    event.event_dates.map(eventDate => ({
+      id: eventDate.id, // Use event_date_id instead of event_id
+      eventId: event.id,
+      title: event.title,
       city: event.city,
-      date: firstDate ? new Date(firstDate.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data'
-    }
-  }) || []
+      location: event.location,
+      date: new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR'),
+      time: `${eventDate.start_time} - ${eventDate.end_time}`,
+      displayName: `${event.city} - ${event.title} (${new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')})`
+    }))
+  ) || []
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,10 +124,10 @@ const AdminRegistrations = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Eventos Ativos</p>
-                  <p className="text-2xl font-bold">{stats.openEvents}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Confirmadas</p>
+                  <p className="text-2xl font-bold">{getRegistrationsByStatus('confirmed')}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -126,10 +136,10 @@ const AdminRegistrations = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Eventos Lotados</p>
-                  <p className="text-2xl font-bold">{stats.fullEvents}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
+                  <p className="text-2xl font-bold">{getRegistrationsByStatus('pending')}</p>
                 </div>
-                <BarChart3 className="h-8 w-8 text-orange-600" />
+                <Clock className="h-8 w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -162,9 +172,9 @@ const AdminRegistrations = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Eventos</SelectItem>
-                {eventOptions.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.city} - {event.date}
+                {eventOptions.map((eventDate) => (
+                  <SelectItem key={eventDate.id} value={eventDate.id}>
+                    {eventDate.displayName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -174,7 +184,7 @@ const AdminRegistrations = () => {
 
         {/* Lista de Inscrições */}
         <RegistrationsList 
-          eventId={selectedEventId === 'all' ? undefined : selectedEventId}
+          eventDateId={selectedEventId === 'all' ? undefined : selectedEventId}
           showEventInfo={selectedEventId === 'all'}
         />
       </main>

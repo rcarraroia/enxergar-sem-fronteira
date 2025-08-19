@@ -32,11 +32,13 @@ export interface Registration {
   }
 }
 
-export const useRegistrations = (eventId?: string) => {
+export const useRegistrations = (eventId?: string, eventDateId?: string) => {
   return useQuery({
-    queryKey: ['registrations', eventId],
+    queryKey: ['registrations', eventId, eventDateId],
     queryFn: async () => {
-      console.log('🔍 Buscando inscrições...', eventId ? `para evento ${eventId}` : 'todas')
+      console.log('🔍 Buscando inscrições...', 
+        eventId ? `para evento ${eventId}` : 
+        eventDateId ? `para data ${eventDateId}` : 'todas')
       
       let query = supabase
         .from('registrations')
@@ -71,7 +73,10 @@ export const useRegistrations = (eventId?: string) => {
         `)
         .order('created_at', { ascending: false })
 
-      if (eventId) {
+      if (eventDateId) {
+        // Filtrar por event_date_id específico
+        query = query.eq('event_date_id', eventDateId)
+      } else if (eventId) {
         // Buscar por event_date_id relacionado ao eventId
         const { data: eventDates } = await supabase
           .from('event_dates')

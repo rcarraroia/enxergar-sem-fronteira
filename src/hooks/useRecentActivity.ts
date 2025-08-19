@@ -137,10 +137,10 @@ export const useRecentActivity = () => {
           }
         })
 
-        // Ordenar por timestamp e limitar a 10 itens
+        // Ordenar por timestamp e limitar a 4 itens
         const sortedActivities = activities
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .slice(0, 10)
+          .slice(0, 4)
 
         console.log('📋 Atividades carregadas:', sortedActivities.length)
         return sortedActivities
