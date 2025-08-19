@@ -2,6 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
+import '@testing-library/jest-dom'
 import { TemplatesList } from '../TemplatesList'
 import { TemplateForm } from '../TemplateForm'
 import { useNotificationTemplates } from '@/hooks/useNotificationTemplates'

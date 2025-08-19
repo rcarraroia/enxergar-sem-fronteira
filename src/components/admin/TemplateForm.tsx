@@ -162,7 +162,7 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
               <p className="text-sm text-red-600">{errors.content}</p>
             )}
             <p className="text-sm text-gray-500">
-              Você pode usar variáveis como {{patient_name}}, {{event_date}}, etc.
+              Você pode usar variáveis como {"{{"} patient_name {"}"}, {"{{"} event_date {"}"}, etc.
             </p>
           </div>
 
