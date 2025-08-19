@@ -57,7 +57,7 @@ const AboutSection = () => {
             <Heart className="h-4 w-4 text-secondary mr-2" />
             <span className="text-secondary font-semibold text-sm">Sobre o Projeto</span>
           </div>
-          
+
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Missão de Transformar Vidas
           </h2>
@@ -73,12 +73,12 @@ const AboutSection = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-foreground">Projeto Visão Itinerante</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Fundado em 2020, o Projeto Visão Itinerante surge como uma iniciativa do Instituto Coração Valente, 
+                Fundado em 2020, o Projeto Visão Itinerante surge como uma iniciativa do Instituto Coração Valente,
                 com o objetivo de democratizar o acesso à saúde oftalmológica no Brasil.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Nossa equipe multidisciplinar percorre comunidades carentes oferecendo consultas, exames e 
-                cirurgias oftalmológicas gratuitas, sempre com foco na prevenção e tratamento precoce de 
+                Nossa equipe multidisciplinar percorre comunidades carentes oferecendo consultas, exames e
+                cirurgias oftalmológicas gratuitas, sempre com foco na prevenção e tratamento precoce de
                 doenças que podem levar à cegueira.
               </p>
             </div>
@@ -101,11 +101,11 @@ const AboutSection = () => {
                 <div className="w-24 h-24 bg-gradient-hero rounded-full flex items-center justify-center mx-auto">
                   <Eye className="h-12 w-12 text-white" />
                 </div>
-                
+
                 <div>
                   <h4 className="text-xl font-bold text-foreground mb-2">Nossa Visão</h4>
                   <p className="text-muted-foreground">
-                    "Um Brasil onde todas as pessoas tenham acesso a cuidados oftalmológicos de qualidade, 
+                    "Um Brasil onde todas as pessoas tenham acesso a cuidados oftalmológicos de qualidade,
                     independentemente de sua condição socioeconômica."
                   </p>
                 </div>
@@ -141,8 +141,8 @@ const AboutSection = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
-                  <img 
-                    src="/lovable-uploads/coracao-valente.png" 
+                  <img
+                    src="/lovable-uploads/coracao-valente.png"
                     alt="Instituto Coração Valente"
                     className="w-full h-full object-contain p-1"
                   />
@@ -152,8 +152,8 @@ const AboutSection = () => {
               </div>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
-                  <img 
-                    src="/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png" 
+                  <img
+                    src="/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png"
                     alt="Paróquia São José"
                     className="w-full h-full object-cover"
                   />
@@ -163,8 +163,8 @@ const AboutSection = () => {
               </div>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
-                  <img 
-                    src="/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png" 
+                  <img
+                    src="/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png"
                     alt="Paróquia Cristo Libertador"
                     className="w-full h-full object-cover"
                   />
@@ -174,8 +174,8 @@ const AboutSection = () => {
               </div>
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-2 rounded-full overflow-hidden bg-white shadow-md">
-                  <img 
-                    src="/lovable-uploads/logo512x512.png" 
+                  <img
+                    src="/lovable-uploads/logo512x512.png"
                     alt="Wladimir Careca"
                     className="w-full h-full object-contain p-1"
                   />

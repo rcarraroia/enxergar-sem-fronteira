@@ -124,18 +124,7 @@ const Admin = () => {
             }}
             actions={[
               { label: "Ver Pacientes", onClick: () => navigate('/admin/patients') },
-              { label: "Exportar Lista", onClick: handleExportReports }
-            ]}
-          />
-
-          <MetricCard
-            title="Inscrições"
-            icon={UserCheck}
-            value={metrics?.totalRegistrations || 0}
-            subtitle={`${metrics?.todayRegistrations || 0} hoje`}
-            actions={[
-              { label: "Ver Inscrições", onClick: () => navigate('/admin/registrations') },
-              { label: "Inscrições Hoje", onClick: handleViewTodayRegistrations }
+              { label: "Ver Inscrições", onClick: () => navigate('/admin/registrations') }
             ]}
           />
 
