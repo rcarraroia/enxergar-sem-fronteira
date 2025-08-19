@@ -60,21 +60,34 @@ export const PatientsList: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>('all')
   const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
 
+  // Debug logs
+  React.useEffect(() => {
+    console.log('🔍 Debug - Dados carregados:')
+    console.log('Patients:', patients?.length || 0)
+    console.log('Registrations:', registrations?.length || 0)
+    console.log('Events:', events?.length || 0)
+    console.log('Events data:', events)
+    console.log('Registrations data:', registrations)
+  }, [patients, registrations, events])
+
   // Extrair cidades únicas dos eventos
   const cities = React.useMemo(() => {
     if (!events) return []
     const uniqueCities = [...new Set(events.map(event => event.city).filter(Boolean))]
+    console.log('🏙️ Cidades encontradas:', uniqueCities)
     return uniqueCities.sort()
   }, [events])
 
   // Extrair eventos únicos
   const eventOptions = React.useMemo(() => {
     if (!events) return []
-    return events.map(event => ({
+    const options = events.map(event => ({
       id: event.id,
       title: event.title,
       city: event.city
     }))
+    console.log('📅 Eventos encontrados:', options)
+    return options
   }, [events])
 
   // Extrair datas únicas baseadas no evento selecionado
@@ -102,13 +115,17 @@ export const PatientsList: React.FC = () => {
   const patientsWithRegistrations = React.useMemo(() => {
     if (!patients || !registrations) return []
     
-    return patients.map(patient => {
+    const result = patients.map(patient => {
       const patientRegistrations = registrations.filter(reg => reg.patient.id === patient.id)
       return {
         ...patient,
         registrations: patientRegistrations
       }
     })
+    
+    console.log('👥 Pacientes com inscrições:', result.length)
+    console.log('Exemplo de paciente com inscrições:', result[0])
+    return result
   }, [patients, registrations])
 
   // Filtrar pacientes baseado nos critérios selecionados
@@ -366,15 +383,37 @@ export const PatientsList: React.FC = () => {
           </div>
         </div>
 
+        {/* Debug Info */}
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg text-sm">
+          <h4 className="font-medium mb-2">Debug Info:</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p>Pacientes: {patients?.length || 0}</p>
+              <p>Registrações: {registrations?.length || 0}</p>
+              <p>Eventos: {events?.length || 0}</p>
+            </div>
+            <div>
+              <p>Cidades: {cities.length}</p>
+              <p>Pacientes filtrados: {filteredPatients.length}</p>
+              <p>Filtros ativos: {[selectedCity !== 'all', selectedEvent !== 'all', selectedDate !== 'all', searchTerm !== ''].filter(Boolean).length}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Tabela */}
         {filteredPatients.length === 0 ? (
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              {searchTerm 
+              {searchTerm || selectedCity !== 'all' || selectedEvent !== 'all' || selectedDate !== 'all'
                 ? 'Nenhum paciente encontrado com estes filtros' 
                 : 'Nenhum paciente cadastrado ainda'}
             </p>
+            {patients && patients.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Existem {patients.length} pacientes no total, mas nenhum corresponde aos filtros aplicados.
+              </p>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
