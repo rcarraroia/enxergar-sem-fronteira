@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 const Footer = () => {
-  const { settings, loading } = useSystemSettings();
+  const { getSettingValue, getSettingJSON, isLoading } = useSystemSettings();
 
   const quickLinks = [{
     name: 'Sobre o Projeto',
@@ -34,25 +34,26 @@ const Footer = () => {
     href: '/cookies'
   }];
 
+  const socialLinksData = getSettingJSON('social_links', {});
   const socialLinks = [
     {
       icon: Facebook,
-      href: settings.social_links.facebook,
+      href: socialLinksData.facebook,
       label: 'Facebook'
     }, 
     {
       icon: Instagram,
-      href: settings.social_links.instagram,
+      href: socialLinksData.instagram,
       label: 'Instagram'
     }, 
     {
       icon: Linkedin,
-      href: settings.social_links.linkedin,
+      href: socialLinksData.linkedin,
       label: 'LinkedIn'
     }
   ].filter(social => social.href && social.href.trim() !== '');
 
-  if (loading) {
+  if (isLoading) {
     return (
       <footer className="bg-foreground text-background">
         <div className="container mx-auto px-4 py-16">
@@ -77,6 +78,10 @@ const Footer = () => {
     );
   }
 
+  const projectName = getSettingValue('project_name', 'Enxergar sem Fronteiras');
+  const projectDescription = getSettingValue('project_description', 'Sistema de gestão de eventos de saúde ocular');
+  const logoFooter = getSettingValue('logo_footer');
+
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4">
@@ -85,10 +90,10 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              {settings.logo_footer ? (
+              {logoFooter ? (
                 <img 
-                  src={settings.logo_footer} 
-                  alt={settings.project_name}
+                  src={logoFooter} 
+                  alt={projectName}
                   className="h-10 object-contain"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -101,8 +106,8 @@ const Footer = () => {
                 </div>
               )}
               <div>
-                <h3 className="text-xl font-bold">{settings.project_name}</h3>
-                <p className="text-sm text-muted opacity-80">{settings.project_description}</p>
+                <h3 className="text-xl font-bold">{projectName}</h3>
+                <p className="text-sm text-muted opacity-80">{projectDescription}</p>
               </div>
             </div>
             
@@ -192,7 +197,7 @@ const Footer = () => {
             {/* Copyright */}
             <div className="text-center md:text-left">
               <p className="text-sm text-muted opacity-80">
-                © 2025 {settings.project_name}. Todos os direitos reservados.
+                © 2025 {projectName}. Todos os direitos reservados.
               </p>
               <p className="text-xs text-muted opacity-60 mt-1">
                 Uma iniciativa do Instituto Coração Valente

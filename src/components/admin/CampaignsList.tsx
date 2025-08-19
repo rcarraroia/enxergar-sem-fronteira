@@ -31,9 +31,20 @@ export const CampaignsList = () => {
     toast.success('Link da campanha copiado!')
   }
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active'
-    await updateCampaign.mutateAsync({ id, status: newStatus })
+  const handleToggleStatus = async (campaign: any) => {
+    const newStatus = campaign.status === 'active' ? 'paused' : 'active'
+    await updateCampaign.mutateAsync({ 
+      id: campaign.id, 
+      status: newStatus,
+      slug: campaign.slug,
+      title: campaign.title,
+      goal_amount: campaign.goal_amount,
+      description: campaign.description || '',
+      event_id: campaign.event_id || null,
+      end_date: campaign.end_date || null,
+      allow_custom_amount: campaign.allow_custom_amount || false,
+      allow_subscriptions: campaign.allow_subscriptions || false
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -172,7 +183,7 @@ export const CampaignsList = () => {
                             Ver Página
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleToggleStatus(campaign.id, campaign.status)}
+                            onClick={() => handleToggleStatus(campaign)}
                           >
                             {campaign.status === 'active' ? (
                               <>

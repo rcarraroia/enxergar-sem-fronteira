@@ -15,10 +15,7 @@ const Header = () => {
     isAdmin,
     isOrganizer
   } = useAuth();
-  const {
-    settings,
-    loading
-  } = useSystemSettings();
+  const { getSettingValue, isLoading } = useSystemSettings();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -51,15 +48,18 @@ const Header = () => {
     }
   };
 
+  const logoHeader = getSettingValue('logo_header');
+  const projectName = getSettingValue('project_name', 'Enxergar sem Fronteiras');
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {!loading && settings.logo_header ? (
+            {!isLoading && logoHeader ? (
               <img 
-                src={settings.logo_header} 
-                alt={settings.project_name} 
+                src={logoHeader} 
+                alt={projectName} 
                 className="h-12 object-contain" 
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';

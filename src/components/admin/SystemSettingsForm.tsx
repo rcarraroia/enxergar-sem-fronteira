@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,12 +14,32 @@ interface SystemSettingsFormProps {
 }
 
 export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
-  const { settings, loading, updateSetting } = useSystemSettings()
-  const [formData, setFormData] = useState(settings)
+  const { getSettingValue, getSettingJSON, updateSetting, isLoading, isUpdating } = useSystemSettings()
+  const [formData, setFormData] = useState({
+    project_name: '',
+    project_description: '',
+    logo_header: '',
+    logo_footer: '',
+    social_links: { facebook: '', instagram: '', linkedin: '' },
+    asaas_ong_coracao_valente: '',
+    asaas_projeto_visao_itinerante: '',
+    asaas_renum_tecnologia: ''
+  })
 
-  React.useEffect(() => {
-    setFormData(settings)
-  }, [settings])
+  useEffect(() => {
+    if (!isLoading) {
+      setFormData({
+        project_name: getSettingValue('project_name', 'Enxergar sem Fronteiras'),
+        project_description: getSettingValue('project_description', 'Sistema de gestão de eventos de saúde ocular'),
+        logo_header: getSettingValue('logo_header', ''),
+        logo_footer: getSettingValue('logo_footer', ''),
+        social_links: getSettingJSON('social_links', { facebook: '', instagram: '', linkedin: '' }),
+        asaas_ong_coracao_valente: getSettingValue('asaas_ong_coracao_valente', ''),
+        asaas_projeto_visao_itinerante: getSettingValue('asaas_projeto_visao_itinerante', ''),
+        asaas_renum_tecnologia: getSettingValue('asaas_renum_tecnologia', '')
+      })
+    }
+  }, [isLoading, getSettingValue, getSettingJSON])
 
   const handleSave = async () => {
     try {
@@ -33,7 +53,7 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           await updateSetting('logo_footer', formData.logo_footer)
           break
         case 'social':
-          await updateSetting('social_links', formData.social_links)
+          await updateSetting('social_links', JSON.stringify(formData.social_links))
           break
         case 'apikeys':
           await updateSetting('asaas_ong_coracao_valente', formData.asaas_ong_coracao_valente)
@@ -46,7 +66,7 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -84,9 +104,9 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
             />
           </div>
 
-          <Button onClick={handleSave} className="w-full">
+          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
             <Save className="h-4 w-4 mr-2" />
-            Salvar Configurações Gerais
+            {isUpdating ? 'Salvando...' : 'Salvar Configurações Gerais'}
           </Button>
         </CardContent>
       </Card>
@@ -126,9 +146,9 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
             previewBg="bg-slate-800"
           />
 
-          <Button onClick={handleSave} className="w-full">
+          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
             <Save className="h-4 w-4 mr-2" />
-            Salvar Configurações de Logo
+            {isUpdating ? 'Salvando...' : 'Salvar Configurações de Logo'}
           </Button>
         </CardContent>
       </Card>
@@ -196,9 +216,9 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
             </p>
           </div>
           
-          <Button onClick={handleSave} className="w-full">
+          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
             <Save className="h-4 w-4 mr-2" />
-            Salvar Configurações das API Keys
+            {isUpdating ? 'Salvando...' : 'Salvar Configurações das API Keys'}
           </Button>
         </CardContent>
       </Card>
@@ -256,9 +276,9 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           />
         </div>
 
-        <Button onClick={handleSave} className="w-full">
+        <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
           <Save className="h-4 w-4 mr-2" />
-          Salvar Links das Redes Sociais
+          {isUpdating ? 'Salvando...' : 'Salvar Links das Redes Sociais'}
         </Button>
       </CardContent>
     </Card>
