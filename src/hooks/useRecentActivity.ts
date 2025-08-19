@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 
 export interface ActivityItem {
   id: string
-  type: 'registration' | 'event' | 'patient' | 'system'
+  type: 'registration' | 'event' | 'patient' | 'system' | 'template'
   title: string
   description: string
   timestamp: string
@@ -102,6 +102,39 @@ export const useRecentActivity = () => {
             timestamp: patient.created_at,
             icon: 'User'
           })
+        })
+
+        // Buscar atividades de templates recentes
+        const { data: templates } = await supabase
+          .from('notification_templates')
+          .select('id, name, type, created_at, updated_at')
+          .order('updated_at', { ascending: false })
+          .limit(3)
+
+        templates?.forEach(template => {
+          // Check if template was recently created (within last 24 hours)
+          const createdRecently = new Date(template.created_at).getTime() > Date.now() - 24 * 60 * 60 * 1000
+          const updatedRecently = new Date(template.updated_at).getTime() > Date.now() - 24 * 60 * 60 * 1000
+          
+          if (createdRecently) {
+            activities.push({
+              id: `template-created-${template.id}`,
+              type: 'template',
+              title: 'Template Criado',
+              description: `Novo template ${template.type}: ${template.name}`,
+              timestamp: template.created_at,
+              icon: 'Mail'
+            })
+          } else if (updatedRecently && template.created_at !== template.updated_at) {
+            activities.push({
+              id: `template-updated-${template.id}`,
+              type: 'template',
+              title: 'Template Atualizado',
+              description: `Template ${template.type} atualizado: ${template.name}`,
+              timestamp: template.updated_at,
+              icon: 'Edit'
+            })
+          }
         })
 
         // Ordenar por timestamp e limitar a 10 itens

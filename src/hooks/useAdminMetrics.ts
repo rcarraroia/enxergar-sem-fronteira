@@ -17,6 +17,12 @@ export interface AdminMetrics {
   totalOrganizers: number
   totalDonations: number
   systemHealth: 'healthy' | 'warning' | 'error'
+  // Template metrics
+  totalTemplates: number
+  activeTemplates: number
+  emailTemplates: number
+  whatsappTemplates: number
+  templatesLastUpdated?: string
 }
 
 export const useAdminMetrics = () => {
@@ -101,6 +107,23 @@ export const useAdminMetrics = () => {
           ? ((thisWeekRegistrations / Math.max(totalRegistrations - thisWeekRegistrations, 1)) * 100)
           : 0
 
+        // Buscar métricas de templates
+        const { data: templates } = await supabase
+          .from('notification_templates')
+          .select('id, type, is_active, updated_at')
+
+        const totalTemplates = templates?.length || 0
+        const activeTemplates = templates?.filter(t => t.is_active).length || 0
+        const emailTemplates = templates?.filter(t => t.type === 'email').length || 0
+        const whatsappTemplates = templates?.filter(t => t.type === 'whatsapp').length || 0
+        
+        // Find most recent template update
+        const templatesLastUpdated = templates?.length > 0 
+          ? templates.reduce((latest, template) => {
+              return new Date(template.updated_at) > new Date(latest) ? template.updated_at : latest
+            }, templates[0].updated_at)
+          : undefined
+
         // Simular saúde do sistema
         const systemHealth: 'healthy' | 'warning' | 'error' = 'healthy'
 
@@ -118,7 +141,13 @@ export const useAdminMetrics = () => {
           todayRegistrations: todayRegistrations || 0,
           totalOrganizers: totalOrganizers || 0,
           totalDonations: totalRevenue, // Using same as revenue for now
-          systemHealth
+          systemHealth,
+          // Template metrics
+          totalTemplates,
+          activeTemplates,
+          emailTemplates,
+          whatsappTemplates,
+          templatesLastUpdated
         }
 
         console.log('📊 Métricas carregadas:', metrics)
@@ -141,7 +170,12 @@ export const useAdminMetrics = () => {
           todayRegistrations: 0,
           totalOrganizers: 0,
           totalDonations: 0,
-          systemHealth: 'error'
+          systemHealth: 'error',
+          // Template metrics (error state)
+          totalTemplates: 0,
+          activeTemplates: 0,
+          emailTemplates: 0,
+          whatsappTemplates: 0
         }
       }
     },

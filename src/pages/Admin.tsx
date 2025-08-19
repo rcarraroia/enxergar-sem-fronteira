@@ -26,6 +26,7 @@ import { MetricCard } from '@/components/admin/MetricCard'
 import { AlertBanner } from '@/components/admin/AlertBanner'
 import { ActivityFeed } from '@/components/admin/ActivityFeed'
 import { QuickActions } from '@/components/admin/QuickActions'
+import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard'
 
 const Admin = () => {
   const navigate = useNavigate()
@@ -202,6 +203,8 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+
+          <NotificationTemplatesCard />
 
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
