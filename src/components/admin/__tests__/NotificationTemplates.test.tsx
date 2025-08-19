@@ -8,6 +8,9 @@ import { useNotificationTemplates } from '@/hooks/useNotificationTemplates'
 
 // Mock the hook
 vi.mock('@/hooks/useNotificationTemplates')
+vi.mock('@/utils/dateUtils', () => ({
+  formatDate: vi.fn((date) => date)
+}))
 
 const mockUseNotificationTemplates = vi.mocked(useNotificationTemplates)
 
@@ -34,8 +37,7 @@ describe('NotificationTemplates', () => {
       name: 'Test Template',
       subject: 'Test Subject',
       content: 'Test Content',
-      type: 'email',
-      category: 'registration',
+      type: 'email' as const,
       is_active: true,
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z'
@@ -46,47 +48,46 @@ describe('NotificationTemplates', () => {
     mockUseNotificationTemplates.mockReturnValue({
       templates: mockTemplates,
       loading: false,
+      error: null,
       createTemplate: vi.fn(),
       updateTemplate: vi.fn(),
       deleteTemplate: vi.fn(),
       duplicateTemplate: vi.fn(),
+      toggleTemplate: vi.fn(),
+      refetch: vi.fn(),
     })
   })
 
   describe('TemplatesList', () => {
+    const defaultProps = {
+      type: 'email' as const,
+      templates: mockTemplates,
+      onEdit: vi.fn(),
+      onDuplicate: vi.fn(),
+      onDelete: vi.fn(),
+      onToggle: vi.fn(),
+      loading: false
+    }
+
     it('renders templates list correctly', () => {
-      renderWithQueryClient(<TemplatesList />)
+      renderWithQueryClient(<TemplatesList {...defaultProps} />)
       
       expect(screen.getByText('Test Template')).toBeInTheDocument()
       expect(screen.getByText('Test Subject')).toBeInTheDocument()
     })
 
     it('shows empty state when no templates', () => {
-      mockUseNotificationTemplates.mockReturnValue({
-        templates: [],
-        loading: false,
-        createTemplate: vi.fn(),
-        updateTemplate: vi.fn(),
-        deleteTemplate: vi.fn(),
-        duplicateTemplate: vi.fn(),
-      })
-
-      renderWithQueryClient(<TemplatesList />)
+      renderWithQueryClient(
+        <TemplatesList {...defaultProps} templates={[]} />
+      )
       
       expect(screen.getByText(/nenhum template/i)).toBeInTheDocument()
     })
 
     it('shows loading state', () => {
-      mockUseNotificationTemplates.mockReturnValue({
-        templates: [],
-        loading: true,
-        createTemplate: vi.fn(),
-        updateTemplate: vi.fn(),
-        deleteTemplate: vi.fn(),
-        duplicateTemplate: vi.fn(),
-      })
-
-      renderWithQueryClient(<TemplatesList />)
+      renderWithQueryClient(
+        <TemplatesList {...defaultProps} templates={[]} loading={true} />
+      )
       
       expect(screen.getByText(/carregando/i)).toBeInTheDocument()
     })
@@ -97,6 +98,7 @@ describe('NotificationTemplates', () => {
     const mockOnCancel = vi.fn()
 
     const defaultProps = {
+      type: 'email' as const,
       onSave: mockOnSave,
       onCancel: mockOnCancel,
     }
@@ -113,7 +115,6 @@ describe('NotificationTemplates', () => {
       expect(screen.getByLabelText(/assunto/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/conteúdo/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/tipo/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/categoria/i)).toBeInTheDocument()
     })
 
     it('validates required fields', async () => {
@@ -149,7 +150,6 @@ describe('NotificationTemplates', () => {
           subject: 'New Subject', 
           content: 'New Content',
           type: 'email',
-          category: 'registration',
           is_active: true
         })
       })
@@ -159,7 +159,7 @@ describe('NotificationTemplates', () => {
       const editTemplate = mockTemplates[0]
       
       renderWithQueryClient(
-        <TemplateForm {...defaultProps} initialData={editTemplate} />
+        <TemplateForm {...defaultProps} template={editTemplate} />
       )
 
       expect(screen.getByDisplayValue('Test Template')).toBeInTheDocument()

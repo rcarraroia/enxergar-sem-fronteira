@@ -1,3 +1,4 @@
+
 /**
  * Templates List Component
  * Displays templates in a table with actions
@@ -190,7 +191,6 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                         <Switch
                           checked={template.is_active}
                           onCheckedChange={() => onToggle(template)}
-                          size="sm"
                         />
                         <Badge 
                           variant={template.is_active ? "default" : "secondary"}
