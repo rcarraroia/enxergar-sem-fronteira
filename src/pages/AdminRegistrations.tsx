@@ -19,9 +19,12 @@ import {
   Calendar,
   BarChart3,
   CheckCircle,
-  Clock
+  Clock,
+  Download,
+  FileText
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const AdminRegistrations = () => {
   const { user, signOut } = useAuth()
@@ -29,6 +32,7 @@ const AdminRegistrations = () => {
   const { events } = useEventsAdmin()
   const { data: allRegistrations } = useRegistrations()
   const [selectedEventId, setSelectedEventId] = useState<string>('all')
+  const [selectedCity, setSelectedCity] = useState<string>('all')
 
   const handleSignOut = async () => {
     try {
@@ -58,6 +62,16 @@ const AdminRegistrations = () => {
     }
   }
 
+  const handleExportCSV = () => {
+    // Implementar exportação CSV
+    toast.info('Exportando relatório em CSV...')
+  }
+
+  const handleExportPDF = () => {
+    // Implementar exportação PDF
+    toast.info('Gerando relatório em PDF...')
+  }
+
   const stats = getEventStats()
 
   // Criar opções do select com informações detalhadas das datas
@@ -73,6 +87,9 @@ const AdminRegistrations = () => {
       displayName: `${event.city} - ${event.title} (${new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')})`
     }))
   ) || []
+
+  // Obter cidades únicas
+  const cities = [...new Set(events?.map(event => event.city) || [])]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -157,12 +174,12 @@ const AdminRegistrations = () => {
           </Card>
         </div>
 
-        {/* Filtro de Eventos */}
+        {/* Filtros e Relatórios */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filtrar por Evento</CardTitle>
+            <CardTitle>Filtros e Relatórios</CardTitle>
             <CardDescription>
-              Selecione um evento específico ou visualize todas as inscrições
+              Selecione os filtros para visualizar inscrições específicas e gere relatórios
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -25,7 +25,7 @@ export const useRecentActivity = () => {
           .from('registrations')
           .select('id, created_at, patient_id, event_date_id')
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(3)
 
         // Para cada inscrição, buscar dados do paciente e evento separadamente
         if (registrations) {
@@ -73,7 +73,7 @@ export const useRecentActivity = () => {
           .from('events')
           .select('id, title, created_at')
           .order('created_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         events?.forEach(event => {
           activities.push({
@@ -91,7 +91,7 @@ export const useRecentActivity = () => {
           .from('patients')
           .select('id, nome, created_at')
           .order('created_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         patients?.forEach(patient => {
           activities.push({
@@ -109,7 +109,7 @@ export const useRecentActivity = () => {
           .from('notification_templates')
           .select('id, name, type, created_at, updated_at')
           .order('updated_at', { ascending: false })
-          .limit(3)
+          .limit(2)
 
         templates?.forEach(template => {
           // Check if template was recently created (within last 24 hours)

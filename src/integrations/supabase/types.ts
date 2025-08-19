@@ -381,6 +381,39 @@ export type Database = {
           },
         ]
       }
+      notification_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       organizers: {
         Row: {
           address: string | null
@@ -575,65 +608,74 @@ export type Database = {
           },
         ]
       }
-      subscriptions: {
+      reminder_jobs: {
         Row: {
-          amount: number
-          created_at: string
+          completed_at: string | null
+          created_at: string | null
+          email_sent: boolean | null
+          error_message: string | null
+          event_date_id: string
           id: string
+          patient_id: string
+          reminder_type: string
+          retry_count: number | null
+          scheduled_for: string
+          sent_at: string | null
+          sms_sent: boolean | null
           status: string
-          updated_at: string
-          user_id: string
+          updated_at: string | null
+          whatsapp_sent: boolean | null
         }
         Insert: {
-          amount: number
-          created_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          event_date_id: string
           id?: string
+          patient_id: string
+          reminder_type: string
+          retry_count?: number | null
+          scheduled_for: string
+          sent_at?: string | null
+          sms_sent?: boolean | null
           status?: string
-          updated_at?: string
-          user_id: string
+          updated_at?: string | null
+          whatsapp_sent?: boolean | null
         }
         Update: {
-          amount?: number
-          created_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          event_date_id?: string
           id?: string
+          patient_id?: string
+          reminder_type?: string
+          retry_count?: number | null
+          scheduled_for?: string
+          sent_at?: string | null
+          sms_sent?: boolean | null
           status?: string
-          updated_at?: string
-          user_id?: string
+          updated_at?: string | null
+          whatsapp_sent?: boolean | null
         }
-        Relationships: []
-      }
-      notification_templates: {
-        Row: {
-          id: string
-          name: string
-          type: 'email' | 'whatsapp' | 'sms'
-          subject: string | null
-          content: string
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          type: 'email' | 'whatsapp' | 'sms'
-          subject?: string | null
-          content: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          type?: 'email' | 'whatsapp' | 'sms'
-          subject?: string | null
-          content?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reminder_jobs_event_date_id_fkey"
+            columns: ["event_date_id"]
+            isOneToOne: false
+            referencedRelation: "event_dates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_jobs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_settings: {
         Row: {
