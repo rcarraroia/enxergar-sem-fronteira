@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Save, X, Send } from 'lucide-react'
 import { TemplateFormProps } from '@/types/notificationTemplates'
 import { validateTemplate } from '@/utils/templateProcessor'
+import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 export const TemplateForm: React.FC<TemplateFormProps> = ({
@@ -119,62 +120,66 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
         }
       }
 
-      // Prepare test data
+      // Prepare test data with sample variables
       const testData = {
-        template: formData,
-        contact: testContact,
-        sampleData: {
-          patient_name: 'Paciente Teste',
-          patient_email: 'teste@email.com',
-          event_title: 'Atendimento Oftalmológico Gratuito - TESTE',
-          event_date: new Date().toLocaleDateString('pt-BR'),
-          event_time: '08:00 - 18:00',
-          event_location: 'Local de Teste',
-          event_address: 'Endereço de Teste, 123 - Centro',
-          event_city: 'Cidade Teste',
-          confirmation_link: 'https://enxergarsemfronteira.com.br/confirm/test123',
-          unsubscribe_link: 'https://enxergarsemfronteira.com.br/unsubscribe/test123'
-        }
+        patient_name: 'Paciente Teste',
+        patient_email: 'teste@email.com',
+        event_title: 'Atendimento Oftalmológico Gratuito - TESTE',
+        event_date: new Date().toLocaleDateString('pt-BR'),
+        event_time: '08:00 - 18:00',
+        event_location: 'Local de Teste',
+        event_address: 'Endereço de Teste, 123 - Centro',
+        event_city: 'Cidade Teste',
+        confirmation_link: 'https://enxergarsemfronteira.com.br/confirm/test123',
+        unsubscribe_link: 'https://enxergarsemfronteira.com.br/unsubscribe/test123'
       }
 
-      console.log('🧪 Enviando teste:', testData)
+      console.log('🧪 Enviando teste para:', testContact)
 
-      // Call appropriate Edge Function for testing
-      let functionName = ''
-      if (formData.type === 'email') {
-        functionName = 'send-notification-email'
-      } else if (formData.type === 'sms') {
-        functionName = 'send-sms'
-      } else if (formData.type === 'whatsapp') {
-        functionName = 'send-whatsapp'
-      }
-
-      const response = await fetch(`/functions/v1/${functionName}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          to: testContact,
-          template_name: `test_${formData.name}`,
-          template_data: testData.sampleData,
-          custom_template: {
-            subject: formData.subject,
-            content: formData.content
-          },
-          test_mode: true
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao enviar teste')
-      }
-
-      const result = await response.json()
-      console.log('✅ Teste enviado:', result)
+      let response
       
+      if (formData.type === 'email') {
+        // Use the existing send-email function
+        response = await supabase.functions.invoke('send-email', {
+          body: {
+            templateName: `test_${formData.name}`,
+            templateData: testData,
+            recipientEmail: testContact,
+            recipientName: testData.patient_name,
+            testMode: true,
+            customTemplate: {
+              subject: formData.subject,
+              content: formData.content
+            }
+          }
+        })
+      } else if (formData.type === 'sms') {
+        // Use the existing send-sms function
+        response = await supabase.functions.invoke('send-sms', {
+          body: {
+            to: testContact,
+            message: formData.content,
+            templateData: testData,
+            testMode: true
+          }
+        })
+      } else if (formData.type === 'whatsapp') {
+        // Use the existing send-whatsapp function
+        response = await supabase.functions.invoke('send-whatsapp', {
+          body: {
+            to: testContact,
+            message: formData.content,
+            templateData: testData,
+            testMode: true
+          }
+        })
+      }
+
+      if (response?.error) {
+        throw new Error(response.error.message || 'Erro ao enviar teste')
+      }
+
+      console.log('✅ Teste enviado:', response)
       toast.success(`Teste enviado com sucesso para ${testContact}!`)
       
     } catch (error) {
