@@ -23,7 +23,7 @@ interface Campaign {
   updated_at: string
 }
 
-interface CampaignFormData {
+export interface CampaignFormData {
   slug: string
   title: string
   description?: string
@@ -34,6 +34,19 @@ interface CampaignFormData {
   allow_subscriptions?: boolean
   status?: string
   image_url?: string
+  start_date?: string
+  end_date?: string
+}
+
+export interface CreateCampaignData {
+  title: string
+  description?: string
+  event_id?: string
+  goal_amount?: number
+  suggested_amounts?: number[]
+  allow_custom_amount: boolean
+  allow_subscriptions: boolean
+  status: string
   start_date?: string
   end_date?: string
 }
@@ -64,17 +77,28 @@ export const useCampaigns = () => {
   })
 
   const createCampaignMutation = useMutation({
-    mutationFn: async (campaignData: CampaignFormData) => {
+    mutationFn: async (campaignData: CreateCampaignData) => {
+      const slug = campaignData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 50)
+
       const { data, error } = await supabase
         .from('campaigns')
         .insert({
-          ...campaignData,
+          slug,
+          title: campaignData.title,
+          description: campaignData.description,
+          event_id: campaignData.event_id,
           goal_amount: campaignData.goal_amount || 0,
           current_amount: 0,
           suggested_amounts: campaignData.suggested_amounts || [25, 50, 100, 200],
           allow_custom_amount: campaignData.allow_custom_amount ?? true,
           allow_subscriptions: campaignData.allow_subscriptions ?? true,
-          status: campaignData.status || 'active'
+          status: campaignData.status || 'active',
+          start_date: campaignData.start_date,
+          end_date: campaignData.end_date
         })
         .select()
         .single()
@@ -151,9 +175,9 @@ export const useCampaigns = () => {
     campaigns,
     isLoading,
     error,
-    createCampaign: createCampaignMutation.mutate,
-    updateCampaign: updateCampaignMutation.mutate,
-    deleteCampaign: deleteCampaignMutation.mutate,
+    createCampaign: createCampaignMutation,
+    updateCampaign: updateCampaignMutation,
+    deleteCampaign: deleteCampaignMutation,
     isCreating: createCampaignMutation.isPending,
     isUpdating: updateCampaignMutation.isPending,
     isDeleting: deleteCampaignMutation.isPending

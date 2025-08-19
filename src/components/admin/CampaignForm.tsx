@@ -80,7 +80,7 @@ export const CampaignForm = () => {
         end_date: endDate?.toISOString(),
       }
 
-      await createCampaign.mutateAsync(submitData)
+      createCampaign.mutate(submitData)
       reset()
       setCustomAmounts([25, 50, 100, 200])
       setStartDate(undefined)
