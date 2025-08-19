@@ -36,10 +36,14 @@ export const CampaignsList = () => {
     await updateCampaign.mutateAsync({ 
       id: campaign.id, 
       status: newStatus,
-      // Include required fields from the original campaign
       slug: campaign.slug,
       title: campaign.title,
-      goal_amount: campaign.goal_amount
+      goal_amount: campaign.goal_amount,
+      description: campaign.description || '',
+      event_id: campaign.event_id || null,
+      end_date: campaign.end_date || null,
+      allow_custom_amount: campaign.allow_custom_amount || false,
+      allow_subscriptions: campaign.allow_subscriptions || false
     })
   }
 
@@ -212,29 +216,4 @@ export const CampaignsList = () => {
       </CardContent>
     </Card>
   )
-
-  function getStatusBadge(status: string) {
-    const variants = {
-      active: 'default',
-      paused: 'secondary',
-      ended: 'destructive'
-    } as const
-
-    const labels = {
-      active: 'Ativa',
-      paused: 'Pausada',
-      ended: 'Encerrada'
-    }
-
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
-        {labels[status as keyof typeof labels] || status}
-      </Badge>
-    )
-  }
-
-  function getProgressPercentage(current: number, goal: number | null) {
-    if (!goal || goal === 0) return 0
-    return Math.min((current / goal) * 100, 100)
-  }
 }
