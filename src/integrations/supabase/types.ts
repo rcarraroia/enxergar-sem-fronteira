@@ -381,6 +381,39 @@ export type Database = {
           },
         ]
       }
+      notification_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       organizers: {
         Row: {
           address: string | null
@@ -574,66 +607,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      subscriptions: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notification_templates: {
-        Row: {
-          id: string
-          name: string
-          type: 'email' | 'whatsapp' | 'sms'
-          subject: string | null
-          content: string
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          type: 'email' | 'whatsapp' | 'sms'
-          subject?: string | null
-          content: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          type?: 'email' | 'whatsapp' | 'sms'
-          subject?: string | null
-          content?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       system_settings: {
         Row: {
