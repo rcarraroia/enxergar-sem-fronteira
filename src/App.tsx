@@ -121,12 +121,12 @@ function App() {
 
               {/* ADMIN V2 - Nova versão reconstruída (ISOLADA) */}
               <Route path="/admin-v2-access" element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute requireAdmin={true}>
                   <AdminV2Access />
                 </ProtectedRoute>
               } />
               <Route path="/admin-v2" element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute requireAdmin={true}>
                   <AdminDashboardV2 />
                 </ProtectedRoute>
               } />
