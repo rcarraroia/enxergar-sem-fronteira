@@ -1,328 +1,212 @@
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useAuth } from '@/hooks/useAuth'
+import { useEventsAdmin } from '@/hooks/useEventsAdmin'
 import { useRegistrations } from '@/hooks/useRegistrations'
-import { useEvents } from '@/hooks/useEvents'
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
-import { Search, Filter, Download, Users, Calendar, MapPin, Phone, Mail, AlertCircle } from 'lucide-react'
-import { formatDate, formatTime } from '@/utils/timeFormat'
+import { RegistrationsList } from '@/components/admin/RegistrationsList'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { 
+  ArrowLeft,
+  Users,
+  Calendar,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  Download,
+  FileText
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
-export default function AdminRegistrations() {
-  const { data: registrations, isLoading: isLoadingRegistrations } = useRegistrations()
-  const { data: events, isLoading: isLoadingEvents } = useEvents()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [eventFilter, setEventFilter] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
+const AdminRegistrations = () => {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  const { events } = useEventsAdmin()
+  const { data: allRegistrations } = useRegistrations()
+  const [selectedEventId, setSelectedEventId] = useState<string>('all')
+  const [selectedCity, setSelectedCity] = useState<string>('all')
 
-  const isLoading = isLoadingRegistrations || isLoadingEvents
-
-  // Filtrar registrações
-  const filteredRegistrations = registrations?.filter(registration => {
-    const matchesSearch = !searchTerm || 
-      registration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (registration.email && registration.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      registration.phone.includes(searchTerm)
-
-    const matchesEvent = !eventFilter || registration.event_date.event_id === eventFilter
-    const matchesStatus = !statusFilter || registration.status === statusFilter
-
-    return matchesSearch && matchesEvent && matchesStatus
-  }) || []
-
-  // Estatísticas
-  const totalRegistrations = registrations?.length || 0
-  const confirmedRegistrations = registrations?.filter(r => r.status === 'confirmed').length || 0
-  const pendingRegistrations = registrations?.filter(r => r.status === 'pending').length || 0
-  const cancelledRegistrations = registrations?.filter(r => r.status === 'cancelled').length || 0
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      'confirmed': 'default',
-      'pending': 'secondary',
-      'cancelled': 'destructive',
-      'completed': 'outline'
-    } as const
-
-    const labels = {
-      'confirmed': 'Confirmado',
-      'pending': 'Pendente',
-      'cancelled': 'Cancelado',
-      'completed': 'Concluído'
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
     }
+  }
 
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
-        {labels[status as keyof typeof labels] || status}
-      </Badge>
-    )
+  const getTotalRegistrations = () => {
+    if (!allRegistrations) return 0
+    return allRegistrations.length
+  }
+
+  const getRegistrationsByStatus = (status: string) => {
+    if (!allRegistrations) return 0
+    return allRegistrations.filter(reg => reg.status === status).length
+  }
+
+  const getEventStats = () => {
+    if (!events) return { totalEvents: 0, openEvents: 0, fullEvents: 0 }
+    
+    return {
+      totalEvents: events.length,
+      openEvents: events.filter(e => e.status === 'open').length,
+      fullEvents: events.filter(e => e.status === 'full').length
+    }
   }
 
   const handleExportCSV = () => {
-    if (!filteredRegistrations.length) return
-
-    const headers = [
-      'Nome', 'CPF', 'Email', 'Telefone', 'Cidade', 'Estado',
-      'Evento', 'Data do Evento', 'Horário', 'Status', 'Data de Inscrição'
-    ]
-
-    const csvData = filteredRegistrations.map(registration => [
-      registration.name,
-      registration.cpf,
-      registration.email || '',
-      registration.phone,
-      registration.city,
-      registration.state,
-      registration.event_date.event.city,
-      formatDate(registration.event_date.date),
-      `${formatTime(registration.event_date.start_time)} - ${formatTime(registration.event_date.end_time)}`,
-      registration.status,
-      formatDate(registration.created_at)
-    ])
-
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
-      .join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `registracoes_${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
+    // Implementar exportação CSV
+    toast.info('Exportando relatório em CSV...')
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <LoadingSkeleton key={i} variant="card" />
-          ))}
-        </div>
-        <LoadingSkeleton variant="table" />
-      </div>
-    )
+  const handleExportPDF = () => {
+    // Implementar exportação PDF
+    toast.info('Gerando relatório em PDF...')
   }
+
+  const stats = getEventStats()
+
+  // Criar opções do select com informações detalhadas das datas
+  const eventOptions = events?.flatMap(event => 
+    event.event_dates.map(eventDate => ({
+      id: eventDate.id, // Use event_date_id instead of event_id
+      eventId: event.id,
+      title: event.title,
+      city: event.city,
+      location: event.location,
+      date: new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR'),
+      time: `${eventDate.start_time} - ${eventDate.end_time}`,
+      displayName: `${event.city} - ${event.title} (${new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')})`
+    }))
+  ) || []
+
+  // Obter cidades únicas
+  const cities = [...new Set(events?.map(event => event.city) || [])]
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Gerenciar Inscrições</h1>
-        <p className="text-muted-foreground">
-          Visualize e gerencie todas as inscrições dos eventos
-        </p>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Inscrições</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalRegistrations}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Confirmadas</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{confirmedRegistrations}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{pendingRegistrations}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
-            <Users className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{cancelledRegistrations}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, email ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      <header className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/admin')}
+                className="p-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Gestão de Inscrições</h1>
+                <p className="text-sm text-muted-foreground">Visualizar e gerenciar participantes</p>
               </div>
             </div>
+            
+            <Button variant="outline" onClick={handleSignOut}>
+              Sair
+            </Button>
+          </div>
+        </div>
+      </header>
 
-            <Select value={eventFilter} onValueChange={setEventFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Filtrar por evento" />
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Estatísticas */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total de Inscrições</p>
+                  <p className="text-2xl font-bold">{getTotalRegistrations()}</p>
+                </div>
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Confirmadas</p>
+                  <p className="text-2xl font-bold">{getRegistrationsByStatus('confirmed')}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
+                  <p className="text-2xl font-bold">{getRegistrationsByStatus('pending')}</p>
+                </div>
+                <Clock className="h-8 w-8 text-orange-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total de Eventos</p>
+                  <p className="text-2xl font-bold">{stats.totalEvents}</p>
+                </div>
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filtros e Relatórios */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Filtros e Relatórios</CardTitle>
+            <CardDescription>
+              Selecione os filtros para visualizar inscrições específicas e gere relatórios
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+              <SelectTrigger className="max-w-md">
+                <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os eventos</SelectItem>
-                {events?.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.city}
+                <SelectItem value="all">Todos os Eventos</SelectItem>
+                {eventOptions.map((eventDate) => (
+                  <SelectItem key={eventDate.id} value={eventDate.id}>
+                    {eventDate.displayName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+          </CardContent>
+        </Card>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todos os status</SelectItem>
-                <SelectItem value="confirmed">Confirmado</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="cancelled">Cancelado</SelectItem>
-                <SelectItem value="completed">Concluído</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button onClick={handleExportCSV} variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              Exportar CSV
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lista de Inscrições */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inscrições ({filteredRegistrations.length})</CardTitle>
-          <CardDescription>
-            Lista de todas as inscrições cadastradas no sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredRegistrations.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-sm font-semibold">Nenhuma inscrição encontrada</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {searchTerm || eventFilter || statusFilter 
-                  ? 'Tente ajustar os filtros de busca.'
-                  : 'Não há inscrições cadastradas ainda.'}
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Paciente</TableHead>
-                    <TableHead>Contato</TableHead>
-                    <TableHead>Evento</TableHead>
-                    <TableHead>Data/Horário</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Inscrição</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRegistrations.map((registration) => (
-                    <TableRow key={registration.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{registration.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            CPF: {registration.cpf}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {registration.city}, {registration.state}
-                          </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-sm">
-                            <Phone className="h-3 w-3" />
-                            {registration.phone}
-                          </div>
-                          {registration.email && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Mail className="h-3 w-3" />
-                              {registration.email}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">
-                            {registration.event_date.event.city}
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {registration.event_date.event.location}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">
-                              {formatDate(registration.event_date.date)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {formatTime(registration.event_date.start_time)} - {formatTime(registration.event_date.end_time)}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        {getStatusBadge(registration.status)}
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground">
-                          {formatDate(registration.created_at)}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Lista de Inscrições */}
+        <RegistrationsList 
+          eventDateId={selectedEventId === 'all' ? undefined : selectedEventId}
+          showEventInfo={selectedEventId === 'all'}
+        />
+      </main>
     </div>
   )
 }
+
+export default AdminRegistrations

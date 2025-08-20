@@ -48,9 +48,9 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
 
   const filteredRegistrations = registrations?.filter(registration => {
     const matchesSearch = 
-      registration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (registration.email && registration.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      registration.cpf.includes(searchTerm.replace(/\D/g, ''))
+      registration.patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.patient.cpf.includes(searchTerm.replace(/\D/g, ''))
 
     const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
 
@@ -75,13 +75,16 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
         },
         total: filteredRegistrations.length,
         pacientes: filteredRegistrations.map(reg => ({
-          nome: reg.name,
-          cpf: reg.cpf,
-          email: reg.email || '',
-          telefone: reg.phone,
+          nome: reg.patient.nome,
+          cpf: reg.patient.cpf,
+          email: reg.patient.email,
+          telefone: reg.patient.telefone,
+          nascimento: reg.patient.data_nascimento ? 
+            new Date(reg.patient.data_nascimento).toLocaleDateString('pt-BR') : '',
+          diagnostico: reg.patient.diagnostico || '',
           status: reg.status,
           inscricao: new Date(reg.created_at).toLocaleDateString('pt-BR'),
-          evento: showEventInfo ? reg.event_date.event.city : '',
+          evento: showEventInfo ? reg.event_date.event.title : '',
           dataEvento: showEventInfo ? 
             new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR') : '',
           local: showEventInfo ? reg.event_date.event.location : ''
@@ -175,6 +178,8 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
       'CPF', 
       'Email',
       'Telefone',
+      'Data Nascimento',
+      'Diagnóstico',
       'Status',
       'Data Inscrição'
     ]
@@ -187,17 +192,19 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
       headers.join(','),
       ...filteredRegistrations.map(reg => {
         const baseRow = [
-          `"${reg.name}"`,
-          `"${reg.cpf}"`,
-          `"${reg.email || ''}"`,
-          `"${reg.phone}"`,
+          `"${reg.patient.nome}"`,
+          `"${reg.patient.cpf}"`,
+          `"${reg.patient.email}"`,
+          `"${reg.patient.telefone}"`,
+          reg.patient.data_nascimento ? `"${new Date(reg.patient.data_nascimento).toLocaleDateString('pt-BR')}"` : '""',
+          `"${reg.patient.diagnostico || ''}"`,
           `"${reg.status}"`,
           `"${new Date(reg.created_at).toLocaleDateString('pt-BR')}"`
         ]
 
         if (showEventInfo) {
           baseRow.splice(-2, 0, 
-            `"${reg.event_date.event.city}"`,
+            `"${reg.event_date.event.title}"`,
             `"${new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}"`,
             `"${reg.event_date.event.location}"`
           )
@@ -307,6 +314,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                 <TableRow>
                   <TableHead>Participante</TableHead>
                   <TableHead>Contato</TableHead>
+                  <TableHead>Informações</TableHead>
                   {showEventInfo && <TableHead>Evento</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead>Data Inscrição</TableHead>
@@ -317,30 +325,44 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                   <TableRow key={registration.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{registration.name}</div>
+                        <div className="font-medium">{registration.patient.nome}</div>
                         <div className="text-sm text-muted-foreground">
-                          CPF: {registration.cpf}
+                          CPF: {registration.patient.cpf}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        {registration.email && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Mail className="h-3 w-3" />
-                            {registration.email}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1 text-sm">
+                          <Mail className="h-3 w-3" />
+                          {registration.patient.email}
+                        </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Phone className="h-3 w-3" />
-                          {registration.phone}
+                          {registration.patient.telefone}
                         </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-sm">
+                        {registration.patient.data_nascimento && (
+                          <div>
+                            Nascimento: {new Date(registration.patient.data_nascimento).toLocaleDateString('pt-BR')}
+                          </div>
+                        )}
+                        {registration.patient.diagnostico && (
+                          <div className="flex items-center gap-1">
+                            <FileText className="h-3 w-3" />
+                            {registration.patient.diagnostico.slice(0, 30)}
+                            {registration.patient.diagnostico.length > 30 && '...'}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     {showEventInfo && (
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{registration.event_date.event.city}</div>
+                          <div className="font-medium text-sm">{registration.event_date.event.title}</div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
                             {new Date(registration.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}

@@ -1,9 +1,19 @@
+
 import React, { useState } from 'react'
+import { usePatients } from '@/hooks/usePatients'
 import { useRegistrations } from '@/hooks/useRegistrations'
+import { useEvents } from '@/hooks/useEvents'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { 
   Table, 
   TableBody, 
@@ -12,207 +22,405 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table'
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { 
   Users, 
   Search, 
   Download, 
-  Calendar,
   Loader2,
   Mail,
   Phone,
-  FileText
+  FileText,
+  Calendar,
+  Trash2,
+  MapPin,
+  Clock,
+  Filter,
+  FileDown
 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
+import { formatDate, formatTimeRange, formatDateTimeRange } from '@/utils/dateUtils'
 
-interface PatientsListProps {
-  eventId?: string
-  eventDateId?: string
-}
-
-export const PatientsList: React.FC<PatientsListProps> = ({ 
-  eventId,
-  eventDateId 
-}) => {
-  const { data: registrations, isLoading } = useRegistrations(eventId, eventDateId)
+export const PatientsList: React.FC = () => {
+  const { data: patients, isLoading, refetch } = usePatients()
+  const { data: registrations, isLoading: registrationsLoading } = useRegistrations()
+  const { data: events, isLoading: eventsLoading } = useEvents()
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedCity, setSelectedCity] = useState<string>('all')
+  const [selectedEvent, setSelectedEvent] = useState<string>('all')
+  const [selectedDate, setSelectedDate] = useState<string>('all')
+  const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
 
-  const filteredRegistrations = registrations?.filter(registration => {
-    const matchesSearch = 
-      registration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (registration.email && registration.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      registration.cpf.includes(searchTerm.replace(/\D/g, ''))
+  // Debug logs
+  React.useEffect(() => {
+    console.log('🔍 Dados carregados - Patients:', patients?.length || 0, 'Registrations:', registrations?.length || 0, 'Events:', events?.length || 0)
+  }, [patients, registrations, events])
 
-    const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
+  // Extrair cidades únicas dos eventos
+  const cities = React.useMemo(() => {
+    if (!events) return []
+    const uniqueCities = [...new Set(events.map(event => event.city).filter(Boolean))]
+    console.log('🏙️ Cidades encontradas:', uniqueCities)
+    return uniqueCities.sort()
+  }, [events])
 
-    return matchesSearch && matchesStatus
-  }) || []
+  // Extrair eventos únicos
+  const eventOptions = React.useMemo(() => {
+    if (!events) return []
+    const options = events.map(event => ({
+      id: event.id,
+      title: event.title,
+      city: event.city
+    }))
+    console.log('📅 Eventos encontrados:', options)
+    return options
+  }, [events])
+
+  // Extrair datas únicas baseadas no evento selecionado
+  const eventDates = React.useMemo(() => {
+    if (!registrations || selectedEvent === 'all') return []
+    
+    const datesForEvent = registrations
+      .filter(reg => reg.event_date?.event?.id === selectedEvent)
+      .map(reg => ({
+        id: reg.event_date.id,
+        date: reg.event_date.date,
+        start_time: reg.event_date.start_time,
+        end_time: reg.event_date.end_time
+      }))
+    
+    // Remover duplicatas
+    const uniqueDates = datesForEvent.filter((date, index, self) => 
+      index === self.findIndex(d => d.id === date.id)
+    )
+    
+    return uniqueDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }, [registrations, selectedEvent])
+
+  // Criar mapa de pacientes com suas inscrições
+  const patientsWithRegistrations = React.useMemo(() => {
+    if (!patients || !registrations) return []
+    
+    const result = patients.map(patient => {
+      const patientRegistrations = registrations.filter(reg => reg.patient?.id === patient.id)
+      return {
+        ...patient,
+        registrations: patientRegistrations
+      }
+    })
+    
+    console.log('👥 Pacientes com inscrições:', result.length)
+    console.log('🔍 Exemplo de registração completa:', registrations[0])
+    
+    // Log detalhado da estrutura
+    if (registrations[0]) {
+      console.log('📋 Estrutura da registração:')
+      console.log('- patient:', registrations[0].patient)
+      console.log('- event_date:', registrations[0].event_date)
+      console.log('- event_date.event:', registrations[0].event_date?.event)
+      console.log('- event_date.event.city:', registrations[0].event_date?.event?.city)
+    }
+    
+    // Log de paciente com registrações
+    const patientWithRegs = result.find(p => p.registrations.length > 0)
+    if (patientWithRegs) {
+      console.log('👤 Paciente com registrações:', patientWithRegs.nome)
+      console.log('📝 Suas registrações:', patientWithRegs.registrations.length)
+      console.log('🏙️ Cidade da primeira registração:', patientWithRegs.registrations[0]?.event_date?.event?.city)
+    }
+    
+    return result
+  }, [patients, registrations])
+
+  // Filtrar pacientes baseado nos critérios selecionados
+  const filteredPatients = React.useMemo(() => {
+    let filtered = patientsWithRegistrations
+
+    console.log('🔍 Iniciando filtros com', filtered.length, 'pacientes')
+    console.log('Filtros ativos:', { searchTerm, selectedCity, selectedEvent, selectedDate })
+
+    // Filtro por texto
+    if (searchTerm) {
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => 
+        patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.cpf.includes(searchTerm.replace(/\D/g, ''))
+      )
+      console.log(`📝 Filtro por texto: ${beforeCount} → ${filtered.length}`)
+    }
+
+    // Filtro por cidade
+    if (selectedCity !== 'all') {
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasCity = patient.registrations.some(reg => {
+          const eventCity = reg.event_date?.event?.city
+          console.log(`Comparando cidade: "${eventCity}" === "${selectedCity}"`)
+          return eventCity === selectedCity
+        })
+        return hasCity
+      })
+      console.log(`🏙️ Filtro por cidade "${selectedCity}": ${beforeCount} → ${filtered.length}`)
+    }
+
+    // Filtro por evento
+    if (selectedEvent !== 'all') {
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasEvent = patient.registrations.some(reg => {
+          const eventId = reg.event_date?.event?.id
+          return eventId === selectedEvent
+        })
+        return hasEvent
+      })
+      console.log(`📅 Filtro por evento "${selectedEvent}": ${beforeCount} → ${filtered.length}`)
+    }
+
+    // Filtro por data específica
+    if (selectedDate !== 'all') {
+      const beforeCount = filtered.length
+      filtered = filtered.filter(patient => {
+        const hasDate = patient.registrations.some(reg => {
+          const dateId = reg.event_date?.id
+          return dateId === selectedDate
+        })
+        return hasDate
+      })
+      console.log(`📆 Filtro por data "${selectedDate}": ${beforeCount} → ${filtered.length}`)
+    }
+
+    console.log('✅ Resultado final dos filtros:', filtered.length, 'pacientes')
+    return filtered
+  }, [patientsWithRegistrations, searchTerm, selectedCity, selectedEvent, selectedDate])
+
+  const handleDeletePatient = async (patientId: string, patientName: string) => {
+    try {
+      setDeletingPatient(patientId)
+      console.log('🗑️ Excluindo paciente:', patientId, patientName)
+
+      // Primeiro, deletar todas as inscrições do paciente
+      const { error: registrationsError } = await supabase
+        .from('registrations')
+        .delete()
+        .eq('patient_id', patientId)
+
+      if (registrationsError) {
+        console.error('❌ Erro ao excluir inscrições:', registrationsError)
+        throw registrationsError
+      }
+
+      // Depois, deletar o paciente
+      const { error: patientError } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', patientId)
+
+      if (patientError) {
+        console.error('❌ Erro ao excluir paciente:', patientError)
+        throw patientError
+      }
+
+      console.log('✅ Paciente e inscrições excluídos com sucesso')
+      toast.success(`Paciente ${patientName} e suas inscrições foram excluídos com sucesso`)
+      
+      // Atualizar a lista
+      refetch()
+    } catch (error: unknown) {
+      console.error('❌ Erro ao excluir paciente:', error)
+      toast.error('Erro ao excluir paciente: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+    } finally {
+      setDeletingPatient(null)
+    }
+  }
+
+  const handleExportPDF = () => {
+    if (!filteredPatients.length) return
+
+    // Criar conteúdo HTML para o PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Lista de Pacientes</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+          th { background-color: #f2f2f2; font-weight: bold; }
+          .patient-name { font-weight: bold; }
+          .registration { margin-bottom: 5px; font-size: 10px; }
+          .badge { padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+          .badge-confirmed { background: #d4edda; color: #155724; }
+          .badge-pending { background: #f8d7da; color: #721c24; }
+          .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
+          <p>Gerado em: ${formatDate(new Date().toISOString().split('T')[0])} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        
+        <div class="filters">
+          <strong>Filtros aplicados:</strong>
+          ${selectedCity !== 'all' ? `Cidade: ${selectedCity} | ` : ''}
+          ${selectedEvent !== 'all' ? `Evento específico | ` : ''}
+          ${selectedDate !== 'all' ? `Data específica | ` : ''}
+          ${searchTerm ? `Busca: "${searchTerm}" | ` : ''}
+          <strong>Total: ${filteredPatients.length} paciente(s)</strong>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Contato</th>
+              <th>Data Nasc.</th>
+              <th>Inscrições</th>
+              <th>LGPD</th>
+              <th>Cadastro</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredPatients.map(patient => `
+              <tr>
+                <td>
+                  <div class="patient-name">${patient.nome}</div>
+                  <div>CPF: ${patient.cpf}</div>
+                </td>
+                <td>
+                  <div>📧 ${patient.email}</div>
+                  <div>📞 ${patient.telefone}</div>
+                </td>
+                <td>
+                  ${patient.data_nascimento ? formatDate(patient.data_nascimento) : '-'}
+                  ${patient.diagnostico ? `<br><small>${patient.diagnostico.slice(0, 50)}${patient.diagnostico.length > 50 ? '...' : ''}</small>` : ''}
+                </td>
+                <td>
+                  ${patient.registrations.length === 0 ? 'Nenhuma inscrição' : 
+                    patient.registrations.map(reg => `
+                      <div class="registration">
+                        <strong>${reg.event_date?.event?.title || 'N/A'}</strong><br>
+                        📍 ${reg.event_date?.event?.city?.trim() || 'N/A'}<br>
+                        📅 ${reg.event_date?.date ? formatDate(reg.event_date.date) : 'N/A'} 
+                        ⏰ ${formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}<br>
+                        <span class="badge ${reg.status === 'confirmed' ? 'badge-confirmed' : 'badge-pending'}">
+                          ${reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                        </span>
+                      </div>
+                    `).join('')
+                  }
+                </td>
+                <td>
+                  <span class="badge ${patient.consentimento_lgpd ? 'badge-confirmed' : 'badge-pending'}">
+                    ${patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
+                  </span>
+                </td>
+                <td>${formatDate(patient.created_at.split('T')[0])}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>Documento gerado automaticamente pelo sistema Enxergar sem Fronteiras</p>
+          <p>Total de registros: ${filteredPatients.length}</p>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Criar e baixar o PDF
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(htmlContent)
+      printWindow.document.close()
+      
+      // Aguardar o carregamento e imprimir
+      printWindow.onload = () => {
+        printWindow.print()
+        printWindow.close()
+      }
+    }
+  }
 
   const handleExportCSV = () => {
-    if (!filteredRegistrations.length) return
+    if (!filteredPatients.length) return
 
     const headers = [
       'Nome',
       'CPF', 
       'Email',
       'Telefone',
-      'Status',
-      'Data Cadastro'
+      'Data Nascimento',
+      'Diagnóstico',
+      'LGPD',
+      'Data Cadastro',
+      'Inscrições'
     ]
 
     const csvContent = [
       headers.join(','),
-      ...filteredRegistrations.map(reg => [
-        `"${reg.name}"`,
-        `"${reg.cpf}"`,
-        `"${reg.email || ''}"`,
-        `"${reg.phone}"`,
-        `"${reg.status}"`,
-        `"${new Date(reg.created_at).toLocaleDateString('pt-BR')}"`
-      ].join(','))
+      ...filteredPatients.map(patient => {
+        const inscricoes = patient.registrations.map(reg => 
+          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${formatDateTimeRange(reg.event_date?.date || '', reg.event_date?.start_time || '', reg.event_date?.end_time || '')}`
+        ).join('; ')
+        
+        return [
+          `"${patient.nome}"`,
+          `"${patient.cpf}"`,
+          `"${patient.email}"`,
+          `"${patient.telefone}"`,
+          patient.data_nascimento ? `"${formatDate(patient.data_nascimento)}"` : '""',
+          `"${patient.diagnostico || ''}"`,
+          `"${patient.consentimento_lgpd ? 'Sim' : 'Não'}"`,
+          `"${formatDate(patient.created_at.split('T')[0])}"`,
+          `"${inscricoes}"`
+        ].join(',')
+      })
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `pacientes_${eventId || 'todos'}_${new Date().getTime()}.csv`)
+    
+    // Nome do arquivo mais descritivo baseado nos filtros
+    let fileName = 'pacientes'
+    if (selectedCity !== 'all') fileName += `_${selectedCity}`
+    if (selectedEvent !== 'all') fileName += '_evento'
+    if (selectedDate !== 'all') fileName += '_data'
+    fileName += `_${formatDate(new Date().toISOString().split('T')[0]).replace(/\//g, '-')}.csv`
+    
+    link.setAttribute('download', fileName)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
-  const handleExportPDF = async () => {
-    if (!filteredRegistrations.length) {
-      alert('Nenhuma inscrição para exportar')
-      return
-    }
-
-    try {
-      // Preparar dados para PDF
-      const pdfData = {
-        titulo: 'Relatório de Pacientes',
-        data: new Date().toLocaleDateString('pt-BR'),
-        filtros: {
-          evento: eventId || 'Todos os eventos',
-          status: statusFilter === 'all' ? 'Todos os status' : statusFilter,
-          busca: searchTerm || 'Sem filtro'
-        },
-        total: filteredRegistrations.length,
-        pacientes: filteredRegistrations.map(reg => ({
-          nome: reg.name,
-          cpf: reg.cpf,
-          email: reg.email || '',
-          telefone: reg.phone,
-          status: reg.status,
-          inscricao: new Date(reg.created_at).toLocaleDateString('pt-BR')
-        }))
-      }
-
-      // Criar HTML para PDF
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>${pdfData.titulo}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .total { font-weight: bold; margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${pdfData.titulo}</h1>
-            <p>Gerado em: ${pdfData.data}</p>
-          </div>
-          
-          <div class="filters">
-            <h3>Filtros Aplicados:</h3>
-            <p><strong>Evento:</strong> ${pdfData.filtros.evento}</p>
-            <p><strong>Status:</strong> ${pdfData.filtros.status}</p>
-            <p><strong>Busca:</strong> ${pdfData.filtros.busca}</p>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th>Status</th>
-                <th>Data Inscrição</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${pdfData.pacientes.map(p => `
-                <tr>
-                  <td>${p.nome}</td>
-                  <td>${p.cpf}</td>
-                  <td>${p.email}</td>
-                  <td>${p.telefone}</td>
-                  <td>${p.status}</td>
-                  <td>${p.inscricao}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <div class="total">
-            <p>Total de pacientes: ${pdfData.total}</p>
-          </div>
-        </body>
-        </html>
-      `
-
-      // Abrir em nova janela para impressão/PDF
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        printWindow.focus()
-        printWindow.print()
-      }
-
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      alert('Erro ao gerar PDF. Tente novamente.')
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return <Badge variant="default">Confirmado</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>
-      case 'waiting':
-        return <Badge variant="secondary">Lista de Espera</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
-  if (isLoading) {
+  if (isLoading || registrationsLoading || eventsLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Carregando pacientes...</span>
+            <span className="ml-2">Carregando dados...</span>
           </div>
         </CardContent>
       </Card>
@@ -224,16 +432,21 @@ export const PatientsList: React.FC<PatientsListProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Pacientes Cadastrados
+          Gestão de Pacientes
         </CardTitle>
         <CardDescription>
-          {filteredRegistrations.length} paciente(s) encontrado(s)
+          Visualize e gerencie pacientes por cidade, evento e data específica
         </CardDescription>
       </CardHeader>
       <CardContent>
         {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Filter className="h-4 w-4" />
+            Filtros
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -243,37 +456,134 @@ export const PatientsList: React.FC<PatientsListProps> = ({
                 className="pl-10"
               />
             </div>
+            
+            <Select value={selectedCity} onValueChange={setSelectedCity}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por cidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as cidades</SelectItem>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3 w-3" />
+                      {city}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedEvent} onValueChange={(value) => {
+              setSelectedEvent(value)
+              setSelectedDate('all') // Reset date when event changes
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por evento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os eventos</SelectItem>
+                {eventOptions.map(event => (
+                  <SelectItem key={event.id} value={event.id}>
+                    <div className="flex flex-col">
+                      <span>{event.title}</span>
+                      <span className="text-xs text-muted-foreground">{event.city}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select 
+              value={selectedDate} 
+              onValueChange={setSelectedDate}
+              disabled={selectedEvent === 'all'}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por data" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as datas</SelectItem>
+                {eventDates.map(date => (
+                  <SelectItem key={date.id} value={date.id}>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3" />
+                      <div className="flex flex-col">
+                        <span>{formatDate(date.date)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimeRange(date.start_time, date.end_time)}
+                        </span>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="confirmed">Confirmado</SelectItem>
-              <SelectItem value="cancelled">Cancelado</SelectItem>
-              <SelectItem value="waiting">Lista de Espera</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={handleExportCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-          <Button onClick={handleExportPDF} variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Exportar PDF
-          </Button>
+
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              {filteredPatients.length} paciente(s) encontrado(s)
+              {(selectedCity !== 'all' || selectedEvent !== 'all' || selectedDate !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCity('all')
+                    setSelectedEvent('all')
+                    setSelectedDate('all')
+                    setSearchTerm('')
+                  }}
+                  className="ml-2 h-6 px-2 text-xs"
+                >
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleExportCSV} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                CSV
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FileDown className="h-4 w-4 mr-2" />
+                PDF
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg text-sm">
+          <h4 className="font-medium mb-2">Debug Info:</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p>Pacientes: {patients?.length || 0}</p>
+              <p>Registrações: {registrations?.length || 0}</p>
+              <p>Eventos: {events?.length || 0}</p>
+            </div>
+            <div>
+              <p>Cidades: {cities.length}</p>
+              <p>Pacientes filtrados: {filteredPatients.length}</p>
+              <p>Filtros ativos: {[selectedCity !== 'all', selectedEvent !== 'all', selectedDate !== 'all', searchTerm !== ''].filter(Boolean).length}</p>
+            </div>
+          </div>
         </div>
 
         {/* Tabela */}
-        {filteredRegistrations.length === 0 ? (
+        {filteredPatients.length === 0 ? (
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== 'all' 
+              {searchTerm || selectedCity !== 'all' || selectedEvent !== 'all' || selectedDate !== 'all'
                 ? 'Nenhum paciente encontrado com estes filtros' 
-                : 'Nenhum paciente cadastrado'}
+                : 'Nenhum paciente cadastrado ainda'}
             </p>
+            {patients && patients.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Existem {patients.length} pacientes no total, mas nenhum corresponde aos filtros aplicados.
+              </p>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -282,41 +592,144 @@ export const PatientsList: React.FC<PatientsListProps> = ({
                 <TableRow>
                   <TableHead>Paciente</TableHead>
                   <TableHead>Contato</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Data de Nasc.</TableHead>
+                  <TableHead>Inscrições</TableHead>
+                  <TableHead>LGPD</TableHead>
                   <TableHead>Data Cadastro</TableHead>
+                  <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegistrations.map((registration) => (
-                  <TableRow key={registration.id}>
+                {filteredPatients.map((patient) => (
+                  <TableRow key={patient.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{registration.name}</div>
+                        <div className="font-medium">{patient.nome}</div>
                         <div className="text-sm text-muted-foreground">
-                          CPF: {registration.cpf}
+                          CPF: {patient.cpf}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        {registration.email && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Mail className="h-3 w-3" />
-                            {registration.email}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1 text-sm">
+                          <Mail className="h-3 w-3" />
+                          {patient.email}
+                        </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Phone className="h-3 w-3" />
-                          {registration.phone}
+                          {patient.telefone}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(registration.status)}
+                      <div className="space-y-1 text-sm">
+                        {patient.data_nascimento && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(patient.data_nascimento)}
+                          </div>
+                        )}
+                        {patient.diagnostico && (
+                          <div className="flex items-center gap-1">
+                            <FileText className="h-3 w-3" />
+                            {patient.diagnostico.slice(0, 30)}
+                            {patient.diagnostico.length > 30 && '...'}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {patient.registrations.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">Nenhuma inscrição</span>
+                        ) : (
+                          patient.registrations.slice(0, 2).map((reg, index) => (
+                            <div key={reg.id} className="text-xs space-y-1">
+                              <div className="font-medium">{reg.event_date?.event?.title}</div>
+                              <div className="text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-2 w-2" />
+                                {reg.event_date?.event?.city?.trim()}
+                              </div>
+                              <div className="text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-2 w-2" />
+                                {formatDate(reg.event_date?.date || '')}
+                                <span className="mx-1">•</span>
+                                <Clock className="h-2 w-2" />
+                                {formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}
+                              </div>
+                              <Badge 
+                                variant={reg.status === 'confirmed' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                              </Badge>
+                            </div>
+                          ))
+                        )}
+                        {patient.registrations.length > 2 && (
+                          <div className="text-xs text-muted-foreground">
+                            +{patient.registrations.length - 2} mais
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={patient.consentimento_lgpd ? "default" : "destructive"}>
+                        {patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(registration.created_at).toLocaleDateString('pt-BR')}
+                        {formatDate(patient.created_at.split('T')[0])}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={deletingPatient === patient.id}
+                            >
+                              {deletingPatient === patient.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o paciente <strong>{patient.nome}</strong>?
+                                <br /><br />
+                                <span className="text-destructive font-medium">
+                                  ⚠️ Esta ação irá excluir permanentemente:
+                                </span>
+                                <ul className="list-disc list-inside mt-2 space-y-1">
+                                  <li>Todos os dados do paciente</li>
+                                  <li>Todas as inscrições em eventos</li>
+                                  <li>Histórico de registros</li>
+                                </ul>
+                                <br />
+                                Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeletePatient(patient.id, patient.nome)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir Permanentemente
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -1,18 +1,64 @@
+
 import React, { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Textarea } from '@/components/ui/textarea'
-import { CPFInput } from '@/components/ui/cpf-input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Calendar, MapPin, Clock, Users, AlertCircle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, UserPlus, Calendar, MapPin, Clock } from 'lucide-react'
-import { useRegistrations } from '@/hooks/useRegistrations'
 import { formatTime, formatDate } from '@/utils/timeFormat'
-import { validateCPF } from '@/utils/cpfUtils'
+import { validateCPF, cleanCPF } from '@/utils/cpfUtils'
+import { CPFInput } from '@/components/ui/cpf-input'
+import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
+
+const patientSchema = z.object({
+  nome: z.string()
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres')
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
+  email: z.string()
+    .email('Email inválido')
+    .max(255, 'Email muito longo'),
+  telefone: z.string()
+    .min(10, 'Telefone deve ter pelo menos 10 dígitos')
+    .max(15, 'Telefone muito longo')
+    .regex(/^[\d\s\-()]+$/, 'Formato de telefone inválido'),
+  cpf: z.string()
+    .min(11, 'CPF deve ter 11 dígitos')
+    .refine((cpf) => validateCPF(cpf), 'CPF inválido'),
+  data_nascimento: z.string()
+    .min(1, 'Data de nascimento é obrigatória')
+    .refine((date) => {
+      if (!date) return false
+      const birthDate = new Date(date)
+      const today = new Date()
+      const age = today.getFullYear() - birthDate.getFullYear()
+      return age >= 0 && age <= 120
+    }, 'Data de nascimento inválida'),
+  consentimento_lgpd: z.boolean().refine(val => val === true, 'Você deve aceitar os termos da LGPD'),
+})
+
+type PatientFormData = z.infer<typeof patientSchema>
+
+interface EventInfo {
+  id: string
+  city: string
+  title: string
+  location: string
+  address: string
+  date: string
+  start_time: string
+  end_time: string
+  available_slots: number
+  total_slots: number
+}
 
 interface PatientRegistrationFormProps {
   eventId?: string
@@ -20,521 +66,386 @@ interface PatientRegistrationFormProps {
   onSuccess?: () => void
 }
 
-interface EventInfo {
-  id: string
-  title: string
-  description: string
-  location: string
-  address: string
-  city: string
-  event_dates: Array<{
-    id: string
-    date: string
-    start_time: string
-    end_time: string
-    available_slots: number
-    total_slots: number
-  }>
-}
+export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
+  const [loadingEventInfo, setLoadingEventInfo] = useState(false)
+  const [duplicateError, setDuplicateError] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [registeredPatientName, setRegisteredPatientName] = useState('')
 
-const fetchEventInfo = async (id: string): Promise<EventInfo | null> => {
-  if (!id) return null
-  
-  try {
-    const { data, error } = await supabase
-      .from('events')
-      .select(`
-        id,
-        title,
-        description,
-        location,
-        address,
-        city,
-        event_dates (
+  console.log('🎯 PatientRegistrationForm iniciado com:', { eventId, eventDateId })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+    trigger,
+  } = useForm<PatientFormData>({
+    resolver: zodResolver(patientSchema),
+  })
+
+  const consentimento = watch('consentimento_lgpd')
+  const cpfValue = watch('cpf')
+
+  // Buscar informações do evento se eventId e eventDateId forem fornecidos
+  useEffect(() => {
+    if (eventId && eventDateId) {
+      fetchEventInfo()
+    }
+  }, [eventId, eventDateId, fetchEventInfo])
+
+  // Validação em tempo real do CPF
+  useEffect(() => {
+    if (cpfValue && cpfValue.length === 11) {
+      trigger('cpf')
+    }
+  }, [cpfValue, trigger])
+
+  const fetchEventInfo = async () => {
+    if (!eventId || !eventDateId) return
+
+    try {
+      setLoadingEventInfo(true)
+      console.log('🔍 Buscando informações do evento:', { eventId, eventDateId })
+
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select(`
           id,
+          city,
+          title,
+          location,
+          address
+        `)
+        .eq('id', eventId)
+        .single()
+
+      if (eventError) {
+        console.error('❌ Erro ao buscar evento:', eventError)
+        return
+      }
+
+      const { data: eventDateData, error: eventDateError } = await supabase
+        .from('event_dates')
+        .select(`
           date,
           start_time,
           end_time,
           available_slots,
           total_slots
-        )
-      `)
-      .eq('id', id)
-      .single()
+        `)
+        .eq('id', eventDateId)
+        .single()
 
-    if (error) throw error
-    return data
-  } catch (error) {
-    console.error('Erro ao buscar informações do evento:', error)
-    toast.error('Erro ao carregar informações do evento')
-    return null
-  }
-}
-
-export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
-  const { createRegistration } = useRegistrations()
-  const [isLoading, setIsLoading] = useState(false)
-  const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
-  const [isLoadingEvent, setIsLoadingEvent] = useState(false)
-
-  const [formData, setFormData] = useState({
-    name: '',
-    cpf: '',
-    birth_date: '',
-    gender: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
-    medical_history: '',
-    current_medications: '',
-    allergies: '',
-    has_previous_eye_surgery: false,
-    wears_glasses: false,
-    main_complaint: '',
-    accepts_terms: false,
-    accepts_privacy: false
-  })
-
-  useEffect(() => {
-    if (eventId) {
-      setIsLoadingEvent(true)
-      fetchEventInfo(eventId)
-        .then(setEventInfo)
-        .finally(() => setIsLoadingEvent(false))
-    }
-  }, [eventId])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.accepts_terms || !formData.accepts_privacy) {
-      toast.error('Você deve aceitar os termos de uso e política de privacidade')
-      return
-    }
-
-    if (!validateCPF(formData.cpf)) {
-      toast.error('CPF inválido')
-      return
-    }
-
-    if (!eventDateId && eventInfo?.event_dates.length === 1) {
-      // Se não foi especificado eventDateId mas há apenas uma data, usar essa
-      const singleEventDateId = eventInfo.event_dates[0].id
-      await submitRegistration(singleEventDateId)
-    } else if (eventDateId) {
-      await submitRegistration(eventDateId)
-    } else {
-      toast.error('Data do evento não especificada')
-      return
-    }
-  }
-
-  const submitRegistration = async (dateId: string) => {
-    setIsLoading(true)
-    try {
-      await createRegistration.mutateAsync({
-        ...formData,
-        event_date_id: dateId
-      })
-      
-      toast.success('Cadastro realizado com sucesso!')
-      
-      if (onSuccess) {
-        onSuccess()
+      if (eventDateError) {
+        console.error('❌ Erro ao buscar data do evento:', eventDateError)
+        return
       }
+
+      const combinedEventInfo: EventInfo = {
+        ...eventData,
+        ...eventDateData
+      }
+
+      setEventInfo(combinedEventInfo)
+      console.log('✅ Informações do evento carregadas:', combinedEventInfo)
     } catch (error) {
-      console.error('Erro ao realizar cadastro:', error)
-      toast.error('Erro ao realizar cadastro. Tente novamente.')
+      console.error('💥 Erro ao buscar informações do evento:', error)
     } finally {
-      setIsLoading(false)
+      setLoadingEventInfo(false)
     }
   }
 
-  if (isLoadingEvent) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin mr-2" />
-            <span>Carregando informações do evento...</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
+  const onSubmit = async (data: PatientFormData) => {
+    try {
+      setIsSubmitting(true)
+      setDuplicateError(null)
+      console.log('📝 Iniciando cadastro de paciente:', data)
+
+      // Limpar CPF antes de salvar no banco
+      const cleanedCPF = cleanCPF(data.cpf)
+
+      // Inserir paciente
+      const { data: patient, error: patientError } = await supabase
+        .from('patients')
+        .insert({
+          nome: data.nome,
+          email: data.email,
+          telefone: data.telefone,
+          cpf: cleanedCPF, // Salvar CPF sempre limpo no banco
+          data_nascimento: data.data_nascimento,
+          consentimento_lgpd: data.consentimento_lgpd,
+        })
+        .select()
+        .single()
+
+      if (patientError) {
+        console.error('❌ Erro ao criar paciente:', patientError)
+        
+        // Tratar erros de duplicação
+        if (patientError.message.includes('unique constraint') || 
+            patientError.message.includes('unique_cpf') ||
+            patientError.message.includes('Já existe um paciente cadastrado')) {
+          
+          if (patientError.message.includes('CPF')) {
+            setDuplicateError('Este CPF já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
+          } else if (patientError.message.includes('email')) {
+            setDuplicateError('Este email já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
+          } else {
+            setDuplicateError('Já existe um cadastro com essas informações. Verifique seus dados ou entre em contato conosco.')
+          }
+          return
+        }
+        
+        throw patientError
+      }
+
+      console.log('✅ Paciente criado:', patient)
+
+      // Se há uma data específica de evento selecionada, criar inscrição
+      if (eventDateId && patient) {
+        console.log('📅 Criando inscrição para data do evento:', eventDateId)
+        
+        const { error: registrationError } = await supabase
+          .from('registrations')
+          .insert({
+            patient_id: patient.id,
+            event_date_id: eventDateId,
+            status: 'confirmed',
+          })
+
+        if (registrationError) {
+          console.error('❌ Erro ao criar inscrição:', registrationError)
+          throw registrationError
+        }
+
+        console.log('✅ Inscrição criada com sucesso')
+
+        // Gerar token de acesso único para o paciente
+        const accessToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        
+        const { error: tokenError } = await supabase
+          .from('patient_access_tokens')
+          .insert({
+            patient_id: patient.id,
+            token: accessToken,
+            event_date_id: eventDateId,
+          })
+
+        if (tokenError) {
+          console.error('⚠️ Erro ao criar token de acesso:', tokenError)
+          // Não falhar a inscrição por causa do token
+        } else {
+          console.log('🔑 Token de acesso criado')
+        }
+
+        // Mostrar modal de sucesso em vez de toast
+        setRegisteredPatientName(data.nome)
+        setShowSuccessModal(true)
+      } else {
+        console.log('📋 Cadastro sem evento específico (lista de espera)')
+        toast.success('Cadastro realizado com sucesso!')
+      }
+
+      reset()
+      setDuplicateError(null)
+      onSuccess?.()
+    } catch (error) {
+      console.error('💥 Erro ao processar inscrição:', error)
+      toast.error('Erro ao processar inscrição. Tente novamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const selectedEventDate = eventInfo?.event_dates.find(ed => ed.id === eventDateId) || 
-                           (eventInfo?.event_dates.length === 1 ? eventInfo.event_dates[0] : null)
+  const handleCPFChange = (cleanValue: string) => {
+    setValue('cpf', cleanValue)
+    if (cleanValue.length === 11) {
+      trigger('cpf')
+    }
+  }
 
   return (
     <div className="space-y-6">
-      {/* Informações do Evento */}
+      {/* Resumo do Evento */}
       {eventInfo && (
-        <Card>
+        <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-primary">
               <Calendar className="h-5 w-5" />
-              {eventInfo.title}
+              Resumo do Evento
             </CardTitle>
-            <CardDescription>{eventInfo.description}</CardDescription>
+            <CardDescription>
+              Você está se inscrevendo para o seguinte evento:
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span>{eventInfo.location}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {eventInfo.address}, {eventInfo.city}
-            </div>
-            
-            {selectedEventDate && (
-              <div className="border-t pt-4 space-y-2">
-                <h4 className="font-semibold">Data e Horário:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-lg text-primary">{eventInfo.city}</h3>
+                  <p className="text-sm text-muted-foreground">{eventInfo.title}</p>
+                </div>
+                
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-primary" />
-                  <span>{formatDate(selectedEventDate.date)}</span>
+                  <span className="font-medium">{formatDate(eventInfo.date)}</span>
                 </div>
+                
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span>{formatTime(selectedEventDate.start_time)} às {formatTime(selectedEventDate.end_time)}</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {selectedEventDate.available_slots} vagas disponíveis
+                  <span>{formatTime(eventInfo.start_time)} às {formatTime(eventInfo.end_time)}</span>
                 </div>
               </div>
-            )}
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-primary mt-0.5" />
+                  <div>
+                    <div className="font-medium">{eventInfo.location}</div>
+                    <div className="text-muted-foreground">{eventInfo.address}</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-sm">
+                    {eventInfo.available_slots} de {eventInfo.total_slots} vagas disponíveis
+                  </span>
+                  <Badge variant="secondary" className="ml-2">
+                    {eventInfo.available_slots > 0 ? 'Disponível' : 'Lotado'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Formulário de Cadastro */}
-      <Card className="w-full max-w-2xl mx-auto">
+      {/* Formulário de Inscrição */}
+      <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            Cadastro do Paciente
+          <CardTitle>
+            {eventInfo ? 'Dados para Inscrição' : 'Inscrição de Paciente'}
           </CardTitle>
           <CardDescription>
-            Preencha seus dados para se cadastrar no evento oftalmológico
+            {eventInfo 
+              ? 'Preencha seus dados para confirmar a inscrição no evento'
+              : 'Preencha os dados para se inscrever no evento'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Dados Pessoais */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Dados Pessoais</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nome Completo *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
+          {/* Alerta de erro de duplicação */}
+          {duplicateError && (
+            <Alert className="mb-6 border-destructive/50 text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {duplicateError}
+              </AlertDescription>
+            </Alert>
+          )}
 
-                <div>
-                  <Label htmlFor="cpf">CPF *</Label>
-                  <CPFInput
-                    value={formData.cpf}
-                    onChange={(value) => setFormData(prev => ({ ...prev, cpf: value }))}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="nome">Nome Completo</Label>
+                <Input
+                  id="nome"
+                  {...register('nome')}
+                  placeholder="Seu nome completo"
+                />
+                {errors.nome && (
+                  <p className="text-sm text-destructive mt-1">{errors.nome.message}</p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="birth_date">Data de Nascimento *</Label>
-                  <Input
-                    id="birth_date"
-                    type="date"
-                    value={formData.birth_date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email')}
+                  placeholder="seu@email.com"
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
+                )}
+              </div>
 
-                <div>
-                  <Label htmlFor="gender">Gênero *</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="masculino">Masculino</SelectItem>
-                      <SelectItem value="feminino">Feminino</SelectItem>
-                      <SelectItem value="outro">Outro</SelectItem>
-                      <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input
+                  id="telefone"
+                  {...register('telefone')}
+                  placeholder="(11) 99999-9999"
+                />
+                {errors.telefone && (
+                  <p className="text-sm text-destructive mt-1">{errors.telefone.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="cpf">CPF</Label>
+                <CPFInput
+                  id="cpf"
+                  value={cpfValue || ''}
+                  onChange={handleCPFChange}
+                />
+                {errors.cpf && (
+                  <p className="text-sm text-destructive mt-1">{errors.cpf.message}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+                <Input
+                  id="data_nascimento"
+                  type="date"
+                  {...register('data_nascimento')}
+                />
+                {errors.data_nascimento && (
+                  <p className="text-sm text-destructive mt-1">{errors.data_nascimento.message}</p>
+                )}
               </div>
             </div>
 
-            {/* Contato */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Contato</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone">Telefone *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="consentimento_lgpd"
+                checked={consentimento}
+                onCheckedChange={(checked) => setValue('consentimento_lgpd', checked as boolean)}
+              />
+              <Label htmlFor="consentimento_lgpd" className="text-sm leading-5">
+                Concordo com o tratamento dos meus dados pessoais de acordo com a{' '}
+                <a href="/lgpd" className="text-primary hover:underline">
+                  Lei Geral de Proteção de Dados (LGPD)
+                </a>
+                {' '}e autorizo o contato para informações sobre o evento.
+              </Label>
             </div>
+            {errors.consentimento_lgpd && (
+              <p className="text-sm text-destructive">{errors.consentimento_lgpd.message}</p>
+            )}
 
-            {/* Endereço */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Endereço</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="address">Endereço Completo *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">Cidade *</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="state">Estado *</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="zip_code">CEP *</Label>
-                    <Input
-                      id="zip_code"
-                      value={formData.zip_code}
-                      onChange={(e) => setFormData(prev => ({ ...prev, zip_code: e.target.value }))}
-                      placeholder="00000-000"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contato de Emergência */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Contato de Emergência</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="emergency_contact_name">Nome do Contato *</Label>
-                  <Input
-                    id="emergency_contact_name"
-                    value={formData.emergency_contact_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact_name: e.target.value }))}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="emergency_contact_phone">Telefone do Contato *</Label>
-                  <Input
-                    id="emergency_contact_phone"
-                    value={formData.emergency_contact_phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact_phone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Informações Médicas */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Informações Médicas</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="medical_history">Histórico Médico</Label>
-                  <Textarea
-                    id="medical_history"
-                    value={formData.medical_history}
-                    onChange={(e) => setFormData(prev => ({ ...prev, medical_history: e.target.value }))}
-                    placeholder="Descreva seu histórico médico relevante..."
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="current_medications">Medicações Atuais</Label>
-                  <Textarea
-                    id="current_medications"
-                    value={formData.current_medications}
-                    onChange={(e) => setFormData(prev => ({ ...prev, current_medications: e.target.value }))}
-                    placeholder="Liste os medicamentos que você usa atualmente..."
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="allergies">Alergias</Label>
-                  <Textarea
-                    id="allergies"
-                    value={formData.allergies}
-                    onChange={(e) => setFormData(prev => ({ ...prev, allergies: e.target.value }))}
-                    placeholder="Liste suas alergias conhecidas..."
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="has_previous_eye_surgery"
-                      checked={formData.has_previous_eye_surgery}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, has_previous_eye_surgery: !!checked }))
-                      }
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor="has_previous_eye_surgery">
-                      Já fez cirurgia nos olhos?
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="wears_glasses"
-                      checked={formData.wears_glasses}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, wears_glasses: !!checked }))
-                      }
-                      disabled={isLoading}
-                    />
-                    <Label htmlFor="wears_glasses">
-                      Usa óculos ou lentes de contato?
-                    </Label>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="main_complaint">Queixa Principal</Label>
-                  <Textarea
-                    id="main_complaint"
-                    value={formData.main_complaint}
-                    onChange={(e) => setFormData(prev => ({ ...prev, main_complaint: e.target.value }))}
-                    placeholder="Descreva o motivo principal da sua consulta..."
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Termos e Condições */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Termos e Condições</h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="accepts_terms"
-                    checked={formData.accepts_terms}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, accepts_terms: !!checked }))
-                    }
-                    disabled={isLoading}
-                    className="mt-1"
-                  />
-                  <Label htmlFor="accepts_terms" className="text-sm leading-relaxed">
-                    Aceito os{' '}
-                    <a href="/terms-of-use" target="_blank" className="text-primary hover:underline">
-                      Termos de Uso
-                    </a>{' '}
-                    e concordo com as condições do atendimento.
-                  </Label>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="accepts_privacy"
-                    checked={formData.accepts_privacy}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, accepts_privacy: !!checked }))
-                    }
-                    disabled={isLoading}
-                    className="mt-1"
-                  />
-                  <Label htmlFor="accepts_privacy" className="text-sm leading-relaxed">
-                    Aceito a{' '}
-                    <a href="/privacy-policy" target="_blank" className="text-primary hover:underline">
-                      Política de Privacidade
-                    </a>{' '}
-                    e autorizo o tratamento dos meus dados pessoais.
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700" 
-              disabled={isLoading || !formData.accepts_terms || !formData.accepts_privacy}
-            >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Realizando Cadastro...' : 'Realizar Cadastro'}
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? 'Processando...' : 'Confirmar Inscrição'}
             </Button>
           </form>
         </CardContent>
       </Card>
+
+      {/* Modal de Sucesso */}
+      <RegistrationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        eventInfo={eventInfo}
+        patientName={registeredPatientName}
+      />
     </div>
   )
 }
