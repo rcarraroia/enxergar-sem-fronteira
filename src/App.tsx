@@ -26,7 +26,7 @@ import AdminEventsV2 from "./pages/admin-v2/Events";
 import CreateEventV2 from "./pages/admin-v2/Events/create";
 import EditEventV2 from "./pages/admin-v2/Events/edit";
 import AdminPatientsV2 from "./pages/admin-v2/Patients";
-import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
+// import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminOrganizersV2 from "./pages/admin-v2/Organizers";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
@@ -161,11 +161,11 @@ function App() {
                   <AdminPatientsV2 />
                 </ProtectedRoute>
               } />
-              <Route path="/admin-v2/registrations" element={
+              {/* <Route path="/admin-v2/registrations" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminRegistrationsV2 />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/admin-v2/organizers" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminOrganizersV2 />
