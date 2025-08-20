@@ -6,9 +6,10 @@ import { toast } from 'sonner'
 interface AuthContextType {
   user: User | null
   loading: boolean
-  userRole: 'admin' | 'organizer' | 'user' | null
+  userRole: 'admin' | 'organizer' | 'user' | 'superadmin' | null
   isAdmin: boolean
   isOrganizer: boolean
+  isSuperAdmin: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, name: string, role?: string) => Promise<void>
   signOut: () => Promise<void>
@@ -16,9 +17,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user'> => {
+const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user' | 'superadmin'> => {
   try {
-    // CORREÇÃO CRÍTICA: Verificar role baseado na tabela organizers, não no email
+    // Verificar role baseado na tabela organizers
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
       .select('id, role, status')
@@ -31,19 +32,12 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
       return 'user'
     }
 
-    if (organizerData) {
-      // Se tem role definido na tabela, usar esse role
-      if (organizerData.role === 'admin') {
-        console.log('🔐 Usuário identificado como ADMIN via tabela organizers')
-        return 'admin'
-      }
-      
-      console.log('🔐 Usuário identificado como ORGANIZADOR via tabela organizers')
-      return 'organizer'
+    if (organizerData && organizerData.role) {
+      console.log('🔐 Usuário identificado como:', organizerData.role, 'via tabela organizers')
+      return organizerData.role as 'admin' | 'organizer' | 'superadmin'
     }
 
     // FALLBACK TEMPORÁRIO: Manter verificação de email apenas para admins existentes
-    // TODO: Remover após migração completa dos admins para a tabela
     if (email.includes('@admin.enxergar') || email.includes('rcarraro@admin.enxergar')) {
       console.log('🔐 Usuário identificado como ADMIN via fallback de email (TEMPORÁRIO)')
       return 'admin'
@@ -59,10 +53,11 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userRole, setUserRole] = useState<'admin' | 'organizer' | 'user' | null>(null)
+  const [userRole, setUserRole] = useState<'admin' | 'organizer' | 'user' | 'superadmin' | null>(null)
 
-  const isAdmin = userRole === 'admin'
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin'
   const isOrganizer = userRole === 'organizer'
+  const isSuperAdmin = userRole === 'superadmin'
 
   useEffect(() => {
     console.log('🔍 AuthProvider: Inicializando verificação de sessão...')
@@ -71,9 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
-        
-        // IMPORTANTE: Remover qualquer redirecionamento automático aqui
-        // O redirecionamento deve ser controlado pelos componentes específicos
         
         setTimeout(async () => {
           setUser(session?.user ?? null)
@@ -84,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUserRole(role)
 
             // Atualizar last_login se for organizador
-            if (role === 'organizer') {
+            if (role === 'organizer' || role === 'admin' || role === 'superadmin') {
               updateLastLogin(session.user.id)
             }
           } else {
@@ -116,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserRole(role)
 
           // Atualizar last_login se for organizador
-          if (role === 'organizer') {
+          if (role === 'organizer' || role === 'admin' || role === 'superadmin') {
             updateLastLogin(session.user.id)
           }
         }
@@ -188,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.user) {
         // Criar perfil na tabela organizers se for organizador
         const userRole = role || await determineUserRole(email)
-        if (userRole === 'organizer') {
+        if (userRole === 'organizer' || userRole === 'admin' || userRole === 'superadmin') {
           try {
             const { error: profileError } = await supabase
               .from('organizers')
@@ -196,7 +188,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 id: data.user.id,
                 name,
                 email,
-                status: 'active'
+                status: 'active',
+                role: userRole
               })
 
             if (profileError) {
@@ -241,6 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userRole,
     isAdmin,
     isOrganizer,
+    isSuperAdmin,
     signIn,
     signUp,
     signOut,
@@ -251,7 +245,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading, 
     userRole,
     isAdmin,
-    isOrganizer
+    isOrganizer,
+    isSuperAdmin
   })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
