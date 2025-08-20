@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { RoleBasedRedirect } from "@/components/RoleBasedRedirect";
 import Index from "./pages/Index";
 import Registration from "./pages/Registration";
 import EventSelection from "./pages/EventSelection";
@@ -59,9 +58,7 @@ function App() {
               {/* Protected routes */}
               <Route path="/admin" element={
                 <ProtectedRoute requireAdmin={true}>
-                  <RoleBasedRedirect>
-                    <Admin />
-                  </RoleBasedRedirect>
+                  <Admin />
                 </ProtectedRoute>
               } />
               
@@ -121,9 +118,7 @@ function App() {
               
               <Route path="/organizer" element={
                 <ProtectedRoute requireOrganizer={true}>
-                  <RoleBasedRedirect>
-                    <OrganizerDashboard />
-                  </RoleBasedRedirect>
+                  <OrganizerDashboard />
                 </ProtectedRoute>
               } />
               
