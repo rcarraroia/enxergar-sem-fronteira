@@ -23,90 +23,85 @@ export const useAdminMetricsV2 = () => {
       try {
         console.log('🔍 [V2] Buscando métricas administrativas...')
 
-        // Verificar autenticação primeiro
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          console.warn('⚠️ [V2] Usuário não autenticado')
-          throw new Error('Usuário não autenticado')
-        }
+        // Executar todas as queries em paralelo para melhor performance
+        const [
+          patientsResult,
+          eventsResult,
+          registrationsResult,
+          eventDatesResult
+        ] = await Promise.allSettled([
+          supabase.from('patients').select('*', { count: 'exact', head: true }),
+          supabase.from('events').select('id, created_at, title'),
+          supabase.from('registrations').select('*', { count: 'exact', head: true }),
+          supabase.from('event_dates').select('event_id, date, total_slots, available_slots')
+        ])
 
-        console.log('👤 [V2] Usuário autenticado:', user.email)
+        // Processar resultados com fallbacks
+        const totalPatients = patientsResult.status === 'fulfilled' 
+          ? (patientsResult.value.count || 0) 
+          : 0
 
-        // Buscar total de pacientes com tratamento de erro
-        let totalPatients = 0
-        try {
-          const { count, error: patientsError } = await supabase
-            .from('patients')
-            .select('*', { count: 'exact', head: true })
-          
-          if (patientsError) {
-            console.error('❌ [V2] Erro ao buscar pacientes:', patientsError)
-          } else {
-            totalPatients = count || 0
-            console.log('📊 [V2] Total de pacientes:', totalPatients)
-          }
-        } catch (error) {
-          console.error('❌ [V2] Exceção ao buscar pacientes:', error)
-        }
+        const events = eventsResult.status === 'fulfilled' 
+          ? (eventsResult.value.data || []) 
+          : []
+        const totalEvents = events.length
 
-        // Buscar eventos com tratamento de erro
-        let totalEvents = 0
-        try {
-          const { data: events, error: eventsError } = await supabase
-            .from('events')
-            .select('id, created_at')
+        const totalRegistrations = registrationsResult.status === 'fulfilled' 
+          ? (registrationsResult.value.count || 0) 
+          : 0
 
-          if (eventsError) {
-            console.error('❌ [V2] Erro ao buscar eventos:', eventsError)
-          } else {
-            totalEvents = events?.length || 0
-            console.log('📊 [V2] Total de eventos:', totalEvents)
-          }
-        } catch (error) {
-          console.error('❌ [V2] Exceção ao buscar eventos:', error)
-        }
+        const eventDates = eventDatesResult.status === 'fulfilled' 
+          ? (eventDatesResult.value.data || []) 
+          : []
 
-        // Buscar inscrições com tratamento de erro
-        let totalRegistrations = 0
-        try {
-          const { count, error: registrationsError } = await supabase
-            .from('registrations')
-            .select('*', { count: 'exact', head: true })
-          
-          if (registrationsError) {
-            console.error('❌ [V2] Erro ao buscar inscrições:', registrationsError)
-          } else {
-            totalRegistrations = count || 0
-            console.log('📊 [V2] Total de inscrições:', totalRegistrations)
-          }
-        } catch (error) {
-          console.error('❌ [V2] Exceção ao buscar inscrições:', error)
-        }
+        // Calcular eventos ativos (com datas futuras)
+        const today = new Date().toISOString().split('T')[0]
+        const activeEventIds = new Set(
+          eventDates
+            .filter(ed => ed.date >= today)
+            .map(ed => ed.event_id)
+        )
+        const activeEvents = activeEventIds.size
 
-        // Calcular taxa de ocupação simplificada
+        // Calcular taxa de ocupação real
         let occupancyRate = 0
-        if (totalEvents > 0 && totalRegistrations > 0) {
-          occupancyRate = Math.min(Math.round((totalRegistrations / (totalEvents * 10)) * 100), 100)
+        if (eventDates.length > 0) {
+          const totalSlots = eventDates.reduce((sum, ed) => sum + (ed.total_slots || 0), 0)
+          const availableSlots = eventDates.reduce((sum, ed) => sum + (ed.available_slots || 0), 0)
+          const occupiedSlots = totalSlots - availableSlots
+          
+          if (totalSlots > 0) {
+            occupancyRate = Math.round((occupiedSlots / totalSlots) * 100)
+          }
+        }
+
+        // Determinar saúde do sistema
+        let systemHealth: 'healthy' | 'warning' | 'error' = 'healthy'
+        if (occupancyRate > 90) {
+          systemHealth = 'warning'
+        }
+        if (totalEvents === 0 || totalPatients === 0) {
+          systemHealth = 'warning'
         }
 
         const metrics: AdminMetricsV2 = {
           totalPatients,
           totalEvents,
-          activeEvents: Math.floor(totalEvents * 0.7), // Estimativa de eventos ativos
+          activeEvents,
           totalRegistrations,
           occupancyRate,
-          systemHealth: 'healthy',
+          systemHealth,
           lastUpdated: new Date().toISOString()
         }
 
-        console.log('📊 [V2] Métricas finais carregadas:', metrics)
+        console.log('📊 [V2] Métricas carregadas com sucesso:', metrics)
         return metrics
 
       } catch (error) {
         console.error('❌ [V2] Erro crítico ao carregar métricas:', error)
         
-        // Retornar métricas de fallback para demonstração
-        const fallbackMetrics: AdminMetricsV2 = {
+        // Retornar métricas de fallback
+        return {
           totalPatients: 0,
           totalEvents: 0,
           activeEvents: 0,
@@ -115,14 +110,11 @@ export const useAdminMetricsV2 = () => {
           systemHealth: 'error',
           lastUpdated: new Date().toISOString()
         }
-        
-        console.log('🔄 [V2] Usando métricas de fallback:', fallbackMetrics)
-        return fallbackMetrics
       }
     },
     refetchInterval: 60000, // Atualizar a cada minuto
     staleTime: 30000, // Considerar dados frescos por 30 segundos
-    retry: 3, // Tentar 3 vezes em caso de erro
-    retryDelay: 1000, // Aguardar 1 segundo entre tentativas
+    retry: 2, // Tentar 2 vezes em caso de erro
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
   })
 }

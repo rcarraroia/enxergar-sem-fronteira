@@ -23,6 +23,8 @@ import AdminSync from "./pages/AdminSync";
 import AdminDashboardV2 from "./pages/admin-v2/Dashboard";
 import AdminV2Access from "./pages/AdminV2Access";
 import AdminEventsV2 from "./pages/admin-v2/Events";
+import CreateEventV2 from "./pages/admin-v2/Events/create";
+import EditEventV2 from "./pages/admin-v2/Events/edit";
 import AdminPatientsV2 from "./pages/admin-v2/Patients";
 import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminOrganizersV2 from "./pages/admin-v2/Organizers";
@@ -142,6 +144,16 @@ function App() {
               <Route path="/admin-v2/events" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminEventsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/events/create" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <CreateEventV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/events/edit/:eventId" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <EditEventV2 />
                 </ProtectedRoute>
               } />
               <Route path="/admin-v2/patients" element={

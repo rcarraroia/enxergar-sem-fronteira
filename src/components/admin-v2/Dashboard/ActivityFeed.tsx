@@ -1,8 +1,7 @@
 /**
- * ACTIVITY FEED V2 - Feed de atividades redesigned
+ * ACTIVITY FEED V2 - Feed de atividades com dados reais
  */
 
-import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -10,41 +9,19 @@ import {
   UserPlus, 
   CalendarPlus, 
   UserCheck, 
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from 'lucide-react'
-
-// Mock data para demonstração
-const mockActivities = [
-  {
-    id: '1',
-    type: 'patient_registered',
-    title: 'Novo paciente cadastrado',
-    description: 'Maria Silva se cadastrou no sistema',
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 min atrás
-  },
-  {
-    id: '2',
-    type: 'event_created',
-    title: 'Evento criado',
-    description: 'Consulta Oftalmológica - São Paulo',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2h atrás
-  },
-  {
-    id: '3',
-    type: 'registration_completed',
-    title: 'Inscrição confirmada',
-    description: 'João Santos confirmou presença',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4h atrás
-  }
-]
+import { useRecentActivityV2 } from '@/hooks/admin-v2/useRecentActivity'
 
 export const ActivityFeed: React.FC = () => {
+  const { data: activities = [], isLoading, error } = useRecentActivityV2()
   const getIcon = (type: string) => {
     switch (type) {
       case 'patient_registered': return UserPlus
       case 'event_created': return CalendarPlus
       case 'registration_completed': return UserCheck
-      case 'sync_completed': return RefreshCw
+      case 'event_updated': return RefreshCw
       default: return Clock
     }
   }
@@ -54,7 +31,7 @@ export const ActivityFeed: React.FC = () => {
       case 'patient_registered': return 'text-blue-600'
       case 'event_created': return 'text-green-600'
       case 'registration_completed': return 'text-purple-600'
-      case 'sync_completed': return 'text-orange-600'
+      case 'event_updated': return 'text-orange-600'
       default: return 'text-gray-600'
     }
   }
@@ -64,7 +41,9 @@ export const ActivityFeed: React.FC = () => {
     const time = new Date(timestamp)
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
     
-    if (diffInMinutes < 60) {
+    if (diffInMinutes < 1) {
+      return 'Agora mesmo'
+    } else if (diffInMinutes < 60) {
       return `${diffInMinutes} min atrás`
     } else if (diffInMinutes < 1440) {
       return `${Math.floor(diffInMinutes / 60)}h atrás`
@@ -73,22 +52,61 @@ export const ActivityFeed: React.FC = () => {
     }
   }
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Atividades Recentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Atividades Recentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Erro ao carregar atividades
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Atividades Recentes
+          <Badge variant="secondary" className="ml-auto">
+            {activities.length}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {mockActivities.length === 0 ? (
+        {activities.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
             Nenhuma atividade recente
           </p>
         ) : (
           <div className="space-y-4">
-            {mockActivities.map((activity) => {
+            {activities.map((activity) => {
               const Icon = getIcon(activity.type)
               const iconColor = getIconColor(activity.type)
               
