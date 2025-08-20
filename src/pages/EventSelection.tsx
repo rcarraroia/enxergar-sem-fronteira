@@ -16,7 +16,7 @@ const EventSelection = () => {
 
   const handleDateSelection = (eventId: string, eventDateId: string) => {
     console.log('📅 Data selecionada:', { eventId, eventDateId })
-    navigate(`/registration?eventId=${eventId}&eventDateId=${eventDateId}`)
+    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`)
   }
 
   const formatWeekday = (dateString: string) => {
