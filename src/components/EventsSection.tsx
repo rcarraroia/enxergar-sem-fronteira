@@ -49,7 +49,7 @@ const EventsSection = () => {
     
     setIsNavigating(true);
     console.log('🎯 EventsSection: Redirecionando para seleção de eventos (ÚNICO)');
-    navigate('/events');
+    navigate('/eventos');
   };
 
   const handleWaitingListClick = (e: React.MouseEvent) => {
@@ -63,7 +63,7 @@ const EventsSection = () => {
     
     setIsNavigating(true);
     console.log('🎯 EventsSection: Redirecionando para lista de espera (ÚNICO)');
-    navigate('/events');
+    navigate('/eventos');
   };
 
   const handleRefresh = () => {

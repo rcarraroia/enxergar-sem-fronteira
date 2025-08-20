@@ -90,7 +90,7 @@ const Header = () => {
               Eventos
             </button>
             <button 
-              onClick={() => navigate('/events')} 
+              onClick={() => navigate('/eventos')} 
               className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Cadastrar-se
@@ -119,7 +119,7 @@ const Header = () => {
                   <Link to="/auth">Conecte-se</Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/events">Participar</Link>
+                  <Link to="/eventos">Participar</Link>
                 </Button>
               </>
             )}

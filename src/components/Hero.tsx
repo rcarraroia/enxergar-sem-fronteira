@@ -68,7 +68,7 @@ const Hero = () => {
 
     setIsNavigating(true);
     console.log('🎯 Hero: Redirecionando para seleção de eventos (ÚNICO)');
-    navigate('/events');
+    navigate('/eventos');
   };
 
   const formatWeekday = (dateString: string) => {
