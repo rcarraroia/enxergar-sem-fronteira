@@ -34,16 +34,7 @@ export const usePatientsV2 = (filters: PatientFilters = {}) => {
 
         let query = supabase
           .from('patients')
-          .select(`
-            id,
-            name,
-            email,
-            phone,
-            birth_date,
-            city,
-            state,
-            created_at
-          `)
+          .select('*')
 
         // Aplicar filtros
         if (filters.search) {

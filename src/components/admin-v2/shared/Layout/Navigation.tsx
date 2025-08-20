@@ -117,20 +117,7 @@ export const AdminNavigation: React.FC = () => {
         </div>
       </div>
       
-      {/* Status da Reconstrução */}
-      <div className="absolute bottom-4 left-4 right-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium text-blue-900">
-              Reconstrução Ativa
-            </span>
-          </div>
-          <p className="text-xs text-blue-700">
-            Sistema isolado do ambiente de produção
-          </p>
-        </div>
-      </div>
+
     </nav>
   )
 }

@@ -54,36 +54,7 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
 
         let query = supabase
           .from('registrations')
-          .select(`
-            id,
-            patient_id,
-            event_id,
-            event_date_id,
-            status,
-            created_at,
-            updated_at,
-            patients(
-              id,
-              name,
-              email,
-              phone,
-              city,
-              state
-            ),
-            events(
-              id,
-              title,
-              location
-            ),
-            event_dates(
-              id,
-              date,
-              start_time,
-              end_time,
-              total_slots,
-              available_slots
-            )
-          `)
+          .select('*')
 
         // Aplicar filtros
         if (filters.search) {
@@ -157,21 +128,62 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
           throw error
         }
 
-        const processedRegistrations: RegistrationV2[] = (registrations || []).map(registration => {
-          const regData = registration as any
-          return {
-            id: regData.id,
-            patient_id: regData.patient_id,
-            event_id: regData.event_id,
-            event_date_id: regData.event_date_id,
-            status: regData.status || 'confirmed',
-            created_at: regData.created_at,
-            updated_at: regData.updated_at,
-            patient: regData.patients,
-            event: regData.events,
-            event_date: regData.event_dates
+        // Buscar dados relacionados para cada inscrição
+        const processedRegistrations: RegistrationV2[] = []
+        
+        for (const registration of registrations || []) {
+          // Buscar dados do paciente
+          let patient = null
+          try {
+            const { data: patientData } = await supabase
+              .from('patients')
+              .select('id, name, email, phone, city, state')
+              .eq('id', registration.patient_id)
+              .single()
+            patient = patientData
+          } catch (error) {
+            console.log('Paciente não encontrado')
           }
-        })
+
+          // Buscar dados do evento
+          let event = null
+          try {
+            const { data: eventData } = await supabase
+              .from('events')
+              .select('id, title, location')
+              .eq('id', registration.event_id)
+              .single()
+            event = eventData
+          } catch (error) {
+            console.log('Evento não encontrado')
+          }
+
+          // Buscar data do evento
+          let eventDate = null
+          try {
+            const { data: eventDateData } = await supabase
+              .from('event_dates')
+              .select('*')
+              .eq('id', registration.event_date_id)
+              .single()
+            eventDate = eventDateData
+          } catch (error) {
+            console.log('Data do evento não encontrada')
+          }
+
+          processedRegistrations.push({
+            id: registration.id,
+            patient_id: registration.patient_id,
+            event_id: registration.event_id,
+            event_date_id: registration.event_date_id,
+            status: registration.status || 'confirmed',
+            created_at: registration.created_at,
+            updated_at: registration.updated_at,
+            patient,
+            event,
+            event_date: eventDate
+          })
+        }
 
         console.log('📊 [V2] Inscrições carregadas:', processedRegistrations.length)
         return processedRegistrations

@@ -34,18 +34,6 @@ const AdminDashboard = () => {
       title="Dashboard Administrativo" 
       breadcrumbs={[{ label: 'Dashboard', path: '/admin-v2' }]}
     >
-      {/* Status de Reconstrução */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-          <h3 className="font-semibold text-blue-900">🚧 Painel em Reconstrução - Fase 2</h3>
-        </div>
-        <p className="text-blue-700 text-sm mt-1">
-          Dashboard funcional com dados reais implementado. 
-          Sistema principal (home, cadastro) permanece intocado e operacional.
-        </p>
-      </div>
-
       {/* System Alerts */}
       <div className="mb-8">
         <SystemAlerts />

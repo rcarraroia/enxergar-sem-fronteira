@@ -216,14 +216,7 @@ const AdminEventsV2 = () => {
         </Button>
       }
     >
-      {/* Status da implementação */}
-      <Alert className="mb-6 border-green-200 bg-green-50">
-        <Calendar className="h-4 w-4 text-green-600" />
-        <AlertDescription className="text-green-800">
-          <strong>✅ Gestão de Eventos Implementada:</strong> Sistema completo de CRUD, 
-          busca, filtros e visualização de dados em tempo real.
-        </AlertDescription>
-      </Alert>
+
 
       <DataTable
         data={events}

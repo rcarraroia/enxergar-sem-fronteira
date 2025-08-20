@@ -28,14 +28,10 @@ export const useRecentActivityV2 = () => {
 
         const activities: ActivityItem[] = []
 
-        // Buscar pacientes recentes (últimos 7 dias)
-        const sevenDaysAgo = new Date()
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
+        // Buscar pacientes recentes (últimos 5)
         const { data: recentPatients } = await supabase
           .from('patients')
           .select('id, name, created_at')
-          .gte('created_at', sevenDaysAgo.toISOString())
           .order('created_at', { ascending: false })
           .limit(5)
 
@@ -77,37 +73,21 @@ export const useRecentActivityV2 = () => {
           })
         }
 
-        // Buscar inscrições recentes (últimos 3 dias)
-        const threeDaysAgo = new Date()
-        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
-
+        // Buscar inscrições recentes (últimas 5)
         const { data: recentRegistrations } = await supabase
           .from('registrations')
-          .select(`
-            id, 
-            created_at,
-            patients(name),
-            events(title)
-          `)
-          .gte('created_at', threeDaysAgo.toISOString())
+          .select('id, created_at')
           .order('created_at', { ascending: false })
           .limit(5)
 
         if (recentRegistrations) {
           recentRegistrations.forEach(registration => {
-            const patient = registration.patients as any
-            const event = registration.events as any
-            
             activities.push({
               id: `registration-${registration.id}`,
               type: 'registration_completed',
               title: 'Nova inscrição confirmada',
-              description: `${patient?.name} se inscreveu em ${event?.title}`,
-              timestamp: registration.created_at,
-              metadata: {
-                patientName: patient?.name,
-                eventTitle: event?.title
-              }
+              description: 'Paciente se inscreveu em evento',
+              timestamp: registration.created_at
             })
           })
         }
