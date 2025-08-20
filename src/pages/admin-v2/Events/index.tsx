@@ -75,19 +75,24 @@ const AdminEventsV2 = () => {
       )
     }
 
-    const sortedDates = eventDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    const sortedDates = eventDates.sort((a, b) => a.date.localeCompare(b.date))
     const firstDate = sortedDates[0]
-    const today = new Date()
-    const eventDate = new Date(firstDate.date)
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
     
-    const isUpcoming = eventDate >= today
+    // Usar a data diretamente sem conversão de timezone
+    const eventDateString = firstDate.date // YYYY-MM-DD
+    const isUpcoming = eventDateString >= today
+
+    // Converter apenas para exibição, mantendo a data local
+    const [year, month, day] = eventDateString.split('-')
+    const displayDate = `${day}/${month}/${year}`
 
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Clock className="h-3 w-3" />
           <span className="text-sm">
-            {format(eventDate, 'dd/MM/yyyy', { locale: ptBR })}
+            {displayDate}
           </span>
           <Badge 
             variant={isUpcoming ? 'default' : 'secondary'}
