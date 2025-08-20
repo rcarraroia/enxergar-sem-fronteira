@@ -1,12 +1,13 @@
+
 import React from 'react'
 import { useSystemSettings } from '@/hooks/useSystemSettings'
 import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react'
 
 const Footer = () => {
-  const { settings } = useSystemSettings()
+  const { getSettingJSON } = useSystemSettings()
 
-  // Type-safe access to social media links
-  const socialLinks = settings?.social_media_links as { facebook?: string; instagram?: string; linkedin?: string } || {}
+  // Get social media links using the helper function
+  const socialLinks = getSettingJSON('social_media_links', {}) as { facebook?: string; instagram?: string; linkedin?: string }
   
   const facebookUrl = typeof socialLinks.facebook === 'string' ? socialLinks.facebook.trim() : ''
   const instagramUrl = typeof socialLinks.instagram === 'string' ? socialLinks.instagram.trim() : ''

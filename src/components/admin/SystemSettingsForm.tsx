@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,87 +13,75 @@ interface SystemSettingsFormProps {
 }
 
 export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
-  const { settings, updateSettings, isLoading } = useSystemSettings()
+  const { getSettingValue, getSettingJSON, updateSetting, isLoading, isUpdating } = useSystemSettings()
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    if (settings) {
-      switch (section) {
-        case 'general':
-          setFormData({
-            site_name: settings.site_name || '',
-            site_description: settings.site_description || '',
-            contact_email: settings.contact_email || '',
-            contact_phone: settings.contact_phone || ''
-          })
-          break
-        case 'logos':
-          setFormData({
-            logo_url: settings.logo_url || '',
-            favicon_url: settings.favicon_url || ''
-          })
-          break
-        case 'social':
-          const socialLinks = settings.social_media_links as { facebook?: string; instagram?: string; linkedin?: string } || {}
-          setFormData({
-            facebook: socialLinks.facebook || '',
-            instagram: socialLinks.instagram || '',
-            linkedin: socialLinks.linkedin || ''
-          })
-          break
-        case 'apikeys':
-          setFormData({
-            resend_api_key: settings.resend_api_key || '',
-            vonage_api_key: settings.vonage_api_key || '',
-            vonage_api_secret: settings.vonage_api_secret || ''
-          })
-          break
-      }
+    switch (section) {
+      case 'general':
+        setFormData({
+          site_name: getSettingValue('site_name', ''),
+          site_description: getSettingValue('site_description', ''),
+          contact_email: getSettingValue('contact_email', ''),
+          contact_phone: getSettingValue('contact_phone', '')
+        })
+        break
+      case 'logos':
+        setFormData({
+          logo_url: getSettingValue('logo_url', ''),
+          favicon_url: getSettingValue('favicon_url', '')
+        })
+        break
+      case 'social':
+        const socialLinks = getSettingJSON('social_media_links', {}) as { facebook?: string; instagram?: string; linkedin?: string }
+        setFormData({
+          facebook: socialLinks.facebook || '',
+          instagram: socialLinks.instagram || '',
+          linkedin: socialLinks.linkedin || ''
+        })
+        break
+      case 'apikeys':
+        setFormData({
+          resend_api_key: getSettingValue('resend_api_key', ''),
+          vonage_api_key: getSettingValue('vonage_api_key', ''),
+          vonage_api_secret: getSettingValue('vonage_api_secret', '')
+        })
+        break
     }
-  }, [settings, section])
+  }, [section, getSettingValue, getSettingJSON])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
 
     try {
-      let updateData: Record<string, any> = {}
-
       switch (section) {
         case 'general':
-          updateData = {
-            site_name: formData.site_name,
-            site_description: formData.site_description,
-            contact_email: formData.contact_email,
-            contact_phone: formData.contact_phone
-          }
+          updateSetting('site_name', formData.site_name)
+          updateSetting('site_description', formData.site_description)
+          updateSetting('contact_email', formData.contact_email)
+          updateSetting('contact_phone', formData.contact_phone)
           break
         case 'logos':
-          updateData = {
-            logo_url: formData.logo_url,
-            favicon_url: formData.favicon_url
-          }
+          updateSetting('logo_url', formData.logo_url)
+          updateSetting('favicon_url', formData.favicon_url)
           break
         case 'social':
-          updateData = {
-            social_media_links: {
-              facebook: formData.facebook,
-              instagram: formData.instagram,
-              linkedin: formData.linkedin
-            }
+          const socialData = {
+            facebook: formData.facebook,
+            instagram: formData.instagram,
+            linkedin: formData.linkedin
           }
+          updateSetting('social_media_links', JSON.stringify(socialData))
           break
         case 'apikeys':
-          updateData = {
-            resend_api_key: formData.resend_api_key,
-            vonage_api_key: formData.vonage_api_key,
-            vonage_api_secret: formData.vonage_api_secret
-          }
+          updateSetting('resend_api_key', formData.resend_api_key)
+          updateSetting('vonage_api_key', formData.vonage_api_key)
+          updateSetting('vonage_api_secret', formData.vonage_api_secret)
           break
       }
 
-      await updateSettings(updateData)
       toast.success('Configurações salvas com sucesso!')
     } catch (error) {
       console.error('Erro ao salvar configurações:', error)
@@ -314,10 +301,10 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {renderSectionContent()}
 
-          <Button type="submit" disabled={isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" disabled={isSaving || isUpdating}>
+            {(isSaving || isUpdating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
-            {isSaving ? 'Salvando...' : 'Salvar Configurações'}
+            {(isSaving || isUpdating) ? 'Salvando...' : 'Salvar Configurações'}
           </Button>
         </form>
       </CardContent>

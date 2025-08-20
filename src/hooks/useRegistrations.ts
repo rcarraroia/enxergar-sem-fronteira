@@ -69,12 +69,6 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
           id,
           status,
           created_at,
-          name,
-          cpf,
-          email,
-          phone,
-          city,
-          state,
           event_date:event_dates (
             id,
             date,
@@ -90,6 +84,15 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
               address,
               city
             )
+          ),
+          patient:patients (
+            id,
+            nome,
+            cpf,
+            email,
+            telefone,
+            data_nascimento,
+            diagnostico
           )
         `)
         .order('created_at', { ascending: false })
@@ -121,9 +124,22 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
         throw error
       }
 
-      console.log(`✅ Encontradas ${data?.length || 0} inscrições`)
-      console.log('📊 Dados das inscrições:', data)
-      return data as Registration[]
+      // Transform the data to match the expected Registration interface
+      const transformedData = (data || []).map(reg => ({
+        id: reg.id,
+        status: reg.status,
+        created_at: reg.created_at,
+        name: reg.patient?.nome || '',
+        cpf: reg.patient?.cpf || '',
+        email: reg.patient?.email || null,
+        phone: reg.patient?.telefone || '',
+        city: '', // This would need to come from patient address if stored
+        state: '', // This would need to come from patient address if stored
+        event_date: reg.event_date
+      }))
+
+      console.log(`✅ Encontradas ${transformedData.length} inscrições`)
+      return transformedData as Registration[]
     }
   })
 
@@ -131,22 +147,43 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
     mutationFn: async (registrationData: CreateRegistrationData) => {
       console.log('📝 Criando nova inscrição:', registrationData)
       
-      const { data, error } = await supabase
+      // First, create the patient
+      const { data: patient, error: patientError } = await supabase
+        .from('patients')
+        .insert([{
+          nome: registrationData.name,
+          cpf: registrationData.cpf,
+          email: registrationData.email || '',
+          telefone: registrationData.phone,
+          data_nascimento: registrationData.birth_date,
+          consentimento_lgpd: true
+        }])
+        .select()
+        .single()
+
+      if (patientError) {
+        console.error('❌ Erro ao criar paciente:', patientError)
+        throw patientError
+      }
+
+      // Then create the registration
+      const { data: registration, error: registrationError } = await supabase
         .from('registrations')
         .insert([{
-          ...registrationData,
+          patient_id: patient.id,
+          event_date_id: registrationData.event_date_id,
           status: 'confirmed'
         }])
         .select()
         .single()
 
-      if (error) {
-        console.error('❌ Erro ao criar inscrição:', error)
-        throw error
+      if (registrationError) {
+        console.error('❌ Erro ao criar inscrição:', registrationError)
+        throw registrationError
       }
 
-      console.log('✅ Inscrição criada com sucesso:', data)
-      return data
+      console.log('✅ Inscrição criada com sucesso:', registration)
+      return registration
     },
     onSuccess: () => {
       // Invalidate and refetch registrations
