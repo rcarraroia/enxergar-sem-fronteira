@@ -72,25 +72,25 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
               city,
               state
             ),
-            event:events (
-              id,
-              title,
-              location
-            ),
             event_date:event_dates (
               id,
               date,
               start_time,
               end_time,
               total_slots,
-              available_slots
+              available_slots,
+              event:events (
+                id,
+                title,
+                location
+              )
             )
           `)
 
         // Aplicar filtros
         if (filters.search) {
           // Buscar por nome do paciente ou título do evento usando joins
-          query = query.or(`patients.nome.ilike.%${filters.search}%,events.title.ilike.%${filters.search}%`)
+          query = query.or(`patients.nome.ilike.%${filters.search}%,event_dates.events.title.ilike.%${filters.search}%`)
         }
 
         if (filters.event_id) {
@@ -136,7 +136,7 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
             city: registration.patient.city,
             state: registration.patient.state
           } : null,
-          event: registration.event,
+          event: registration.event_date?.event,
           event_date: registration.event_date
         }))
 
@@ -192,12 +192,14 @@ export const useRegistrationStatsV2 = () => {
           .from('registrations')
           .select(`
             event_id,
-            event:events(title)
+            event_date:event_dates(
+              event:events(title)
+            )
           `)
 
         const eventCounts = eventStats?.reduce((acc, reg) => {
           const eventId = reg.event_id
-          const eventTitle = (reg.event as any)?.title || 'Evento sem título'
+          const eventTitle = (reg.event_date as any)?.event?.title || 'Evento sem título'
           
           if (!acc[eventId]) {
             acc[eventId] = { title: eventTitle, count: 0 }
