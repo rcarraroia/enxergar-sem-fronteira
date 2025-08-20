@@ -20,7 +20,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user' | 'superadmin'> => {
   try {
-    // Primeiro, verificar se a coluna role existe tentando buscar apenas id e status
+    // Primeiro, verificar se o usuário atual é super admin via is_super_admin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.is_super_admin) {
+      console.log('🔐 Usuário identificado como SUPERADMIN via is_super_admin')
+      return 'superadmin'
+    }
+
+    // Depois, verificar se a coluna role existe tentando buscar apenas id e status
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
       .select('id, status')
