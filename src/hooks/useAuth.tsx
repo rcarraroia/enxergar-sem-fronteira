@@ -19,34 +19,62 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user' | 'superadmin'> => {
   try {
-    // Verificar role baseado na tabela organizers
+    // Primeiro, verificar se a coluna role existe tentando buscar apenas id e status
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
-      .select('id, role, status')
+      .select('id, status')
       .eq('email', email)
       .eq('status', 'active')
       .maybeSingle()
 
     if (organizerError) {
       console.error('Erro ao verificar organizador:', organizerError)
-      return 'user'
+      return determineRoleByEmailFallback(email)
     }
 
-    if (organizerData?.role) {
-      console.log('🔐 Usuário identificado como:', organizerData.role, 'via tabela organizers')
-      return organizerData.role as 'admin' | 'organizer' | 'superadmin'
-    }
+    // Se o organizador existe, tentar buscar o role
+    if (organizerData) {
+      try {
+        const { data: roleData, error: roleError } = await supabase
+          .from('organizers')
+          .select('role')
+          .eq('email', email)
+          .eq('status', 'active')
+          .maybeSingle()
 
-    // FALLBACK TEMPORÁRIO: Manter verificação de email apenas para admins existentes
-    if (email.includes('@admin.enxergar') || email.includes('rcarraro@admin.enxergar')) {
-      console.log('🔐 Usuário identificado como ADMIN via fallback de email (TEMPORÁRIO)')
-      return 'admin'
+        if (!roleError && roleData?.role) {
+          console.log('🔐 Usuário identificado como:', roleData.role, 'via tabela organizers')
+          return roleData.role as 'admin' | 'organizer' | 'superadmin'
+        }
+      } catch (error) {
+        console.warn('⚠️ Coluna role não existe ainda, usando fallback de email')
+      }
+      
+      // Se chegou até aqui, o organizador existe mas não conseguimos acessar o role
+      // Usar fallback baseado no email
+      return determineRoleByEmailFallback(email)
     }
 
   } catch (error) {
     console.error('Erro ao determinar papel do usuário:', error)
   }
   
+  return 'user'
+}
+
+const determineRoleByEmailFallback = (email: string): 'admin' | 'organizer' | 'user' | 'superadmin' => {
+  // Verificação específica para superadmin
+  if (email === 'rcarraro@admin.enxergar') {
+    console.log('🔐 Usuário identificado como SUPERADMIN via fallback de email')
+    return 'superadmin'
+  }
+
+  // Verificação para admins
+  if (email.includes('@admin.enxergar')) {
+    console.log('🔐 Usuário identificado como ADMIN via fallback de email')
+    return 'admin'
+  }
+
   return 'user'
 }
 
@@ -188,8 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 id: data.user.id,
                 name,
                 email,
-                status: 'active',
-                role: userRole
+                status: 'active'
               })
 
             if (profileError) {
