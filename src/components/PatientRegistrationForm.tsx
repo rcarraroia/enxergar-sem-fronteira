@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
@@ -20,11 +20,6 @@ const patientSchema = z.object({
   phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
   cpf: z.string().refine(validateCPF, 'CPF inválido'),
   birthdate: z.string().min(1, 'Data de nascimento é obrigatória'),
-  gender: z.enum(['male', 'female', 'other']),
-  address: z.string().min(5, 'Endereço deve ter pelo menos 5 caracteres'),
-  city: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres'),
-  state: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),  
-  zip: z.string().min(8, 'CEP deve ter 8 dígitos'),
   terms: z.boolean().refine(val => val === true, 'Você deve aceitar os termos'),
   comments: z.string().optional()
 })
@@ -66,11 +61,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
           cpf: data.cpf.replace(/\D/g, ''),
           data_nascimento: data.birthdate,
           diagnostico: data.comments || null,
-          endereco: data.address,
-          cidade: data.city,
-          estado: data.state,
-          cep: data.zip,
-          genero: data.gender
+          consentimento_lgpd: data.terms
         })
         .select()
         .single()
@@ -170,64 +161,6 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
                 {...register('birthdate')}
               />
               {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="gender">Gênero *</Label>
-              <Select onValueChange={(value) => setValue('gender', value as 'male' | 'female' | 'other')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o gênero" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Masculino</SelectItem>
-                  <SelectItem value="female">Feminino</SelectItem>
-                  <SelectItem value="other">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="address">Endereço Completo *</Label>
-            <Input
-              id="address"
-              {...register('address')}
-              placeholder="Rua, número, bairro"
-            />
-            {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="city">Cidade *</Label>
-              <Input
-                id="city"
-                {...register('city')}
-                placeholder="Digite a cidade"
-              />
-              {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="state">Estado *</Label>
-              <Input
-                id="state"
-                {...register('state')}
-                placeholder="SP"
-                maxLength={2}
-              />
-              {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="zip">CEP *</Label>
-              <Input
-                id="zip"
-                {...register('zip')}
-                placeholder="00000-000"
-              />
-              {errors.zip && <p className="text-sm text-red-500">{errors.zip.message}</p>}
             </div>
           </div>
 
