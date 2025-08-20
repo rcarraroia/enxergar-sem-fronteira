@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Registration from "./pages/Registration";
+import EventSelection from "./pages/EventSelection";
 import PatientAccess from "./pages/PatientAccess";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -42,6 +43,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/events" element={<EventSelection />} />
               <Route path="/registration" element={<Registration />} />
               <Route path="/patient-access" element={<PatientAccess />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

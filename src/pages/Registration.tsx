@@ -7,8 +7,9 @@ import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
 import Header from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Calendar, MapPin, Clock, Users } from 'lucide-react'
-import { formatInTimeZone } from 'date-fns-tz'
+import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 const Registration = () => {
@@ -46,9 +47,33 @@ const Registration = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Evento não encontrado</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               O evento que você está procurando não existe ou não está mais disponível.
             </p>
+            <Button onClick={() => navigate('/events')}>
+              Ver Eventos Disponíveis
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  // Verificar se ainda há vagas disponíveis
+  if (eventDate.available_slots <= 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Evento Lotado</h1>
+            <p className="text-muted-foreground mb-4">
+              Infelizmente, não há mais vagas disponíveis para esta data do evento.
+            </p>
+            <Button onClick={() => navigate('/events')}>
+              Ver Outras Datas Disponíveis
+            </Button>
           </div>
         </main>
         <Footer />
@@ -69,10 +94,10 @@ const Registration = () => {
   const formatEventDate = (dateString: string, timeString: string) => {
     try {
       const [hours, minutes] = timeString.split(':')
-      const date = new Date(dateString)
+      const date = new Date(dateString + 'T00:00:00')
       date.setHours(parseInt(hours), parseInt(minutes))
       
-      return formatInTimeZone(date, 'America/Sao_Paulo', "EEEE, dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
+      return format(date, "EEEE, dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
         locale: ptBR
       })
     } catch (error) {

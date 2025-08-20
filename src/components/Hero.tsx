@@ -34,8 +34,8 @@ const Hero = () => {
   }];
 
   const handleRegisterClick = () => {
-    console.log('🎯 Redirecionando para página de registro');
-    navigate('/registration');
+    console.log('🎯 Redirecionando para seleção de eventos');
+    navigate('/events');
   };
 
   const formatWeekday = (dateString: string) => {

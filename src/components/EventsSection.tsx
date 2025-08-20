@@ -37,12 +37,12 @@ const EventsSection = () => {
   };
 
   const handleEventClick = () => {
-    console.log('🎯 Redirecionando para página de registro');
-    navigate('/registration');
+    console.log('🎯 Redirecionando para seleção de eventos');
+    navigate('/events');
   };
 
   const handleWaitingListClick = () => {
-    navigate('/registration');
+    navigate('/events');
   };
 
   const handleRefresh = () => {
