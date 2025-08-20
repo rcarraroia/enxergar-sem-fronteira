@@ -60,29 +60,29 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
             status,
             created_at,
             updated_at,
-            patient_id,
-            event_id,
             event_date_id,
-            patient:patients (
+            patients (
               id,
               nome,
-              cpf,
               email,
               telefone,
-              city,
-              state
+              cpf,
+              data_nascimento,
+              diagnostico
             ),
-            event_date:event_dates (
+            event_dates (
               id,
               date,
               start_time,
               end_time,
               total_slots,
               available_slots,
-              event:events (
+              events (
                 id,
                 title,
-                location
+                location,
+                city,
+                address
               )
             )
           `)
@@ -94,7 +94,7 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         }
 
         if (filters.event_id) {
-          query = query.eq('event_id', filters.event_id)
+          query = query.eq('event_dates.events.id', filters.event_id)
         }
 
         if (filters.status) {
@@ -122,22 +122,34 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         // Processar dados com joins já incluídos
         const processedRegistrations: RegistrationV2[] = (registrations || []).map(registration => ({
           id: registration.id,
-          patient_id: registration.patient_id,
-          event_id: registration.event_id,
+          patient_id: registration.patients?.id || '',
+          event_id: registration.event_dates?.events?.id || '',
           event_date_id: registration.event_date_id,
           status: registration.status || 'confirmed',
           created_at: registration.created_at,
           updated_at: registration.updated_at,
-          patient: registration.patient ? {
-            id: registration.patient.id,
-            name: registration.patient.nome, // Mapear nome correto
-            email: registration.patient.email,
-            phone: registration.patient.telefone, // Mapear telefone correto
-            city: registration.patient.city,
-            state: registration.patient.state
+          patient: registration.patients ? {
+            nome: registration.patients.nome,
+            cpf: registration.patients.cpf,
+            email: registration.patients.email,
+            telefone: registration.patients.telefone,
+            city: registration.patients.city || '',
+            state: registration.patients.state || '',
+            id: registration.patients.id
           } : null,
-          event: registration.event_date?.event,
-          event_date: registration.event_date
+          event: registration.event_dates?.events ? {
+            id: registration.event_dates.events.id,
+            title: registration.event_dates.events.title,
+            location: registration.event_dates.events.location
+          } : null,
+          event_date: registration.event_dates ? {
+            id: registration.event_dates.id,
+            date: registration.event_dates.date,
+            start_time: registration.event_dates.start_time,
+            end_time: registration.event_dates.end_time,
+            total_slots: registration.event_dates.total_slots,
+            available_slots: registration.event_dates.available_slots
+          } : null
         }))
 
         console.log('📊 [V2] Inscrições carregadas:', processedRegistrations.length)
