@@ -16,8 +16,7 @@ const templateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   type: z.enum(['whatsapp', 'email', 'sms']),
   subject: z.string().optional(),
-  content: z.string().min(1, 'Conteúdo é obrigatório'),
-  variables: z.string().optional()
+  content: z.string().min(1, 'Conteúdo é obrigatório')
 })
 
 type TemplateFormData = z.infer<typeof templateSchema>
@@ -41,8 +40,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
       name: template?.name || '',
       type: template?.type || 'whatsapp',
       subject: template?.subject || '',
-      content: template?.content || '',
-      variables: template?.variables ? JSON.stringify(template.variables, null, 2) : ''
+      content: template?.content || ''
     }
   })
 
@@ -57,7 +55,6 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
         type: data.type,
         subject: data.subject || null,
         content: data.content,
-        variables: data.variables ? JSON.parse(data.variables) : null,
         is_active: true
       }
 
@@ -148,19 +145,6 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
             />
             {errors.content && (
               <p className="text-sm text-red-500 mt-1">{errors.content.message}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="variables">Variáveis (JSON)</Label>
-            <Textarea
-              id="variables"
-              {...register('variables')}
-              placeholder='{"nome": "Nome do paciente", "data": "Data da consulta"}'
-              rows={3}
-            />
-            {errors.variables && (
-              <p className="text-sm text-red-500 mt-1">{errors.variables.message}</p>
             )}
           </div>
 

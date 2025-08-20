@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
@@ -6,7 +7,7 @@ import { toast } from 'sonner'
 interface AuthContextType {
   user: User | null
   loading: boolean
-  userRole: 'admin' | 'organizer' | 'user' | null
+  userRole: 'admin' | 'organizer' | 'user' | 'superadmin' | null
   isAdmin: boolean
   isOrganizer: boolean
   signIn: (email: string, password: string) => Promise<void>
@@ -16,52 +17,42 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user'> => {
-  console.log('🔍 Determinando role para email:', email)
+const determineUserRole = async (user: User): Promise<'admin' | 'organizer' | 'user' | 'superadmin'> => {
+  console.log('🔍 Determinando role para email:', user.email)
   
-  // CORREÇÃO URGENTE: Fallback PRIMEIRO para garantir acesso admin
-  if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
-    console.log('🔐 ADMIN identificado via fallback de email (ACESSO GARANTIDO)')
+  // PRIMEIRO: Verificar se é superadmin
+  if (user.is_super_admin) {
+    console.log('🔐 SUPERADMIN identificado via is_super_admin')
+    return 'superadmin'
+  }
+  
+  // SEGUNDO: Fallback para garantir acesso admin via email
+  if (user.email === 'rcarraro@admin.enxergar' || user.email?.includes('@admin.enxergar')) {
+    console.log('🔐 ADMIN identificado via fallback de email')
     return 'admin'
   }
   
   try {
-    // Verificar role baseado na tabela organizers (quando migrações forem aplicadas)
+    // TERCEIRO: Verificar na tabela organizers
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
-      .select('id, role, status')
-      .eq('email', email)
+      .select('id, status')
+      .eq('email', user.email)
       .eq('status', 'active')
       .maybeSingle()
 
     if (organizerError) {
-      console.error('Erro ao verificar organizador (normal se campo role não existe ainda):', organizerError)
-      // Se erro na query, usar fallback
-      if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
-        console.log('🔐 ADMIN via fallback após erro na query')
-        return 'admin'
-      }
+      console.error('Erro ao verificar organizador:', organizerError)
       return 'user'
     }
 
     if (organizerData) {
-      // Se tem role definido na tabela, usar esse role
-      if (organizerData.role === 'admin') {
-        console.log('🔐 Usuário identificado como ADMIN via tabela organizers')
-        return 'admin'
-      }
-      
       console.log('🔐 Usuário identificado como ORGANIZADOR via tabela organizers')
       return 'organizer'
     }
 
   } catch (error) {
     console.error('Erro ao determinar papel do usuário:', error)
-    // Em caso de erro, usar fallback para admins
-    if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
-      console.log('🔐 ADMIN via fallback após exceção')
-      return 'admin'
-    }
   }
   
   return 'user'
@@ -70,9 +61,9 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userRole, setUserRole] = useState<'admin' | 'organizer' | 'user' | null>(null)
+  const [userRole, setUserRole] = useState<'admin' | 'organizer' | 'user' | 'superadmin' | null>(null)
 
-  const isAdmin = userRole === 'admin'
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin'
   const isOrganizer = userRole === 'organizer'
 
   useEffect(() => {
@@ -87,8 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session?.user ?? null)
           
           if (session?.user) {
-            const role = await determineUserRole(session.user.email || '')
-            console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
+            const role = await determineUserRole(session.user)
+            console.log('🔍 Role determinado:', role)
             setUserRole(role)
 
             // Atualizar last_login se for organizador
@@ -119,8 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          const role = await determineUserRole(session.user.email || '')
-          console.log('🔍 Determinando role por email:', session.user.email, '-> Role:', role)
+          const role = await determineUserRole(session.user)
+          console.log('🔍 Role determinado:', role)
           setUserRole(role)
 
           // Atualizar last_login se for organizador
@@ -195,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         // Criar perfil na tabela organizers se for organizador
-        const userRole = role || await determineUserRole(email)
+        const userRole = role || await determineUserRole(data.user)
         if (userRole === 'organizer') {
           try {
             const { error: profileError } = await supabase
@@ -232,7 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error
       }
       
-      // Corrigir bug: limpar estados locais imediatamente
+      // Limpar estados locais imediatamente
       setUser(null)
       setUserRole(null)
       
