@@ -17,26 +17,38 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user'> => {
-  // Verificar se é admin (mantém a lógica baseada em email)
-  if (email.includes('@admin.')) return 'admin'
-  
   try {
-    // Verificar se é organizador consultando a tabela organizers
-    const { data, error } = await supabase
+    // CORREÇÃO CRÍTICA: Verificar role baseado na tabela organizers, não no email
+    const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
-      .select('id')
+      .select('id, role, status')
       .eq('email', email)
       .eq('status', 'active')
       .maybeSingle()
 
-    if (error) {
-      console.error('Erro ao verificar organizador:', error)
+    if (organizerError) {
+      console.error('Erro ao verificar organizador:', organizerError)
       return 'user'
     }
 
-    if (data) {
+    if (organizerData) {
+      // Se tem role definido na tabela, usar esse role
+      if (organizerData.role === 'admin') {
+        console.log('🔐 Usuário identificado como ADMIN via tabela organizers')
+        return 'admin'
+      }
+      
+      console.log('🔐 Usuário identificado como ORGANIZADOR via tabela organizers')
       return 'organizer'
     }
+
+    // FALLBACK TEMPORÁRIO: Manter verificação de email apenas para admins existentes
+    // TODO: Remover após migração completa dos admins para a tabela
+    if (email.includes('@admin.enxergar') || email.includes('rcarraro@admin.enxergar')) {
+      console.log('🔐 Usuário identificado como ADMIN via fallback de email (TEMPORÁRIO)')
+      return 'admin'
+    }
+
   } catch (error) {
     console.error('Erro ao determinar papel do usuário:', error)
   }

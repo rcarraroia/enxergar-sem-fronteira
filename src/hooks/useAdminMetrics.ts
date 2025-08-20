@@ -97,15 +97,30 @@ export const useAdminMetrics = () => {
 
         const totalRevenue = transactions?.reduce((sum, t) => sum + t.amount, 0) || 0
 
-        // Calcular taxa de ocupação (simulada)
-        const occupancyRate = totalRegistrations && totalEvents 
-          ? Math.min((totalRegistrations / (totalEvents * 100)) * 100, 100)
-          : 0
+        // CORREÇÃO: Calcular taxa de ocupação real baseada em event_dates
+        let totalSlots = 0
+        let occupiedSlots = 0
+        
+        if (eventDates && eventDates.length > 0) {
+          // Buscar dados detalhados de event_dates para cálculo correto
+          const { data: eventDatesDetails } = await supabase
+            .from('event_dates')
+            .select('total_slots, available_slots')
+          
+          if (eventDatesDetails) {
+            totalSlots = eventDatesDetails.reduce((sum, ed) => sum + (ed.total_slots || 0), 0)
+            const availableSlots = eventDatesDetails.reduce((sum, ed) => sum + (ed.available_slots || 0), 0)
+            occupiedSlots = totalSlots - availableSlots
+          }
+        }
+        
+        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0
 
-        // Taxa de crescimento (simulada)
-        const growthRate = thisWeekRegistrations && totalRegistrations
-          ? ((thisWeekRegistrations / Math.max(totalRegistrations - thisWeekRegistrations, 1)) * 100)
-          : 0
+        // CORREÇÃO: Taxa de crescimento real baseada em dados históricos
+        const previousWeekRegistrations = totalRegistrations - (thisWeekRegistrations || 0)
+        const growthRate = previousWeekRegistrations > 0 
+          ? Math.round(((thisWeekRegistrations || 0) / previousWeekRegistrations) * 100)
+          : (thisWeekRegistrations || 0) > 0 ? 100 : 0
 
         // Buscar métricas de templates
         const { data: templates } = await supabase
@@ -135,8 +150,8 @@ export const useAdminMetrics = () => {
           totalRegistrations: totalRegistrations || 0,
           thisWeekRegistrations: thisWeekRegistrations || 0,
           totalRevenue,
-          occupancyRate: Math.round(occupancyRate),
-          growthRate: Math.round(growthRate),
+          occupancyRate,
+          growthRate,
           newPatientsThisWeek: newPatientsThisWeek || 0,
           todayRegistrations: todayRegistrations || 0,
           totalOrganizers: totalOrganizers || 0,

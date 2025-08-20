@@ -9,6 +9,8 @@ import { ActivityFeed } from '@/components/admin/ActivityFeed'
 import { QuickActions } from '@/components/admin/QuickActions'
 import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard'
 import { useAdminMetrics } from '@/hooks/useAdminMetrics'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 import { Calendar, Users, UserCheck, Activity } from 'lucide-react'
 
 const Admin = () => {
@@ -39,46 +41,49 @@ const Admin = () => {
   const handleExportReports = async () => {
     console.log('🎯 Admin: Iniciando exportação de relatórios')
     try {
-      // Implementar chamada para a Edge Function de exportação
-      const response = await fetch('/api/admin/export-reports', {
+      // CORREÇÃO: Chamada para a Edge Function correta
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-admin-reports`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           type: 'general',
-          format: 'xlsx'
+          format: 'csv'
         })
       })
 
       if (!response.ok) {
-        throw new Error('Erro ao gerar relatório')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao gerar relatório')
       }
 
-      const blob = await response.blob()
+      // Download do arquivo CSV
+      const csvContent = await response.text()
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
       a.href = url
-      a.download = `relatorio-geral-${new Date().toISOString().split('T')[0]}.xlsx`
+      a.download = `relatorio-geral-${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       
       console.log('✅ Admin: Relatório exportado com sucesso')
+      toast.success('Relatório exportado com sucesso!')
+      
     } catch (error) {
       console.error('❌ Admin: Erro ao exportar relatório:', error)
-      // Fallback: simular download para demonstração
-      const csvContent = 'data:text/csv;charset=utf-8,Nome,Email,Evento,Data\nExemplo,exemplo@email.com,Evento Teste,2024-01-01'
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement('a')
-      link.setAttribute('href', encodedUri)
-      link.setAttribute('download', `relatorio-geral-${new Date().toISOString().split('T')[0]}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      console.log('✅ Admin: Relatório CSV de exemplo exportado')
+      toast.error('Erro ao exportar relatório: ' + error.message)
     }
   }
 
