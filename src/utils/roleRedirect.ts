@@ -2,6 +2,7 @@
 export const getRedirectPath = (userRole: string | null): string => {
   switch (userRole) {
     case 'admin':
+    case 'superadmin':
       return '/admin'
     case 'organizer':
       return '/organizer'
@@ -17,6 +18,8 @@ export const getDefaultDashboardPath = (userRole: string | null): string => {
 
 export const getRoleDisplayName = (userRole: string | null): string => {
   switch (userRole) {
+    case 'superadmin':
+      return 'Super Administrador'
     case 'admin':
       return 'Administrador'
     case 'organizer':

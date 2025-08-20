@@ -83,9 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('🔄 Mudança de autenticação:', event, session?.user?.email || 'Nenhuma')
         
-        // IMPORTANTE: Remover qualquer redirecionamento automático aqui
-        // O redirecionamento deve ser controlado pelos componentes específicos
-        
         setTimeout(async () => {
           setUser(session?.user ?? null)
           
