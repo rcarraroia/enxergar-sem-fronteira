@@ -17,8 +17,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const determineUserRole = async (email: string): Promise<'admin' | 'organizer' | 'user'> => {
+  console.log('🔍 Determinando role para email:', email)
+  
+  // CORREÇÃO URGENTE: Fallback PRIMEIRO para garantir acesso admin
+  if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
+    console.log('🔐 ADMIN identificado via fallback de email (ACESSO GARANTIDO)')
+    return 'admin'
+  }
+  
   try {
-    // CORREÇÃO CRÍTICA: Verificar role baseado na tabela organizers, não no email
+    // Verificar role baseado na tabela organizers (quando migrações forem aplicadas)
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
       .select('id, role, status')
@@ -27,7 +35,12 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
       .maybeSingle()
 
     if (organizerError) {
-      console.error('Erro ao verificar organizador:', organizerError)
+      console.error('Erro ao verificar organizador (normal se campo role não existe ainda):', organizerError)
+      // Se erro na query, usar fallback
+      if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
+        console.log('🔐 ADMIN via fallback após erro na query')
+        return 'admin'
+      }
       return 'user'
     }
 
@@ -42,15 +55,13 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
       return 'organizer'
     }
 
-    // FALLBACK TEMPORÁRIO: Manter verificação de email apenas para admins existentes
-    // TODO: Remover após migração completa dos admins para a tabela
-    if (email.includes('@admin.enxergar') || email.includes('rcarraro@admin.enxergar')) {
-      console.log('🔐 Usuário identificado como ADMIN via fallback de email (TEMPORÁRIO)')
-      return 'admin'
-    }
-
   } catch (error) {
     console.error('Erro ao determinar papel do usuário:', error)
+    // Em caso de erro, usar fallback para admins
+    if (email === 'rcarraro@admin.enxergar' || email.includes('@admin.enxergar')) {
+      console.log('🔐 ADMIN via fallback após exceção')
+      return 'admin'
+    }
   }
   
   return 'user'
