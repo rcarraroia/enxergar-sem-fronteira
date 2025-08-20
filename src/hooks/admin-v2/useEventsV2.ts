@@ -93,23 +93,69 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
           throw error
         }
 
-        // Processar dados de forma simples para evitar erros
-        const processedEvents: EventV2[] = (events || []).map(event => ({
-          id: event.id,
-          title: event.title,
-          description: event.description,
-          location: event.location,
-          organizer_id: event.organizer_id,
-          created_at: event.created_at,
-          updated_at: event.updated_at,
-          status: 'active',
-          event_dates: [],
-          organizer: { name: 'Administrador', email: 'admin@sistema.com' },
-          _count: {
-            registrations: 0,
-            event_dates: 0
+        // Buscar dados relacionados para cada evento
+        const processedEvents: EventV2[] = []
+        
+        for (const event of events || []) {
+          // Buscar organizador
+          let organizer = { name: 'Administrador', email: 'admin@sistema.com' }
+          try {
+            const { data: organizerData } = await supabase
+              .from('organizers')
+              .select('name, email')
+              .eq('id', event.organizer_id)
+              .single()
+            
+            if (organizerData) {
+              organizer = organizerData
+            }
+          } catch (error) {
+            console.log('Organizador não encontrado, usando padrão')
           }
-        }))
+
+          // Buscar datas do evento
+          let eventDates: any[] = []
+          try {
+            const { data: eventDatesData } = await supabase
+              .from('event_dates')
+              .select('*')
+              .eq('event_id', event.id)
+            
+            eventDates = eventDatesData || []
+          } catch (error) {
+            console.log('Datas do evento não encontradas')
+          }
+
+          // Contar inscrições
+          let registrationsCount = 0
+          try {
+            const { count } = await supabase
+              .from('registrations')
+              .select('*', { count: 'exact', head: true })
+              .eq('event_id', event.id)
+            
+            registrationsCount = count || 0
+          } catch (error) {
+            console.log('Erro ao contar inscrições')
+          }
+
+          processedEvents.push({
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            location: event.location,
+            organizer_id: event.organizer_id,
+            created_at: event.created_at,
+            updated_at: event.updated_at,
+            status: 'active',
+            event_dates: eventDates,
+            organizer,
+            _count: {
+              registrations: registrationsCount,
+              event_dates: eventDates.length
+            }
+          })
+        }
 
         // Aplicar filtros de data se necessário
         let filteredEvents = processedEvents
@@ -162,6 +208,47 @@ export const useEventV2 = (eventId: string) => {
 
         if (!event) return null
 
+        // Buscar dados relacionados
+        let organizer = { name: 'Administrador', email: 'admin@sistema.com' }
+        let eventDates: any[] = []
+        let registrationsCount = 0
+
+        try {
+          const { data: organizerData } = await supabase
+            .from('organizers')
+            .select('name, email')
+            .eq('id', event.organizer_id)
+            .single()
+          
+          if (organizerData) {
+            organizer = organizerData
+          }
+        } catch (error) {
+          console.log('Organizador não encontrado')
+        }
+
+        try {
+          const { data: eventDatesData } = await supabase
+            .from('event_dates')
+            .select('*')
+            .eq('event_id', event.id)
+          
+          eventDates = eventDatesData || []
+        } catch (error) {
+          console.log('Datas não encontradas')
+        }
+
+        try {
+          const { count } = await supabase
+            .from('registrations')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+          
+          registrationsCount = count || 0
+        } catch (error) {
+          console.log('Erro ao contar inscrições')
+        }
+
         return {
           id: event.id,
           title: event.title,
@@ -171,11 +258,11 @@ export const useEventV2 = (eventId: string) => {
           created_at: event.created_at,
           updated_at: event.updated_at,
           status: 'active',
-          event_dates: [],
-          organizer: { name: 'Administrador', email: 'admin@sistema.com' },
+          event_dates: eventDates,
+          organizer,
           _count: {
-            registrations: 0,
-            event_dates: 0
+            registrations: registrationsCount,
+            event_dates: eventDates.length
           }
         }
 
