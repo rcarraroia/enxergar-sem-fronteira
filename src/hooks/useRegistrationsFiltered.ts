@@ -39,6 +39,8 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
             date,
             start_time,
             end_time,
+            total_slots,
+            available_slots,
             events (
               id,
               title,
@@ -130,6 +132,8 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
           date: reg.event_dates.date,
           start_time: reg.event_dates.start_time,
           end_time: reg.event_dates.end_time,
+          total_slots: reg.event_dates.total_slots,
+          available_slots: reg.event_dates.available_slots,
           event: reg.event_dates.events
         }
       }))
