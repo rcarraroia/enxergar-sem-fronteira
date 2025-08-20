@@ -90,7 +90,7 @@ const AdminPromotersV2 = () => {
   const [filters, setFilters] = useState<PromoterFilters>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [selectedCity, setSelectedCity] = useState<string>('all')
+
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Dialogs
@@ -108,17 +108,13 @@ const AdminPromotersV2 = () => {
     name: '',
     email: '',
     password: '',
-    phone: '',
-    city: '',
-    state: ''
+    phone: ''
   })
   const [editFormData, setEditFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    city: '',
-    state: '',
-    asaas_wallet_id: ''
+    asaas_api_key: ''
   })
   const [showPassword, setShowPassword] = useState(false)
 
@@ -135,8 +131,7 @@ const AdminPromotersV2 = () => {
   const handleSearch = () => {
     setFilters({
       search: searchTerm || undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      city: selectedCity !== 'all' ? selectedCity : undefined
+      status: selectedStatus !== 'all' ? selectedStatus : undefined
     })
   }
 
@@ -181,9 +176,7 @@ const AdminPromotersV2 = () => {
           name: editFormData.name,
           email: editFormData.email,
           phone: editFormData.phone,
-          city: editFormData.city,
-          state: editFormData.state,
-          asaas_wallet_id: editFormData.asaas_wallet_id
+          asaas_api_key: editFormData.asaas_api_key
         }
       })
       setShowEditDialog(false)
@@ -294,7 +287,6 @@ const AdminPromotersV2 = () => {
         promoter.name || 'N/A',
         promoter.email || 'N/A',
         promoter.phone || 'N/A',
-        promoter.city || 'N/A',
         promoter.status === 'active' ? 'Ativo' :
         promoter.status === 'inactive' ? 'Inativo' : 'Pendente',
         promoter.events_count || 0,
@@ -325,8 +317,7 @@ const AdminPromotersV2 = () => {
     }
   }
 
-  // Obter cidades únicas para o filtro
-  const availableCities = [...new Set(promoters.map(p => p.city).filter(Boolean))]
+
 
   return (
     <AdminLayout 
@@ -354,21 +345,20 @@ const AdminPromotersV2 = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <Label htmlFor="search">Buscar</Label>
               <div className="flex gap-2">
                 <Input
                   id="search"
-                  placeholder="Nome, email ou cidade..."
+                  placeholder="Nome ou email..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value)
                     // Aplicar filtro automaticamente
                     setFilters({
                       search: e.target.value || undefined,
-                      status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                      city: selectedCity !== 'all' ? selectedCity : undefined
+                      status: selectedStatus !== 'all' ? selectedStatus : undefined
                     })
                   }}
                 />
@@ -384,8 +374,7 @@ const AdminPromotersV2 = () => {
                 setSelectedStatus(value)
                 setFilters({
                   search: searchTerm || undefined,
-                  status: value !== 'all' ? value : undefined,
-                  city: selectedCity !== 'all' ? selectedCity : undefined
+                  status: value !== 'all' ? value : undefined
                 })
               }}>
                 <SelectTrigger>
@@ -396,30 +385,6 @@ const AdminPromotersV2 = () => {
                   <SelectItem value="active">Ativo</SelectItem>
                   <SelectItem value="inactive">Inativo</SelectItem>
                   <SelectItem value="pending">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="city">Cidade</Label>
-              <Select value={selectedCity} onValueChange={(value) => {
-                setSelectedCity(value)
-                setFilters({
-                  search: searchTerm || undefined,
-                  status: selectedStatus !== 'all' ? selectedStatus : undefined,
-                  city: value !== 'all' ? value : undefined
-                })
-              }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Cidades</SelectItem>
-                  {availableCities.map(city => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -498,27 +463,7 @@ const AdminPromotersV2 = () => {
                       placeholder="(11) 99999-9999"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor="city">Cidade</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Cidade"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="state">Estado</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        placeholder="UF"
-                        maxLength={2}
-                      />
-                    </div>
-                  </div>
+
 
                   <div className="flex gap-2 pt-4">
                     <Button 
@@ -694,35 +639,15 @@ const AdminPromotersV2 = () => {
                 placeholder="(11) 99999-9999"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="edit_city">Cidade</Label>
-                <Input
-                  id="edit_city"
-                  value={editFormData.city}
-                  onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                  placeholder="Cidade"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit_state">Estado</Label>
-                <Input
-                  id="edit_state"
-                  value={editFormData.state}
-                  onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
-                  placeholder="UF"
-                  maxLength={2}
-                />
-              </div>
-            </div>
+
             <div>
-              <Label htmlFor="edit_asaas_wallet_id">Wallet ID Asaas</Label>
+              <Label htmlFor="edit_asaas_api_key">API Key Asaas</Label>
               <div className="space-y-2">
                 <Input
-                  id="edit_asaas_wallet_id"
-                  value={editFormData.asaas_wallet_id}
-                  onChange={(e) => setEditFormData({ ...editFormData, asaas_wallet_id: e.target.value })}
-                  placeholder="ID da carteira Asaas para split de pagamentos"
+                  id="edit_asaas_api_key"
+                  value={editFormData.asaas_api_key}
+                  onChange={(e) => setEditFormData({ ...editFormData, asaas_api_key: e.target.value })}
+                  placeholder="API Key do Asaas para pagamentos"
                 />
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
@@ -750,9 +675,7 @@ const AdminPromotersV2 = () => {
                     name: '',
                     email: '',
                     phone: '',
-                    city: '',
-                    state: '',
-                    asaas_wallet_id: ''
+                    asaas_api_key: ''
                   })
                 }}
                 className="flex-1"
@@ -888,20 +811,10 @@ const AdminPromotersV2 = () => {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        {promoter.city && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            <span className="text-sm">
-                              {promoter.city}{promoter.state && `, ${promoter.state}`}
-                            </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
                         {getStatusBadge(promoter.status)}
                       </td>
                       <td className="py-3 px-4">
-                        {promoter.asaas_wallet_id ? (
+                        {promoter.asaas_api_key ? (
                           <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
                             Configurada
                           </Badge>
@@ -930,9 +843,7 @@ const AdminPromotersV2 = () => {
                                 name: promoter.name,
                                 email: promoter.email,
                                 phone: promoter.phone || '',
-                                city: promoter.city || '',
-                                state: promoter.state || '',
-                                asaas_wallet_id: promoter.asaas_wallet_id || ''
+                                asaas_api_key: promoter.asaas_api_key || ''
                               })
                               setShowEditDialog(true)
                             }}>
