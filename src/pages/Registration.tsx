@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import PatientRegistrationForm from '@/components/PatientRegistrationForm'
 import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
@@ -12,11 +12,15 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 
 const Registration = () => {
-  const { eventId, eventDateId } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { data: events, isLoading } = useEvents()
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [registeredPatientName, setRegisteredPatientName] = useState('')
+
+  // Pegar parâmetros da URL
+  const eventId = searchParams.get('eventId')
+  const eventDateId = searchParams.get('eventDateId')
 
   useEffect(() => {
     if (!eventId || !eventDateId) {
@@ -125,17 +129,10 @@ const Registration = () => {
           </Card>
 
           {/* Registration Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cadastro do Paciente</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PatientRegistrationForm 
-                eventDateId={eventDateId}
-                onSuccess={handleRegistrationSuccess}
-              />
-            </CardContent>
-          </Card>
+          <PatientRegistrationForm 
+            eventDateId={eventDateId}
+            onSuccess={handleRegistrationSuccess}
+          />
         </div>
       </main>
 
