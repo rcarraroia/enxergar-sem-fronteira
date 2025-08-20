@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
@@ -42,12 +43,19 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
           .eq('status', 'active')
           .maybeSingle()
 
-        if (!roleError && roleData?.role) {
+        // Verificar se não há erro E se roleData existe E se tem a propriedade role
+        if (!roleError && roleData && 'role' in roleData && roleData.role) {
           console.log('🔐 Usuário identificado como:', roleData.role, 'via tabela organizers')
           return roleData.role as 'admin' | 'organizer' | 'superadmin'
         }
+        
+        // Se há erro relacionado à coluna role, usar fallback
+        if (roleError && roleError.message?.includes('role')) {
+          console.warn('⚠️ Coluna role não existe ainda, usando fallback de email')
+          return determineRoleByEmailFallback(email)
+        }
       } catch (error) {
-        console.warn('⚠️ Coluna role não existe ainda, usando fallback de email')
+        console.warn('⚠️ Erro ao buscar role, usando fallback de email:', error)
       }
       
       // Se chegou até aqui, o organizador existe mas não conseguimos acessar o role
