@@ -1,4 +1,3 @@
-
 import { useMutation } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -22,8 +21,14 @@ export const useNotifications = () => {
     mutationFn: async (notificationData: NotificationData) => {
       console.log('📧 Enviando email:', notificationData.subject)
       
-      const { data, error } = await supabase.functions.invoke('send-notification-email', {
-        body: notificationData
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          templateName: notificationData.template,
+          templateData: notificationData.data,
+          recipientEmail: notificationData.to,
+          recipientName: notificationData.data.name,
+          testMode: false
+        }
       })
 
       if (error) {

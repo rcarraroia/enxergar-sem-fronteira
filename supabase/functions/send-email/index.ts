@@ -42,7 +42,7 @@ async function sendEmail({
     throw new Error('RESEND_API_KEY not configured')
   }
 
-  // Get verified domain from environment or use verified domain
+  // Use only verified domain emails
   const RESEND_FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'noreply@enxergarsemfronteira.com.br'
   const RESEND_FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || 'Enxergar sem Fronteiras'
 
