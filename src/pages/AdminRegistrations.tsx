@@ -25,7 +25,7 @@ export default function AdminRegistrations() {
   const filteredRegistrations = registrations?.filter(registration => {
     const matchesSearch = !searchTerm || 
       registration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (registration.email && registration.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       registration.phone.includes(searchTerm)
 
     const matchesEvent = !eventFilter || registration.event_date.event_id === eventFilter
@@ -70,26 +70,19 @@ export default function AdminRegistrations() {
       'Evento', 'Data do Evento', 'Horário', 'Status', 'Data de Inscrição'
     ]
 
-    const csvData = filteredRegistrations.map(registration => {
-      // Find the event that contains this event_date
-      const event = events?.find(e => 
-        e.event_dates.some(ed => ed.id === registration.event_date.id)
-      )
-      
-      return [
-        registration.name,
-        registration.cpf,
-        registration.email || '',
-        registration.phone,
-        registration.city,
-        registration.state,
-        event?.city || 'Evento não encontrado',
-        formatDate(registration.event_date.date),
-        `${formatTime(registration.event_date.start_time)} - ${formatTime(registration.event_date.end_time)}`,
-        registration.status,
-        formatDate(registration.created_at)
-      ]
-    })
+    const csvData = filteredRegistrations.map(registration => [
+      registration.name,
+      registration.cpf,
+      registration.email || '',
+      registration.phone,
+      registration.city,
+      registration.state,
+      registration.event_date.event.city,
+      formatDate(registration.event_date.date),
+      `${formatTime(registration.event_date.start_time)} - ${formatTime(registration.event_date.end_time)}`,
+      registration.status,
+      formatDate(registration.created_at)
+    ])
 
     const csvContent = [headers, ...csvData]
       .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -258,79 +251,72 @@ export default function AdminRegistrations() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRegistrations.map((registration) => {
-                    // Find the event that contains this event_date
-                    const event = events?.find(e => 
-                      e.event_dates.some(ed => ed.id === registration.event_date.id)
-                    )
-                    
-                    return (
-                      <TableRow key={registration.id}>
-                        <TableCell>
+                  {filteredRegistrations.map((registration) => (
+                    <TableRow key={registration.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{registration.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            CPF: {registration.cpf}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {registration.city}, {registration.state}
+                          </div>
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm">
+                            <Phone className="h-3 w-3" />
+                            {registration.phone}
+                          </div>
+                          {registration.email && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              {registration.email}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            {registration.event_date.event.city}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {registration.event_date.event.location}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <div className="font-medium">{registration.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              CPF: {registration.cpf}
+                            <div className="font-medium">
+                              {formatDate(registration.event_date.date)}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {registration.city}, {registration.state}
+                              {formatTime(registration.event_date.start_time)} - {formatTime(registration.event_date.end_time)}
                             </div>
                           </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1 text-sm">
-                              <Phone className="h-3 w-3" />
-                              {registration.phone}
-                            </div>
-                            {registration.email && (
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Mail className="h-3 w-3" />
-                                {registration.email}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {event?.city || 'Evento não encontrado'}
-                            </span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {event?.location}
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <div className="font-medium">
-                                {formatDate(registration.event_date.date)}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {formatTime(registration.event_date.start_time)} - {formatTime(registration.event_date.end_time)}
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          {getStatusBadge(registration.status)}
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="text-sm text-muted-foreground">
-                            {formatDate(registration.created_at)}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
+                        </div>
+                      </TableCell>
+                      
+                      <TableCell>
+                        {getStatusBadge(registration.status)}
+                      </TableCell>
+                      
+                      <TableCell>
+                        <div className="text-sm text-muted-foreground">
+                          {formatDate(registration.created_at)}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

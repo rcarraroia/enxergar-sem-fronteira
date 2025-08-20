@@ -1,323 +1,324 @@
 
 import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import { useSystemSettings } from '@/hooks/useSystemSettings'
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
-import { Settings, Save, Loader2 } from 'lucide-react'
+import { Loader2, Save, Upload } from 'lucide-react'
+import { toast } from 'sonner'
 
-export const SystemSettingsForm = () => {
-  const { settings, isLoading, updateSetting, isUpdating, getSettingValue, getSettingJSON } = useSystemSettings()
-  
-  const [formData, setFormData] = useState({
-    // Organização
-    organization_name: '',
-    organization_description: '',
-    organization_phone: '',
-    organization_email: '',
-    organization_address: '',
-    
-    // Redes Sociais
-    social_media_links: {
-      facebook: '',
-      instagram: '',
-      linkedin: ''
-    },
-    
-    // Email
-    email_sender_name: '',
-    email_sender_email: '',
-    email_reply_to: '',
-    
-    // Notificações
-    sms_enabled: 'true',
-    email_enabled: 'true',
-    whatsapp_enabled: 'false',
-    
-    // Sistema
-    max_registrations_per_event: '100',
-    registration_deadline_hours: '24',
-    reminder_hours_before: '24'
-  })
+interface SystemSettingsFormProps {
+  section: 'general' | 'logos' | 'social' | 'apikeys'
+}
+
+export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
+  const { settings, updateSettings, isLoading } = useSystemSettings()
+  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    if (settings && settings.length > 0) {
-      const socialLinks = getSettingJSON('social_media_links', { facebook: '', instagram: '', linkedin: '' }) as { facebook: string; instagram: string; linkedin: string }
-      
-      setFormData({
-        organization_name: getSettingValue('organization_name', ''),
-        organization_description: getSettingValue('organization_description', ''),
-        organization_phone: getSettingValue('organization_phone', ''),
-        organization_email: getSettingValue('organization_email', ''),
-        organization_address: getSettingValue('organization_address', ''),
-        social_media_links: {
-          facebook: socialLinks.facebook || '',
-          instagram: socialLinks.instagram || '',
-          linkedin: socialLinks.linkedin || ''
-        },
-        email_sender_name: getSettingValue('email_sender_name', ''),
-        email_sender_email: getSettingValue('email_sender_email', ''),
-        email_reply_to: getSettingValue('email_reply_to', ''),
-        sms_enabled: getSettingValue('sms_enabled', 'true'),
-        email_enabled: getSettingValue('email_enabled', 'true'),
-        whatsapp_enabled: getSettingValue('whatsapp_enabled', 'false'),
-        max_registrations_per_event: getSettingValue('max_registrations_per_event', '100'),
-        registration_deadline_hours: getSettingValue('registration_deadline_hours', '24'),
-        reminder_hours_before: getSettingValue('reminder_hours_before', '24')
-      })
+    if (settings) {
+      switch (section) {
+        case 'general':
+          setFormData({
+            site_name: settings.site_name || '',
+            site_description: settings.site_description || '',
+            contact_email: settings.contact_email || '',
+            contact_phone: settings.contact_phone || ''
+          })
+          break
+        case 'logos':
+          setFormData({
+            logo_url: settings.logo_url || '',
+            favicon_url: settings.favicon_url || ''
+          })
+          break
+        case 'social':
+          const socialLinks = settings.social_media_links as { facebook?: string; instagram?: string; linkedin?: string } || {}
+          setFormData({
+            facebook: socialLinks.facebook || '',
+            instagram: socialLinks.instagram || '',
+            linkedin: socialLinks.linkedin || ''
+          })
+          break
+        case 'apikeys':
+          setFormData({
+            resend_api_key: settings.resend_api_key || '',
+            vonage_api_key: settings.vonage_api_key || '',
+            vonage_api_secret: settings.vonage_api_secret || ''
+          })
+          break
+      }
     }
-  }, [settings, getSettingValue, getSettingJSON])
+  }, [settings, section])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Atualizar configurações individualmente
-    const updates = [
-      { key: 'organization_name', value: formData.organization_name },
-      { key: 'organization_description', value: formData.organization_description },
-      { key: 'organization_phone', value: formData.organization_phone },
-      { key: 'organization_email', value: formData.organization_email },
-      { key: 'organization_address', value: formData.organization_address },
-      { key: 'social_media_links', value: JSON.stringify(formData.social_media_links) },
-      { key: 'email_sender_name', value: formData.email_sender_name },
-      { key: 'email_sender_email', value: formData.email_sender_email },
-      { key: 'email_reply_to', value: formData.email_reply_to },
-      { key: 'sms_enabled', value: formData.sms_enabled },
-      { key: 'email_enabled', value: formData.email_enabled },
-      { key: 'whatsapp_enabled', value: formData.whatsapp_enabled },
-      { key: 'max_registrations_per_event', value: formData.max_registrations_per_event },
-      { key: 'registration_deadline_hours', value: formData.registration_deadline_hours },
-      { key: 'reminder_hours_before', value: formData.reminder_hours_before }
-    ]
+    setIsSaving(true)
 
-    for (const update of updates) {
-      updateSetting(update.key, update.value)
+    try {
+      let updateData: Record<string, any> = {}
+
+      switch (section) {
+        case 'general':
+          updateData = {
+            site_name: formData.site_name,
+            site_description: formData.site_description,
+            contact_email: formData.contact_email,
+            contact_phone: formData.contact_phone
+          }
+          break
+        case 'logos':
+          updateData = {
+            logo_url: formData.logo_url,
+            favicon_url: formData.favicon_url
+          }
+          break
+        case 'social':
+          updateData = {
+            social_media_links: {
+              facebook: formData.facebook,
+              instagram: formData.instagram,
+              linkedin: formData.linkedin
+            }
+          }
+          break
+        case 'apikeys':
+          updateData = {
+            resend_api_key: formData.resend_api_key,
+            vonage_api_key: formData.vonage_api_key,
+            vonage_api_secret: formData.vonage_api_secret
+          }
+          break
+      }
+
+      await updateSettings(updateData)
+      toast.success('Configurações salvas com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error)
+      toast.error('Erro ao salvar configurações')
+    } finally {
+      setIsSaving(false)
     }
   }
 
+  const handleInputChange = (key: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value
+    }))
+  }
+
   if (isLoading) {
-    return <LoadingSkeleton variant="card" />
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            <span>Carregando configurações...</span>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const renderGeneralSettings = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="site_name">Nome do Site</Label>
+        <Input
+          id="site_name"
+          value={formData.site_name || ''}
+          onChange={(e) => handleInputChange('site_name', e.target.value)}
+          placeholder="Enxergar sem Fronteiras"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="site_description">Descrição do Site</Label>
+        <Textarea
+          id="site_description"
+          value={formData.site_description || ''}
+          onChange={(e) => handleInputChange('site_description', e.target.value)}
+          placeholder="Promovendo a saúde ocular através de eventos oftalmológicos gratuitos..."
+          rows={3}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="contact_email">Email de Contato</Label>
+        <Input
+          id="contact_email"
+          type="email"
+          value={formData.contact_email || ''}
+          onChange={(e) => handleInputChange('contact_email', e.target.value)}
+          placeholder="contato@enxergarsemfronteira.com.br"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="contact_phone">Telefone de Contato</Label>
+        <Input
+          id="contact_phone"
+          value={formData.contact_phone || ''}
+          onChange={(e) => handleInputChange('contact_phone', e.target.value)}
+          placeholder="(11) 99999-9999"
+        />
+      </div>
+    </div>
+  )
+
+  const renderLogosSettings = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="logo_url">URL do Logo</Label>
+        <div className="flex gap-2">
+          <Input
+            id="logo_url"
+            value={formData.logo_url || ''}
+            onChange={(e) => handleInputChange('logo_url', e.target.value)}
+            placeholder="https://example.com/logo.png"
+          />
+          <Button variant="outline" size="icon">
+            <Upload className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="favicon_url">URL do Favicon</Label>
+        <div className="flex gap-2">
+          <Input
+            id="favicon_url"
+            value={formData.favicon_url || ''}
+            onChange={(e) => handleInputChange('favicon_url', e.target.value)}
+            placeholder="https://example.com/favicon.ico"
+          />
+          <Button variant="outline" size="icon">
+            <Upload className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderSocialSettings = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="facebook">Facebook</Label>
+        <Input
+          id="facebook"
+          value={formData.facebook || ''}
+          onChange={(e) => handleInputChange('facebook', e.target.value)}
+          placeholder="https://facebook.com/enxergarsemfronteiras"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="instagram">Instagram</Label>
+        <Input
+          id="instagram"
+          value={formData.instagram || ''}
+          onChange={(e) => handleInputChange('instagram', e.target.value)}
+          placeholder="https://instagram.com/enxergarsemfronteiras"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="linkedin">LinkedIn</Label>
+        <Input
+          id="linkedin"
+          value={formData.linkedin || ''}
+          onChange={(e) => handleInputChange('linkedin', e.target.value)}
+          placeholder="https://linkedin.com/company/enxergarsemfronteiras"
+        />
+      </div>
+    </div>
+  )
+
+  const renderApiKeysSettings = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="resend_api_key">Resend API Key</Label>
+        <Input
+          id="resend_api_key"
+          type="password"
+          value={formData.resend_api_key || ''}
+          onChange={(e) => handleInputChange('resend_api_key', e.target.value)}
+          placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="vonage_api_key">Vonage API Key</Label>
+        <Input
+          id="vonage_api_key"
+          value={formData.vonage_api_key || ''}
+          onChange={(e) => handleInputChange('vonage_api_key', e.target.value)}
+          placeholder="xxxxxxxx"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="vonage_api_secret">Vonage API Secret</Label>
+        <Input
+          id="vonage_api_secret"
+          type="password"
+          value={formData.vonage_api_secret || ''}
+          onChange={(e) => handleInputChange('vonage_api_secret', e.target.value)}
+          placeholder="xxxxxxxxxxxxxxxx"
+        />
+      </div>
+    </div>
+  )
+
+  const getSectionTitle = () => {
+    switch (section) {
+      case 'general': return 'Configurações Gerais'
+      case 'logos': return 'Logos e Imagens'
+      case 'social': return 'Redes Sociais'
+      case 'apikeys': return 'Chaves de API'
+      default: return 'Configurações'
+    }
+  }
+
+  const getSectionDescription = () => {
+    switch (section) {
+      case 'general': return 'Configure as informações básicas do sistema'
+      case 'logos': return 'Gerencie os logos e imagens do sistema'
+      case 'social': return 'Configure os links das redes sociais'
+      case 'apikeys': return 'Configure as chaves de API dos serviços externos'
+      default: return 'Configure o sistema'
+    }
+  }
+
+  const renderSectionContent = () => {
+    switch (section) {
+      case 'general': return renderGeneralSettings()
+      case 'logos': return renderLogosSettings()
+      case 'social': return renderSocialSettings()
+      case 'apikeys': return renderApiKeysSettings()
+      default: return null
+    }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Configurações do Sistema
-        </CardTitle>
-        <CardDescription>
-          Configure as informações gerais da organização e parâmetros do sistema
-        </CardDescription>
+        <CardTitle>{getSectionTitle()}</CardTitle>
+        <CardDescription>{getSectionDescription()}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações da Organização */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Informações da Organização</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="organization_name">Nome da Organização</Label>
-                <Input
-                  id="organization_name"
-                  value={formData.organization_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organization_name: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
+          {renderSectionContent()}
 
-              <div>
-                <Label htmlFor="organization_email">Email da Organização</Label>
-                <Input
-                  id="organization_email"
-                  type="email"
-                  value={formData.organization_email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organization_email: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="organization_description">Descrição</Label>
-              <Textarea
-                id="organization_description"
-                value={formData.organization_description}
-                onChange={(e) => setFormData(prev => ({ ...prev, organization_description: e.target.value }))}
-                disabled={isUpdating}
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="organization_phone">Telefone</Label>
-                <Input
-                  id="organization_phone"
-                  value={formData.organization_phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organization_phone: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="organization_address">Endereço</Label>
-                <Input
-                  id="organization_address"
-                  value={formData.organization_address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organization_address: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Redes Sociais */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Redes Sociais</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="facebook">Facebook</Label>
-                <Input
-                  id="facebook"
-                  value={formData.social_media_links.facebook}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    social_media_links: { ...prev.social_media_links, facebook: e.target.value }
-                  }))}
-                  placeholder="https://facebook.com/..."
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="instagram">Instagram</Label>
-                <Input
-                  id="instagram"
-                  value={formData.social_media_links.instagram}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    social_media_links: { ...prev.social_media_links, instagram: e.target.value }
-                  }))}
-                  placeholder="https://instagram.com/..."
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                <Input
-                  id="linkedin"
-                  value={formData.social_media_links.linkedin}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    social_media_links: { ...prev.social_media_links, linkedin: e.target.value }
-                  }))}
-                  placeholder="https://linkedin.com/..."
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Configurações de Email */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configurações de Email</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="email_sender_name">Nome do Remetente</Label>
-                <Input
-                  id="email_sender_name"
-                  value={formData.email_sender_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email_sender_name: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email_sender_email">Email do Remetente</Label>
-                <Input
-                  id="email_sender_email"
-                  type="email"
-                  value={formData.email_sender_email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email_sender_email: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="email_reply_to">Email de Resposta</Label>
-              <Input
-                id="email_reply_to"
-                type="email"
-                value={formData.email_reply_to}
-                onChange={(e) => setFormData(prev => ({ ...prev, email_reply_to: e.target.value }))}
-                disabled={isUpdating}
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Configurações do Sistema */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configurações do Sistema</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="max_registrations_per_event">Máximo de Inscrições por Evento</Label>
-                <Input
-                  id="max_registrations_per_event"
-                  type="number"
-                  value={formData.max_registrations_per_event}
-                  onChange={(e) => setFormData(prev => ({ ...prev, max_registrations_per_event: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="registration_deadline_hours">Prazo para Inscrição (horas)</Label>
-                <Input
-                  id="registration_deadline_hours"
-                  type="number"
-                  value={formData.registration_deadline_hours}
-                  onChange={(e) => setFormData(prev => ({ ...prev, registration_deadline_hours: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="reminder_hours_before">Lembrete (horas antes)</Label>
-                <Input
-                  id="reminder_hours_before"
-                  type="number"
-                  value={formData.reminder_hours_before}
-                  onChange={(e) => setFormData(prev => ({ ...prev, reminder_hours_before: e.target.value }))}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isUpdating}>
-              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Save className="mr-2 h-4 w-4" />
-              {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
-            </Button>
-          </div>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Save className="mr-2 h-4 w-4" />
+            {isSaving ? 'Salvando...' : 'Salvar Configurações'}
+          </Button>
         </form>
       </CardContent>
     </Card>

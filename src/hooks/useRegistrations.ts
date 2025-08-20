@@ -1,20 +1,18 @@
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 
 export interface Registration {
   id: string
   status: string
   created_at: string
-  patient: {
-    id: string
-    nome: string
-    cpf: string
-    email: string
-    telefone: string
-    data_nascimento: string | null
-    diagnostico: string | null
-  }
+  name: string
+  cpf: string
+  email: string | null
+  phone: string
+  city: string
+  state: string
   event_date: {
     id: string
     date: string
@@ -22,6 +20,7 @@ export interface Registration {
     end_time: string
     total_slots: number
     available_slots: number
+    event_id: string
     event: {
       id: string
       title: string
@@ -32,8 +31,32 @@ export interface Registration {
   }
 }
 
+interface CreateRegistrationData {
+  name: string
+  cpf: string
+  birth_date: string
+  gender: string
+  phone: string
+  email?: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  emergency_contact_name: string
+  emergency_contact_phone: string
+  medical_history?: string
+  current_medications?: string
+  allergies?: string
+  has_previous_eye_surgery: boolean
+  wears_glasses: boolean
+  main_complaint?: string
+  event_date_id: string
+}
+
 export const useRegistrations = (eventId?: string, eventDateId?: string) => {
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey: ['registrations', eventId, eventDateId],
     queryFn: async () => {
       console.log('🔍 Buscando inscrições...', 
@@ -46,15 +69,12 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
           id,
           status,
           created_at,
-          patient:patients (
-            id,
-            nome,
-            cpf,
-            email,
-            telefone,
-            data_nascimento,
-            diagnostico
-          ),
+          name,
+          cpf,
+          email,
+          phone,
+          city,
+          state,
           event_date:event_dates (
             id,
             date,
@@ -62,6 +82,7 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
             end_time,
             total_slots,
             available_slots,
+            event_id,
             event:events (
               id,
               title,
@@ -105,4 +126,41 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
       return data as Registration[]
     }
   })
+
+  const createRegistration = useMutation({
+    mutationFn: async (registrationData: CreateRegistrationData) => {
+      console.log('📝 Criando nova inscrição:', registrationData)
+      
+      const { data, error } = await supabase
+        .from('registrations')
+        .insert([{
+          ...registrationData,
+          status: 'confirmed'
+        }])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Erro ao criar inscrição:', error)
+        throw error
+      }
+
+      console.log('✅ Inscrição criada com sucesso:', data)
+      return data
+    },
+    onSuccess: () => {
+      // Invalidate and refetch registrations
+      queryClient.invalidateQueries({ queryKey: ['registrations'] })
+      toast.success('Inscrição realizada com sucesso!')
+    },
+    onError: (error) => {
+      console.error('❌ Erro na mutação de inscrição:', error)
+      toast.error('Erro ao realizar inscrição. Tente novamente.')
+    }
+  })
+
+  return {
+    ...query,
+    createRegistration
+  }
 }

@@ -37,6 +37,40 @@ interface EventInfo {
   }>
 }
 
+const fetchEventInfo = async (id: string): Promise<EventInfo | null> => {
+  if (!id) return null
+  
+  try {
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        id,
+        title,
+        description,
+        location,
+        address,
+        city,
+        event_dates (
+          id,
+          date,
+          start_time,
+          end_time,
+          available_slots,
+          total_slots
+        )
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar informações do evento:', error)
+    toast.error('Erro ao carregar informações do evento')
+    return null
+  }
+}
+
 export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
   const { createRegistration } = useRegistrations()
   const [isLoading, setIsLoading] = useState(false)
@@ -66,46 +100,12 @@ export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: Pat
     accepts_privacy: false
   })
 
-  // Move fetchEventInfo declaration before useEffect
-  const fetchEventInfo = async (id: string) => {
-    if (!id) return
-    
-    setIsLoadingEvent(true)
-    try {
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          description,
-          location,
-          address,
-          city,
-          event_dates (
-            id,
-            date,
-            start_time,
-            end_time,
-            available_slots,
-            total_slots
-          )
-        `)
-        .eq('id', id)
-        .single()
-
-      if (error) throw error
-      setEventInfo(data)
-    } catch (error) {
-      console.error('Erro ao buscar informações do evento:', error)
-      toast.error('Erro ao carregar informações do evento')
-    } finally {
-      setIsLoadingEvent(false)
-    }
-  }
-
   useEffect(() => {
     if (eventId) {
+      setIsLoadingEvent(true)
       fetchEventInfo(eventId)
+        .then(setEventInfo)
+        .finally(() => setIsLoadingEvent(false))
     }
   }, [eventId])
 
