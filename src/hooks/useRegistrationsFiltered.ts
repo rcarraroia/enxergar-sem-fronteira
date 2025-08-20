@@ -31,7 +31,8 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
             email,
             telefone,
             cpf,
-            data_nascimento
+            data_nascimento,
+            diagnostico
           ),
           event_dates (
             id,
@@ -134,7 +135,7 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
       }))
 
       console.log(`✅ Encontradas ${transformedRegistrations.length} inscrições após filtros`)
-      return translatedRegistrations
+      return transformedRegistrations
     }
   })
 }
