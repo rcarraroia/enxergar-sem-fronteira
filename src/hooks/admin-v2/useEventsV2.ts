@@ -72,7 +72,7 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
             organizer_id,
             created_at,
             updated_at,
-            organizers!inner(name, email),
+            organizers(name, email),
             event_dates(
               id,
               date,
@@ -173,7 +173,7 @@ export const useEventV2 = (eventId: string) => {
             organizer_id,
             created_at,
             updated_at,
-            organizers!inner(name, email),
+            organizers(name, email),
             event_dates(
               id,
               date,

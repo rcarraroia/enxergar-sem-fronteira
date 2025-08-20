@@ -86,8 +86,8 @@ export const useRecentActivityV2 = () => {
           .select(`
             id, 
             created_at,
-            patients!inner(name),
-            events!inner(title)
+            patients(name),
+            events(title)
           `)
           .gte('created_at', threeDaysAgo.toISOString())
           .order('created_at', { ascending: false })
