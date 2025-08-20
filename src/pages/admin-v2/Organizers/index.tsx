@@ -717,15 +717,27 @@ const AdminPromotersV2 = () => {
             </div>
             <div>
               <Label htmlFor="edit_asaas_wallet_id">Wallet ID Asaas</Label>
-              <Input
-                id="edit_asaas_wallet_id"
-                value={editFormData.asaas_wallet_id}
-                onChange={(e) => setEditFormData({ ...editFormData, asaas_wallet_id: e.target.value })}
-                placeholder="ID da carteira Asaas para split de pagamentos"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Para receber 25% de comissão nos pagamentos via split
-              </p>
+              <div className="space-y-2">
+                <Input
+                  id="edit_asaas_wallet_id"
+                  value={editFormData.asaas_wallet_id}
+                  onChange={(e) => setEditFormData({ ...editFormData, asaas_wallet_id: e.target.value })}
+                  placeholder="ID da carteira Asaas para split de pagamentos"
+                />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Para receber 25% de comissão nos pagamentos via split
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open('https://www.asaas.com/r/51a27e42-08b8-495b-acfd-5f1369c2e104', '_blank')}
+                  >
+                    Criar Conta Asaas
+                  </Button>
+                </div>
+              </div>
             </div>
             <div className="flex gap-2 pt-4">
               <Button 
