@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
@@ -20,20 +19,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const determineUserRole = async (user: User): Promise<'admin' | 'organizer' | 'user' | 'superadmin'> => {
   console.log('🔍 Determinando role para email:', user.email)
   
-  // PRIMEIRO: Verificar se é superadmin
-  if (user.is_super_admin) {
-    console.log('🔐 SUPERADMIN identificado via is_super_admin')
-    return 'superadmin'
-  }
-  
-  // SEGUNDO: Fallback para garantir acesso admin via email
+  // PRIMEIRO: Fallback para garantir acesso admin via email
   if (user.email === 'rcarraro@admin.enxergar' || user.email?.includes('@admin.enxergar')) {
     console.log('🔐 ADMIN identificado via fallback de email')
     return 'admin'
   }
   
   try {
-    // TERCEIRO: Verificar na tabela organizers
+    // SEGUNDO: Verificar na tabela organizers
     const { data: organizerData, error: organizerError } = await supabase
       .from('organizers')
       .select('id, status')
