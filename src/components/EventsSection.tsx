@@ -13,8 +13,8 @@ const EventsSection = () => {
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const getStatusInfo = (totalAvailable: number, totalSlots: number) => {
-    if (totalAvailable === 0) {
+  const getStatusInfo = (availableSlots: number, totalSlots: number) => {
+    if (availableSlots === 0) {
       return {
         badge: 'Lotado',
         variant: 'destructive' as const,
@@ -22,7 +22,7 @@ const EventsSection = () => {
         textColor: 'text-destructive'
       };
     }
-    if (totalAvailable <= totalSlots * 0.3) {
+    if (availableSlots <= totalSlots * 0.3) {
       return {
         badge: 'Vagas Limitadas',
         variant: 'secondary' as const,
@@ -123,14 +123,16 @@ const EventsSection = () => {
         {events && events.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
             {events.slice(0, 4).map((event, index) => {
-              // Calcular totais de todas as datas do evento
-              const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0);
-              const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0);
-              const statusInfo = getStatusInfo(totalAvailable, totalSlots);
-              const occupancyPercentage = totalSlots > 0 ? ((totalSlots - totalAvailable) / totalSlots) * 100 : 0;
-              
-              // Próxima data do evento
+              // Próxima data do evento (primeira data disponível)
               const nextDate = event.event_dates[0];
+              
+              // CORREÇÃO: Usar apenas as vagas da data específica sendo exibida
+              const availableSlots = nextDate.available_slots;
+              const totalSlots = nextDate.total_slots;
+              const statusInfo = getStatusInfo(availableSlots, totalSlots);
+              const occupancyPercentage = totalSlots > 0 ? ((totalSlots - availableSlots) / totalSlots) * 100 : 0;
+              
+              console.log(`📊 Evento ${event.city} - Data ${nextDate.date}: ${availableSlots}/${totalSlots} vagas para esta data específica`);
               
               return (
                 <Card key={event.id} className={`p-6 medical-card animate-slide-up stagger-${(index % 4) + 1} hover:shadow-medical transition-all duration-300`}>
@@ -178,15 +180,15 @@ const EventsSection = () => {
                       )}
                     </div>
 
-                    {/* Availability */}
+                    {/* Availability - CORRIGIDO: mostra vagas da data específica */}
                     <div className={`p-4 rounded-lg ${statusInfo.bgColor}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Users className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-foreground">Vagas Disponíveis</span>
+                          <span className="font-medium text-foreground">Vagas para {formatDate(nextDate.date)}</span>
                         </div>
                         <span className={`font-semibold ${statusInfo.textColor}`}>
-                          {totalAvailable} de {totalSlots}
+                          {availableSlots} de {totalSlots}
                         </span>
                       </div>
                       
@@ -198,18 +200,18 @@ const EventsSection = () => {
                         ></div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {occupancyPercentage.toFixed(0)}% preenchido
+                        {occupancyPercentage.toFixed(0)}% preenchido nesta data
                       </p>
                     </div>
 
                     {/* Action Button */}
                     <Button 
-                      className={`w-full ${totalAvailable === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
-                      disabled={totalAvailable === 0 || isNavigating}
+                      className={`w-full ${availableSlots === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
+                      disabled={availableSlots === 0 || isNavigating}
                       onClick={handleEventClick}
                     >
-                      {isNavigating ? 'Redirecionando...' : totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
-                      {totalAvailable > 0 && !isNavigating && (
+                      {isNavigating ? 'Redirecionando...' : availableSlots === 0 ? 'Data Lotada' : 'Inscrever-se'}
+                      {availableSlots > 0 && !isNavigating && (
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       )}
                     </Button>
