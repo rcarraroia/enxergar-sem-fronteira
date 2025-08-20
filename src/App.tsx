@@ -22,6 +22,15 @@ import AdminSync from "./pages/AdminSync";
 // ADMIN V2 - Nova versão reconstruída
 import AdminDashboardV2 from "./pages/admin-v2/Dashboard";
 import AdminV2Access from "./pages/AdminV2Access";
+import AdminEventsV2 from "./pages/admin-v2/Events";
+import AdminPatientsV2 from "./pages/admin-v2/Patients";
+import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
+import AdminOrganizersV2 from "./pages/admin-v2/Organizers";
+import AdminReportsV2 from "./pages/admin-v2/Reports";
+import AdminSettingsV2 from "./pages/admin-v2/Settings";
+import AdminPaymentsV2 from "./pages/admin-v2/Payments";
+import AdminDonationsV2 from "./pages/admin-v2/Donations";
+import AdminSyncV2 from "./pages/admin-v2/Sync";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import OrganizerEvents from "./pages/OrganizerEvents";
 import OrganizerRegistrations from "./pages/OrganizerRegistrations";
@@ -126,6 +135,56 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/admin-v2" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminDashboardV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/events" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminEventsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/patients" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPatientsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/registrations" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminRegistrationsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/organizers" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminOrganizersV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/reports" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminReportsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/settings" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminSettingsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/payments" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPaymentsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/donations" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminDonationsV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/sync" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminSyncV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/*" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDashboardV2 />
                 </ProtectedRoute>
