@@ -3,24 +3,24 @@ import { Card } from '@/components/ui/card';
 const PartnersSection = () => {
   const partners = [
     {
-      name: 'Instituto Coração Valente',
-      logo: '/placeholder-logo-1.png',
+      name: 'ONG Coração Valente - Ipatinga',
+      logo: '/lovable-uploads/coracao-valente.png',
       description: 'Organização principal do projeto'
     },
     {
-      name: 'Projeto Visão Itinerante',
-      logo: '/placeholder-logo-2.png', 
+      name: 'Paroquia Cristo Libertador - Ipatinga',
+      logo: '/lovable-uploads/195e33d8-8072-4e60-bc4c-ad46fd5d5f92.png',
       description: 'Parceiro estratégico'
     },
     {
-      name: 'Fundação Saúde Visual',
-      logo: '/placeholder-logo-3.png',
-      description: 'Apoio técnico e científico'
+      name: 'Paroquia São Jose - Timoteo',
+      logo: '/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png',
+      description: 'Apoio comunitário'
     },
     {
-      name: 'Rede de Hospitais',
-      logo: '/placeholder-logo-4.png',
-      description: 'Suporte médico especializado'
+      name: 'Wladimir Careca - Timoteo',
+      logo: '/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png',
+      description: 'Parceiro local'
     }
   ];
 
@@ -37,8 +37,20 @@ const PartnersSection = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {partners.map((partner, index) => (
             <Card key={index} className="p-6 text-center medical-card hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <img 
+                  src={partner.logo} 
+                  alt={partner.name}
+                  className="w-full h-full object-contain rounded-lg"
+                  onError={(e) => {
+                    // Fallback caso a imagem não carregue
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center hidden">
                   <span className="text-primary font-bold text-sm">
                     {partner.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
                   </span>
