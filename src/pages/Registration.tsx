@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
@@ -13,7 +14,7 @@ import { ptBR } from 'date-fns/locale'
 const Registration = () => {
   const { eventId, eventDateId } = useParams()
   const navigate = useNavigate()
-  const { events, isLoading } = useEvents()
+  const { data: events, isLoading } = useEvents()
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [registeredPatientName, setRegisteredPatientName] = useState('')
 
@@ -108,7 +109,7 @@ const Registration = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>Vagas: {eventDate.max_participants}</span>
+                      <span>Vagas: {eventDate.available_slots}</span>
                     </div>
                   </div>
                 </div>
@@ -145,9 +146,13 @@ const Registration = () => {
           isOpen={showSuccessModal}
           onClose={handleCloseModal}
           eventInfo={{
+            city: event.city,
             title: event.title,
-            date: formatEventDate(eventDate.date, eventDate.start_time),
-            location: event.location
+            date: eventDate.date,
+            start_time: eventDate.start_time,
+            end_time: eventDate.end_time,
+            location: event.location,
+            address: event.address
           }}
           patientName={registeredPatientName}
         />
