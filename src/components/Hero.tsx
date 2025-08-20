@@ -1,20 +1,42 @@
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
 import { formatTime, formatDate } from '@/utils/timeFormat';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 const Hero = () => {
   const { data: events } = useEvents();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Pegar o próximo evento (primeiro da lista ordenada por data mais próxima)
-  const nextEvent = events?.[0];
-  const nextEventDate = nextEvent?.event_dates?.[0];
+  // Nova lógica: determinar o evento a exibir baseado na regra de 75%
+  const nextEventToDisplay = useMemo(() => {
+    if (!events || events.length === 0) return null;
+
+    // Verificar se o primeiro evento atingiu 75% de ocupação
+    const firstEvent = events[0];
+    const firstEventDate = firstEvent?.event_dates?.[0];
+    
+    if (firstEventDate) {
+      const occupancyRate = firstEventDate.total_slots > 0 
+        ? ((firstEventDate.total_slots - firstEventDate.available_slots) / firstEventDate.total_slots) 
+        : 0;
+      
+      console.log(`📊 Hero Card - Evento ${firstEvent.city} (${firstEventDate.date}): ${(occupancyRate * 100).toFixed(1)}% ocupado`);
+      
+      // Se ocupação >= 75%, mostrar o próximo evento
+      if (occupancyRate >= 0.75) {
+        console.log(`🔄 Hero Card - Evento ${firstEvent.city} atingiu 75% de ocupação. Exibindo próximo evento.`);
+        return events[1] || firstEvent; // Fallback para o primeiro se não houver segundo
+      }
+    }
+    
+    return firstEvent;
+  }, [events]);
+
+  const nextEventDate = nextEventToDisplay?.event_dates?.[0];
 
   const stats = [{
     icon: Eye,
@@ -118,7 +140,7 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Visual Element - Próximo Evento */}
+          {/* Visual Element - Próximo Evento com Nova Lógica */}
           <div className="relative animate-float">
             <Card className="p-8 medical-card">
               <div className="space-y-6">
@@ -127,19 +149,19 @@ const Hero = () => {
                     <Eye className="h-10 w-10 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">
-                    {nextEvent && nextEventDate ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
+                    {nextEventToDisplay && nextEventDate ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
                   </h3>
-                  {nextEvent && nextEventDate ? (
+                  {nextEventToDisplay && nextEventDate ? (
                     <div className="text-2xl font-bold text-primary mt-2 mb-2">
-                      {nextEvent.city}
+                      {nextEventToDisplay.city}
                     </div>
                   ) : null}
                   <p className="text-muted-foreground">
-                    {nextEvent && nextEventDate ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
+                    {nextEventToDisplay && nextEventDate ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
                   </p>
                 </div>
 
-                {nextEvent && nextEventDate ? (
+                {nextEventToDisplay && nextEventDate ? (
                   <>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-medical-bg">
@@ -161,8 +183,8 @@ const Hero = () => {
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-medical-bg">
                         <MapPin className="h-5 w-5 text-primary" />
                         <div>
-                          <div className="font-medium text-foreground">{nextEvent.location}</div>
-                          <div className="text-sm text-muted-foreground">{nextEvent.address}</div>
+                          <div className="font-medium text-foreground">{nextEventToDisplay.location}</div>
+                          <div className="text-sm text-muted-foreground">{nextEventToDisplay.address}</div>
                         </div>
                       </div>
 
