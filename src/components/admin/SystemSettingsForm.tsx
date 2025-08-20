@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,7 +12,7 @@ interface SystemSettingsFormProps {
 }
 
 export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
-  const { getSetting, setSetting, loading } = useSystemSettings()
+  const { getSettingValue, updateSetting, isUpdating } = useSystemSettings()
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -22,18 +21,18 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
       switch (section) {
         case 'general':
           setFormData({
-            project_name: getSetting('project_name', 'Enxergar sem Fronteiras'),
-            project_description: getSetting('project_description', 'Cuidados oftalmológicos gratuitos para comunidades'),
+            project_name: getSettingValue('project_name', 'Enxergar sem Fronteiras'),
+            project_description: getSettingValue('project_description', 'Cuidados oftalmológicos gratuitos para comunidades'),
           })
           break
         case 'logos':
           setFormData({
-            logo_header: getSetting('logo_header', ''),
-            logo_footer: getSetting('logo_footer', ''),
+            logo_header: getSettingValue('logo_header', ''),
+            logo_footer: getSettingValue('logo_footer', ''),
           })
           break
         case 'social':
-          const socialLinks = getSetting('social_links', '{}')
+          const socialLinks = getSettingValue('social_links', '{}')
           const parsedLinks = typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks
           setFormData({
             facebook: parsedLinks.facebook || '',
@@ -43,27 +42,27 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           break
         case 'apikeys':
           setFormData({
-            asaas_api_key: getSetting('asaas_api_key', ''),
-            vonage_api_key: getSetting('vonage_api_key', ''),
-            vonage_api_secret: getSetting('vonage_api_secret', ''),
+            asaas_api_key: getSettingValue('asaas_api_key', ''),
+            vonage_api_key: getSettingValue('vonage_api_key', ''),
+            vonage_api_secret: getSettingValue('vonage_api_secret', ''),
           })
           break
       }
     }
 
     loadSettings()
-  }, [section, getSetting])
+  }, [section, getSettingValue])
 
   const handleSave = async () => {
     try {
       switch (section) {
         case 'general':
-          await setSetting('project_name', formData.project_name)
-          await setSetting('project_description', formData.project_description)
+          updateSetting('project_name', formData.project_name)
+          updateSetting('project_description', formData.project_description)
           break
         case 'logos':
-          await setSetting('logo_header', formData.logo_header)
-          await setSetting('logo_footer', formData.logo_footer)
+          updateSetting('logo_header', formData.logo_header)
+          updateSetting('logo_footer', formData.logo_footer)
           break
         case 'social':
           const socialData = {
@@ -71,12 +70,12 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
             instagram: formData.instagram,
             linkedin: formData.linkedin,
           }
-          await setSetting('social_links', JSON.stringify(socialData))
+          updateSetting('social_links', JSON.stringify(socialData))
           break
         case 'apikeys':
-          await setSetting('asaas_api_key', formData.asaas_api_key)
-          await setSetting('vonage_api_key', formData.vonage_api_key)
-          await setSetting('vonage_api_secret', formData.vonage_api_secret)
+          updateSetting('asaas_api_key', formData.asaas_api_key)
+          updateSetting('vonage_api_key', formData.vonage_api_key)
+          updateSetting('vonage_api_secret', formData.vonage_api_secret)
           break
       }
       toast.success('Configurações salvas com sucesso!')
@@ -218,8 +217,8 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         {renderFields()}
-        <Button onClick={handleSave} disabled={loading} className="w-full">
-          {loading ? 'Salvando...' : 'Salvar Configurações'}
+        <Button onClick={handleSave} disabled={isUpdating} className="w-full">
+          {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
         </Button>
       </CardContent>
     </Card>

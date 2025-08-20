@@ -1,20 +1,32 @@
 
 import React from 'react'
-import { Header } from '@/components/Header'
+import Header from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/admin/MetricCard'
 import { ActivityFeed } from '@/components/admin/ActivityFeed'
 import { QuickActions } from '@/components/admin/QuickActions'
-import { AlertBanner } from '@/components/admin/AlertBanner'
 import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard'
 import { useAdminMetrics } from '@/hooks/useAdminMetrics'
+import { Calendar, Users, UserCheck, Activity } from 'lucide-react'
 
 const Admin = () => {
   const { data: metrics, isLoading } = useAdminMetrics()
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
+  }
+
+  const handleCreateEvent = () => {
+    console.log('Criar evento')
+  }
+
+  const handleViewTodayRegistrations = () => {
+    console.log('Ver inscrições de hoje')
+  }
+
+  const handleExportReports = () => {
+    console.log('Exportar relatórios')
   }
 
   return (
@@ -29,33 +41,31 @@ const Admin = () => {
           </p>
         </div>
 
-        <AlertBanner />
-
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <MetricCard
             title="Total de Eventos"
             value={metrics?.totalEvents || 0}
-            icon="calendar"
-            trend={{ value: 12, isPositive: true, period: "último mês" }}
+            icon={Calendar}
+            trend={{ value: 12, label: "último mês", isPositive: true }}
           />
           <MetricCard
             title="Inscrições Ativas"
             value={metrics?.totalRegistrations || 0}
-            icon="users"
-            trend={{ value: 8, isPositive: true, period: "última semana" }}
+            icon={Users}
+            trend={{ value: 8, label: "última semana", isPositive: true }}
           />
           <MetricCard
             title="Pacientes Cadastrados"
             value={metrics?.totalPatients || 0}
-            icon="user-check"
-            trend={{ value: 15, isPositive: true, period: "último mês" }}
+            icon={UserCheck}
+            trend={{ value: 15, label: "último mês", isPositive: true }}
           />
           <MetricCard
             title="Taxa de Ocupação"
             value={`${metrics?.occupancyRate || 0}%`}
-            icon="activity"
-            trend={{ value: 5, isPositive: true, period: "média mensal" }}
+            icon={Activity}
+            trend={{ value: 5, label: "média mensal", isPositive: true }}
           />
         </div>
 
@@ -66,7 +76,11 @@ const Admin = () => {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent>
-              <QuickActions />
+              <QuickActions 
+                onCreateEvent={handleCreateEvent}
+                onViewTodayRegistrations={handleViewTodayRegistrations}
+                onExportReports={handleExportReports}
+              />
             </CardContent>
           </Card>
 
@@ -81,7 +95,7 @@ const Admin = () => {
               <CardTitle>Atividades Recentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <ActivityFeed />
+              <ActivityFeed activities={[]} />
             </CardContent>
           </Card>
         </div>
