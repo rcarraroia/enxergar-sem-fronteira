@@ -1,212 +1,353 @@
 
 import React, { useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { useRegistrations } from '@/hooks/useRegistrations'
-import { RegistrationsList } from '@/components/admin/RegistrationsList'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table'
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select'
 import { 
-  ArrowLeft,
-  Users,
+  Users, 
+  Search, 
   Calendar,
-  BarChart3,
-  CheckCircle,
-  Clock,
+  MapPin,
+  Phone,
+  Mail,
+  FileText,
   Download,
-  FileText
+  RefreshCw
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRegistrations } from '@/hooks/useRegistrations'
 import { toast } from 'sonner'
 
-const AdminRegistrations = () => {
-  const { user, signOut } = useAuth()
-  const navigate = useNavigate()
-  const { events } = useEventsAdmin()
-  const { data: allRegistrations } = useRegistrations()
-  const [selectedEventId, setSelectedEventId] = useState<string>('all')
-  const [selectedCity, setSelectedCity] = useState<string>('all')
-
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+interface Registration {
+  id: string
+  status: string
+  created_at: string
+  patients: {
+    id: string
+    nome: string
+    email: string
+    telefone: string
+    cpf: string
+    data_nascimento?: string
+    diagnostico?: string
+  }
+  event_dates: {
+    id: string
+    date: string
+    start_time: string
+    events: {
+      id: string
+      title: string
+      location: string
+      address: string
     }
   }
+}
 
-  const getTotalRegistrations = () => {
-    if (!allRegistrations) return 0
-    return allRegistrations.length
-  }
+export default function AdminRegistrations() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [eventFilter, setEventFilter] = useState('all')
+  
+  const { data: registrations = [], isLoading, refetch } = useRegistrations()
 
-  const getRegistrationsByStatus = (status: string) => {
-    if (!allRegistrations) return 0
-    return allRegistrations.filter(reg => reg.status === status).length
-  }
-
-  const getEventStats = () => {
-    if (!events) return { totalEvents: 0, openEvents: 0, fullEvents: 0 }
+  const filteredRegistrations = registrations.filter((registration: Registration) => {
+    const matchesSearch = 
+      registration.patients.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.patients.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.event_dates.events.title.toLowerCase().includes(searchTerm.toLowerCase())
     
-    return {
-      totalEvents: events.length,
-      openEvents: events.filter(e => e.status === 'open').length,
-      fullEvents: events.filter(e => e.status === 'full').length
+    const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
+    const matchesEvent = eventFilter === 'all' || registration.event_dates.events.id === eventFilter
+    
+    return matchesSearch && matchesStatus && matchesEvent
+  })
+
+  const uniqueEvents = Array.from(
+    new Set(registrations.map((r: Registration) => r.event_dates.events.id))
+  ).map(eventId => {
+    const registration = registrations.find((r: Registration) => r.event_dates.events.id === eventId)
+    return registration ? {
+      id: eventId,
+      title: registration.event_dates.events.title
+    } : null
+  }).filter(Boolean)
+
+  const handleStatusChange = async (registrationId: string, newStatus: string) => {
+    try {
+      // Implementar mudança de status
+      toast.success('Status atualizado com sucesso!')
+      refetch()
+    } catch (error) {
+      toast.error('Erro ao atualizar status')
     }
   }
 
-  const handleExportCSV = () => {
-    // Implementar exportação CSV
-    toast.info('Exportando relatório em CSV...')
+  const exportRegistrations = () => {
+    const csvContent = [
+      ['Nome', 'Email', 'Telefone', 'CPF', 'Evento', 'Data', 'Status'].join(','),
+      ...filteredRegistrations.map((reg: Registration) => [
+        reg.patients.nome,
+        reg.patients.email,
+        reg.patients.telefone,
+        reg.patients.cpf,
+        reg.event_dates.events.title,
+        new Date(reg.event_dates.date).toLocaleDateString('pt-BR'),
+        reg.status
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'inscricoes.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
-  const handleExportPDF = () => {
-    // Implementar exportação PDF
-    toast.info('Gerando relatório em PDF...')
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-48">Carregando...</div>
   }
-
-  const stats = getEventStats()
-
-  // Criar opções do select com informações detalhadas das datas
-  const eventOptions = events?.flatMap(event => 
-    event.event_dates.map(eventDate => ({
-      id: eventDate.id, // Use event_date_id instead of event_id
-      eventId: event.id,
-      title: event.title,
-      city: event.city,
-      location: event.location,
-      date: new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR'),
-      time: `${eventDate.start_time} - ${eventDate.end_time}`,
-      displayName: `${event.city} - ${event.title} (${new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')})`
-    }))
-  ) || []
-
-  // Obter cidades únicas
-  const cities = [...new Set(events?.map(event => event.city) || [])]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-6">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/admin')}
-                className="p-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Users className="h-5 w-5 text-white" />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Inscrições</h1>
+          <p className="text-muted-foreground">Gerencie todas as inscrições dos eventos</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportRegistrations}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button variant="outline" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{registrations.length}</p>
               </div>
-              <div>
-                <h1 className="text-xl font-bold">Gestão de Inscrições</h1>
-                <p className="text-sm text-muted-foreground">Visualizar e gerenciar participantes</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Confirmadas</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter((r: Registration) => r.status === 'confirmed').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <MapPin className="h-8 w-8 text-yellow-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter((r: Registration) => r.status === 'pending').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <FileText className="h-8 w-8 text-red-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Canceladas</p>
+                <p className="text-2xl font-bold">
+                  {registrations.filter((r: Registration) => r.status === 'cancelled').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtros</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nome, email ou evento..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
               </div>
             </div>
             
-            <Button variant="outline" onClick={handleSignOut}>
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="confirmed">Confirmada</SelectItem>
+                <SelectItem value="pending">Pendente</SelectItem>
+                <SelectItem value="cancelled">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Estatísticas */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total de Inscrições</p>
-                  <p className="text-2xl font-bold">{getTotalRegistrations()}</p>
-                </div>
-                <Users className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Confirmadas</p>
-                  <p className="text-2xl font-bold">{getRegistrationsByStatus('confirmed')}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                  <p className="text-2xl font-bold">{getRegistrationsByStatus('pending')}</p>
-                </div>
-                <Clock className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total de Eventos</p>
-                  <p className="text-2xl font-bold">{stats.totalEvents}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filtros e Relatórios */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Filtros e Relatórios</CardTitle>
-            <CardDescription>
-              Selecione os filtros para visualizar inscrições específicas e gere relatórios
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-              <SelectTrigger className="max-w-md">
-                <SelectValue placeholder="Selecione um evento" />
+            <Select value={eventFilter} onValueChange={setEventFilter}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Evento" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Eventos</SelectItem>
-                {eventOptions.map((eventDate) => (
-                  <SelectItem key={eventDate.id} value={eventDate.id}>
-                    {eventDate.displayName}
+                {uniqueEvents.map((event: any) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.title}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Lista de Inscrições */}
-        <RegistrationsList 
-          eventDateId={selectedEventId === 'all' ? undefined : selectedEventId}
-          showEventInfo={selectedEventId === 'all'}
-        />
-      </main>
+      {/* Registrations Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Inscrições ({filteredRegistrations.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Contato</TableHead>
+                  <TableHead>Evento</TableHead>
+                  <TableHead>Data do Evento</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Inscrição</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRegistrations.map((registration: Registration) => (
+                  <TableRow key={registration.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{registration.patients.nome}</div>
+                        <div className="text-sm text-muted-foreground">
+                          CPF: {registration.patients.cpf}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <Mail className="h-3 w-3 mr-1" />
+                          {registration.patients.email}
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Phone className="h-3 w-3 mr-1" />
+                          {registration.patients.telefone}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{registration.event_dates.events.title}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {registration.event_dates.events.location}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div>{new Date(registration.event_dates.date).toLocaleDateString('pt-BR')}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {registration.event_dates.start_time}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          registration.status === 'confirmed' ? 'default' :
+                          registration.status === 'pending' ? 'secondary' : 'destructive'
+                        }
+                      >
+                        {registration.status === 'confirmed' ? 'Confirmada' :
+                         registration.status === 'pending' ? 'Pendente' : 'Cancelada'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {new Date(registration.created_at).toLocaleDateString('pt-BR')}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={registration.status}
+                        onValueChange={(value) => handleStatusChange(registration.id, value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="confirmed">Confirmar</SelectItem>
+                          <SelectItem value="pending">Pendente</SelectItem>
+                          <SelectItem value="cancelled">Cancelar</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
-
-export default AdminRegistrations

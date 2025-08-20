@@ -1,451 +1,263 @@
 
 import React, { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Calendar, MapPin, Clock, Users, AlertCircle } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { formatTime, formatDate } from '@/utils/timeFormat'
-import { validateCPF, cleanCPF } from '@/utils/cpfUtils'
-import { CPFInput } from '@/components/ui/cpf-input'
-import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
-
-const patientSchema = z.object({
-  nome: z.string()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome deve ter no máximo 100 caracteres')
-    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
-  email: z.string()
-    .email('Email inválido')
-    .max(255, 'Email muito longo'),
-  telefone: z.string()
-    .min(10, 'Telefone deve ter pelo menos 10 dígitos')
-    .max(15, 'Telefone muito longo')
-    .regex(/^[\d\s\-()]+$/, 'Formato de telefone inválido'),
-  cpf: z.string()
-    .min(11, 'CPF deve ter 11 dígitos')
-    .refine((cpf) => validateCPF(cpf), 'CPF inválido'),
-  data_nascimento: z.string()
-    .min(1, 'Data de nascimento é obrigatória')
-    .refine((date) => {
-      if (!date) return false
-      const birthDate = new Date(date)
-      const today = new Date()
-      const age = today.getFullYear() - birthDate.getFullYear()
-      return age >= 0 && age <= 120
-    }, 'Data de nascimento inválida'),
-  consentimento_lgpd: z.boolean().refine(val => val === true, 'Você deve aceitar os termos da LGPD'),
-})
-
-type PatientFormData = z.infer<typeof patientSchema>
-
-interface EventInfo {
-  id: string
-  city: string
-  title: string
-  location: string
-  address: string
-  date: string
-  start_time: string
-  end_time: string
-  available_slots: number
-  total_slots: number
-}
+import { supabase } from '@/integrations/supabase/client'
+import { cpfMask, validateCPF } from '@/utils/cpfUtils'
+import { formatPhoneNumber } from '@/utils/validationUtils'
 
 interface PatientRegistrationFormProps {
-  eventId?: string
-  eventDateId?: string
-  onSuccess?: () => void
+  eventDateId: string
+  onSuccess: () => void
 }
 
-export const PatientRegistrationForm = ({ eventId, eventDateId, onSuccess }: PatientRegistrationFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+interface EventInfo {
+  title: string
+  date: string
+  start_time: string
+  location: string
+  address: string
+  available_slots: number
+}
+
+export const PatientRegistrationForm = ({ eventDateId, onSuccess }: PatientRegistrationFormProps) => {
+  const [loading, setLoading] = useState(false)
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
-  const [loadingEventInfo, setLoadingEventInfo] = useState(false)
-  const [duplicateError, setDuplicateError] = useState<string | null>(null)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [registeredPatientName, setRegisteredPatientName] = useState('')
-
-  console.log('🎯 PatientRegistrationForm iniciado com:', { eventId, eventDateId })
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-    trigger,
-  } = useForm<PatientFormData>({
-    resolver: zodResolver(patientSchema),
+  const [formData, setFormData] = useState({
+    nome: '',
+    cpf: '',
+    email: '',
+    telefone: '',
+    data_nascimento: '',
+    diagnostico: ''
   })
 
-  const consentimento = watch('consentimento_lgpd')
-  const cpfValue = watch('cpf')
-
-  // Buscar informações do evento se eventId e eventDateId forem fornecidos
-  useEffect(() => {
-    if (eventId && eventDateId) {
-      fetchEventInfo()
-    }
-  }, [eventId, eventDateId, fetchEventInfo])
-
-  // Validação em tempo real do CPF
-  useEffect(() => {
-    if (cpfValue && cpfValue.length === 11) {
-      trigger('cpf')
-    }
-  }, [cpfValue, trigger])
-
   const fetchEventInfo = async () => {
-    if (!eventId || !eventDateId) return
-
-    try {
-      setLoadingEventInfo(true)
-      console.log('🔍 Buscando informações do evento:', { eventId, eventDateId })
-
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select(`
-          id,
-          city,
+    const { data, error } = await supabase
+      .from('event_dates')
+      .select(`
+        date,
+        start_time,
+        available_slots,
+        events (
           title,
           location,
           address
-        `)
-        .eq('id', eventId)
-        .single()
+        )
+      `)
+      .eq('id', eventDateId)
+      .single()
 
-      if (eventError) {
-        console.error('❌ Erro ao buscar evento:', eventError)
-        return
-      }
+    if (error) {
+      console.error('Erro ao buscar informações do evento:', error)
+      toast.error('Erro ao carregar informações do evento')
+      return
+    }
 
-      const { data: eventDateData, error: eventDateError } = await supabase
-        .from('event_dates')
-        .select(`
-          date,
-          start_time,
-          end_time,
-          available_slots,
-          total_slots
-        `)
-        .eq('id', eventDateId)
-        .single()
-
-      if (eventDateError) {
-        console.error('❌ Erro ao buscar data do evento:', eventDateError)
-        return
-      }
-
-      const combinedEventInfo: EventInfo = {
-        ...eventData,
-        ...eventDateData
-      }
-
-      setEventInfo(combinedEventInfo)
-      console.log('✅ Informações do evento carregadas:', combinedEventInfo)
-    } catch (error) {
-      console.error('💥 Erro ao buscar informações do evento:', error)
-    } finally {
-      setLoadingEventInfo(false)
+    if (data?.events) {
+      setEventInfo({
+        title: data.events.title,
+        date: data.date,
+        start_time: data.start_time,
+        location: data.events.location,
+        address: data.events.address,
+        available_slots: data.available_slots
+      })
     }
   }
 
-  const onSubmit = async (data: PatientFormData) => {
+  useEffect(() => {
+    fetchEventInfo()
+  }, [eventDateId])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateCPF(formData.cpf)) {
+      toast.error('CPF inválido')
+      return
+    }
+
+    if (eventInfo && eventInfo.available_slots <= 0) {
+      toast.error('Não há mais vagas disponíveis para este evento')
+      return
+    }
+
+    setLoading(true)
+
     try {
-      setIsSubmitting(true)
-      setDuplicateError(null)
-      console.log('📝 Iniciando cadastro de paciente:', data)
-
-      // Limpar CPF antes de salvar no banco
-      const cleanedCPF = cleanCPF(data.cpf)
-
-      // Inserir paciente
-      const { data: patient, error: patientError } = await supabase
+      // Criar ou buscar paciente
+      const { data: existingPatient } = await supabase
         .from('patients')
-        .insert({
-          nome: data.nome,
-          email: data.email,
-          telefone: data.telefone,
-          cpf: cleanedCPF, // Salvar CPF sempre limpo no banco
-          data_nascimento: data.data_nascimento,
-          consentimento_lgpd: data.consentimento_lgpd,
-        })
-        .select()
+        .select('id')
+        .eq('cpf', formData.cpf.replace(/\D/g, ''))
         .single()
 
-      if (patientError) {
-        console.error('❌ Erro ao criar paciente:', patientError)
-        
-        // Tratar erros de duplicação
-        if (patientError.message.includes('unique constraint') || 
-            patientError.message.includes('unique_cpf') ||
-            patientError.message.includes('Já existe um paciente cadastrado')) {
-          
-          if (patientError.message.includes('CPF')) {
-            setDuplicateError('Este CPF já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
-          } else if (patientError.message.includes('email')) {
-            setDuplicateError('Este email já está cadastrado em nossa base de dados. Se você já se inscreveu anteriormente, verifique seu email para mais informações.')
-          } else {
-            setDuplicateError('Já existe um cadastro com essas informações. Verifique seus dados ou entre em contato conosco.')
-          }
-          return
-        }
-        
-        throw patientError
-      }
+      let patientId: string
 
-      console.log('✅ Paciente criado:', patient)
-
-      // Se há uma data específica de evento selecionada, criar inscrição
-      if (eventDateId && patient) {
-        console.log('📅 Criando inscrição para data do evento:', eventDateId)
-        
-        const { error: registrationError } = await supabase
-          .from('registrations')
-          .insert({
-            patient_id: patient.id,
-            event_date_id: eventDateId,
-            status: 'confirmed',
-          })
-
-        if (registrationError) {
-          console.error('❌ Erro ao criar inscrição:', registrationError)
-          throw registrationError
-        }
-
-        console.log('✅ Inscrição criada com sucesso')
-
-        // Gerar token de acesso único para o paciente
-        const accessToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-        
-        const { error: tokenError } = await supabase
-          .from('patient_access_tokens')
-          .insert({
-            patient_id: patient.id,
-            token: accessToken,
-            event_date_id: eventDateId,
-          })
-
-        if (tokenError) {
-          console.error('⚠️ Erro ao criar token de acesso:', tokenError)
-          // Não falhar a inscrição por causa do token
-        } else {
-          console.log('🔑 Token de acesso criado')
-        }
-
-        // Mostrar modal de sucesso em vez de toast
-        setRegisteredPatientName(data.nome)
-        setShowSuccessModal(true)
+      if (existingPatient) {
+        patientId = existingPatient.id
       } else {
-        console.log('📋 Cadastro sem evento específico (lista de espera)')
-        toast.success('Cadastro realizado com sucesso!')
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert([{
+            nome: formData.nome,
+            cpf: formData.cpf.replace(/\D/g, ''),
+            email: formData.email,
+            telefone: formData.telefone.replace(/\D/g, ''),
+            data_nascimento: formData.data_nascimento || null,
+            diagnostico: formData.diagnostico || null,
+            consentimento_lgpd: true
+          }])
+          .select('id')
+          .single()
+
+        if (patientError) {
+          throw patientError
+        }
+
+        patientId = newPatient.id
       }
 
-      reset()
-      setDuplicateError(null)
-      onSuccess?.()
-    } catch (error) {
-      console.error('💥 Erro ao processar inscrição:', error)
-      toast.error('Erro ao processar inscrição. Tente novamente.')
+      // Verificar se já existe inscrição
+      const { data: existingRegistration } = await supabase
+        .from('registrations')
+        .select('id')
+        .eq('patient_id', patientId)
+        .eq('event_date_id', eventDateId)
+        .single()
+
+      if (existingRegistration) {
+        toast.error('Você já está inscrito neste evento')
+        return
+      }
+
+      // Criar inscrição
+      const { error: registrationError } = await supabase
+        .from('registrations')
+        .insert([{
+          patient_id: patientId,
+          event_date_id: eventDateId,
+          status: 'confirmed'
+        }])
+
+      if (registrationError) {
+        throw registrationError
+      }
+
+      toast.success('Inscrição realizada com sucesso!')
+      onSuccess()
+
+    } catch (error: any) {
+      console.error('Erro ao realizar inscrição:', error)
+      
+      if (error.message?.includes('CPF')) {
+        toast.error('Já existe um cadastro com este CPF')
+      } else if (error.message?.includes('email')) {
+        toast.error('Já existe um cadastro com este email')
+      } else {
+        toast.error('Erro ao realizar inscrição. Tente novamente.')
+      }
     } finally {
-      setIsSubmitting(false)
+      setLoading(false)
     }
   }
 
-  const handleCPFChange = (cleanValue: string) => {
-    setValue('cpf', cleanValue)
-    if (cleanValue.length === 11) {
-      trigger('cpf')
-    }
+  if (!eventInfo) {
+    return <div>Carregando informações do evento...</div>
   }
 
   return (
-    <div className="space-y-6">
-      {/* Resumo do Evento */}
-      {eventInfo && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Calendar className="h-5 w-5" />
-              Resumo do Evento
-            </CardTitle>
-            <CardDescription>
-              Você está se inscrevendo para o seguinte evento:
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-semibold text-lg text-primary">{eventInfo.city}</h3>
-                  <p className="text-sm text-muted-foreground">{eventInfo.title}</p>
-                </div>
-                
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{formatDate(eventInfo.date)}</span>
-                </div>
-                
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span>{formatTime(eventInfo.start_time)} às {formatTime(eventInfo.end_time)}</span>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-start gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-primary mt-0.5" />
-                  <div>
-                    <div className="font-medium">{eventInfo.location}</div>
-                    <div className="text-muted-foreground">{eventInfo.address}</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" />
-                  <span className="text-sm">
-                    {eventInfo.available_slots} de {eventInfo.total_slots} vagas disponíveis
-                  </span>
-                  <Badge variant="secondary" className="ml-2">
-                    {eventInfo.available_slots > 0 ? 'Disponível' : 'Lotado'}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+    <Card>
+      <CardHeader>
+        <CardTitle>Inscrição para o Evento</CardTitle>
+        <div className="text-sm text-gray-600">
+          <p><strong>{eventInfo.title}</strong></p>
+          <p>📅 {new Date(eventInfo.date).toLocaleDateString('pt-BR')}</p>
+          <p>⏰ {eventInfo.start_time}</p>
+          <p>📍 {eventInfo.location}</p>
+          <p>🏠 {eventInfo.address}</p>
+          <p>🎫 Vagas disponíveis: {eventInfo.available_slots}</p>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="nome">Nome Completo *</Label>
+            <Input
+              id="nome"
+              value={formData.nome}
+              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+              required
+            />
+          </div>
 
-      {/* Formulário de Inscrição */}
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>
-            {eventInfo ? 'Dados para Inscrição' : 'Inscrição de Paciente'}
-          </CardTitle>
-          <CardDescription>
-            {eventInfo 
-              ? 'Preencha seus dados para confirmar a inscrição no evento'
-              : 'Preencha os dados para se inscrever no evento'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Alerta de erro de duplicação */}
-          {duplicateError && (
-            <Alert className="mb-6 border-destructive/50 text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {duplicateError}
-              </AlertDescription>
-            </Alert>
-          )}
+          <div>
+            <Label htmlFor="cpf">CPF *</Label>
+            <Input
+              id="cpf"
+              value={formData.cpf}
+              onChange={(e) => setFormData({ ...formData, cpf: cpfMask(e.target.value) })}
+              placeholder="000.000.000-00"
+              required
+            />
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="nome">Nome Completo</Label>
-                <Input
-                  id="nome"
-                  {...register('nome')}
-                  placeholder="Seu nome completo"
-                />
-                {errors.nome && (
-                  <p className="text-sm text-destructive mt-1">{errors.nome.message}</p>
-                )}
-              </div>
+          <div>
+            <Label htmlFor="email">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
 
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register('email')}
-                  placeholder="seu@email.com"
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
-                )}
-              </div>
+          <div>
+            <Label htmlFor="telefone">Telefone *</Label>
+            <Input
+              id="telefone"
+              value={formData.telefone}
+              onChange={(e) => setFormData({ ...formData, telefone: formatPhoneNumber(e.target.value) })}
+              placeholder="(11) 99999-9999"
+              required
+            />
+          </div>
 
-              <div>
-                <Label htmlFor="telefone">Telefone</Label>
-                <Input
-                  id="telefone"
-                  {...register('telefone')}
-                  placeholder="(11) 99999-9999"
-                />
-                {errors.telefone && (
-                  <p className="text-sm text-destructive mt-1">{errors.telefone.message}</p>
-                )}
-              </div>
+          <div>
+            <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+            <Input
+              id="data_nascimento"
+              type="date"
+              value={formData.data_nascimento}
+              onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+            />
+          </div>
 
-              <div>
-                <Label htmlFor="cpf">CPF</Label>
-                <CPFInput
-                  id="cpf"
-                  value={cpfValue || ''}
-                  onChange={handleCPFChange}
-                />
-                {errors.cpf && (
-                  <p className="text-sm text-destructive mt-1">{errors.cpf.message}</p>
-                )}
-              </div>
+          <div>
+            <Label htmlFor="diagnostico">Diagnóstico ou Observações</Label>
+            <Textarea
+              id="diagnostico"
+              value={formData.diagnostico}
+              onChange={(e) => setFormData({ ...formData, diagnostico: e.target.value })}
+              placeholder="Descreva sua condição ou observações relevantes"
+            />
+          </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="data_nascimento">Data de Nascimento</Label>
-                <Input
-                  id="data_nascimento"
-                  type="date"
-                  {...register('data_nascimento')}
-                />
-                {errors.data_nascimento && (
-                  <p className="text-sm text-destructive mt-1">{errors.data_nascimento.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="consentimento_lgpd"
-                checked={consentimento}
-                onCheckedChange={(checked) => setValue('consentimento_lgpd', checked as boolean)}
-              />
-              <Label htmlFor="consentimento_lgpd" className="text-sm leading-5">
-                Concordo com o tratamento dos meus dados pessoais de acordo com a{' '}
-                <a href="/lgpd" className="text-primary hover:underline">
-                  Lei Geral de Proteção de Dados (LGPD)
-                </a>
-                {' '}e autorizo o contato para informações sobre o evento.
-              </Label>
-            </div>
-            {errors.consentimento_lgpd && (
-              <p className="text-sm text-destructive">{errors.consentimento_lgpd.message}</p>
-            )}
-
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? 'Processando...' : 'Confirmar Inscrição'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Modal de Sucesso */}
-      <RegistrationSuccessModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        eventInfo={eventInfo}
-        patientName={registeredPatientName}
-      />
-    </div>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={loading || eventInfo.available_slots <= 0}
+          >
+            {loading ? 'Processando...' : 'Realizar Inscrição'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
