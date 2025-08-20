@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
@@ -46,6 +45,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
   }
 
   const onSubmit = async (data: PatientFormData) => {
+    console.log('🚀 Iniciando processo de cadastro...', data)
     setIsSubmitting(true)
     
     try {
@@ -59,6 +59,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
           email: data.email,
           telefone: data.phone,
           cpf: data.cpf.replace(/\D/g, ''),
+          data_nascimento: data.birthdate,
           consentimento_lgpd: data.terms
         })
         .select()
@@ -150,6 +151,26 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               />
               {errors.cpf && <p className="text-sm text-red-500">{errors.cpf.message}</p>}
             </div>
+
+            <div>
+              <Label htmlFor="birthdate">Data de Nascimento *</Label>
+              <Input
+                id="birthdate"
+                type="date"
+                {...register('birthdate')}
+              />
+              {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="comments">Observações (opcional)</Label>
+            <Textarea
+              id="comments"
+              {...register('comments')}
+              placeholder="Alguma observação adicional..."
+              rows={3}
+            />
           </div>
 
           <div className="flex items-center space-x-2">
@@ -167,6 +188,11 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
             type="submit" 
             className="w-full" 
             disabled={isSubmitting}
+            onClick={(e) => {
+              console.log('🖱️ Botão clicado! Submetendo formulário...')
+              e.preventDefault()
+              handleSubmit(onSubmit)(e)
+            }}
           >
             {isSubmitting ? 'Processando...' : 'Confirmar Inscrição'}
           </Button>

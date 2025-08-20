@@ -13,8 +13,8 @@ const EventsSection = () => {
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const getStatusInfo = (totalAvailable: number, totalSlots: number) => {
-    if (totalAvailable === 0) {
+  const getStatusInfo = (availableSlots: number, totalSlots: number) => {
+    if (availableSlots === 0) {
       return {
         badge: 'Lotado',
         variant: 'destructive' as const,
@@ -22,7 +22,7 @@ const EventsSection = () => {
         textColor: 'text-destructive'
       };
     }
-    if (totalAvailable <= totalSlots * 0.3) {
+    if (availableSlots <= totalSlots * 0.3) {
       return {
         badge: 'Vagas Limitadas',
         variant: 'secondary' as const,
@@ -70,6 +70,18 @@ const EventsSection = () => {
     console.log('🔄 Atualizando lista de eventos...');
     refetch();
   };
+
+  // Expandir eventos para mostrar cada data como um card separado
+  const expandedEvents = events ? events.flatMap(event => 
+    event.event_dates.map(eventDate => ({
+      ...event,
+      currentDate: eventDate,
+      // Manter apenas a data atual no array para facilitar o processamento
+      event_dates: [eventDate]
+    }))
+  ).sort((a, b) => 
+    new Date(a.currentDate.date).getTime() - new Date(b.currentDate.date).getTime()
+  ) : [];
 
   if (isLoading) {
     return (
@@ -120,20 +132,20 @@ const EventsSection = () => {
           )}
         </div>
 
-        {events && events.length > 0 ? (
+        {expandedEvents && expandedEvents.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-            {events.slice(0, 4).map((event, index) => {
-              // Calcular totais de todas as datas do evento
-              const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0);
-              const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0);
-              const statusInfo = getStatusInfo(totalAvailable, totalSlots);
-              const occupancyPercentage = totalSlots > 0 ? ((totalSlots - totalAvailable) / totalSlots) * 100 : 0;
+            {expandedEvents.slice(0, 4).map((expandedEvent, index) => {
+              // Usar a data específica do evento expandido
+              const eventDate = expandedEvent.currentDate;
+              const availableSlots = eventDate.available_slots;
+              const totalSlots = eventDate.total_slots;
+              const statusInfo = getStatusInfo(availableSlots, totalSlots);
+              const occupancyPercentage = totalSlots > 0 ? ((totalSlots - availableSlots) / totalSlots) * 100 : 0;
               
-              // Próxima data do evento
-              const nextDate = event.event_dates[0];
+              console.log(`📊 Card ${expandedEvent.city} - Data ${eventDate.date}: ${availableSlots}/${totalSlots} vagas`);
               
               return (
-                <Card key={event.id} className={`p-6 medical-card animate-slide-up stagger-${(index % 4) + 1} hover:shadow-medical transition-all duration-300`}>
+                <Card key={`${expandedEvent.id}-${eventDate.id}`} className={`p-6 medical-card animate-slide-up stagger-${(index % 4) + 1} hover:shadow-medical transition-all duration-300`}>
                   <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-start justify-between">
@@ -142,9 +154,9 @@ const EventsSection = () => {
                           <Eye className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-foreground text-lg">{event.city}</h3>
+                          <h3 className="font-semibold text-foreground text-lg">{expandedEvent.city}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Organizado por: {event.organizers?.name || 'Organizador Local'}
+                            Organizado por: {expandedEvent.organizers?.name || 'Organizador Local'}
                           </p>
                           <Badge variant={statusInfo.variant} className="mt-1">
                             {statusInfo.badge}
@@ -153,32 +165,25 @@ const EventsSection = () => {
                       </div>
                     </div>
 
-                    {/* Event Details - showing next date */}
+                    {/* Event Details - showing specific date */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3 text-muted-foreground">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span className="font-medium text-foreground">{formatDate(nextDate.date)}</span>
+                        <span className="font-medium text-foreground">{formatDate(eventDate.date)}</span>
                         <Clock className="h-4 w-4 text-primary ml-4" />
-                        <span>{formatTime(nextDate.start_time)} - {formatTime(nextDate.end_time)}</span>
+                        <span>{formatTime(eventDate.start_time)} - {formatTime(eventDate.end_time)}</span>
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex items-center space-x-3 text-muted-foreground">
                           <MapPin className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-foreground">{event.location}</span>
+                          <span className="font-medium text-foreground">{expandedEvent.location}</span>
                         </div>
-                        <p className="text-sm text-muted-foreground ml-7">{event.address}</p>
+                        <p className="text-sm text-muted-foreground ml-7">{expandedEvent.address}</p>
                       </div>
-
-                      {/* Show multiple dates if available */}
-                      {event.event_dates.length > 1 && (
-                        <div className="text-sm text-muted-foreground">
-                          + {event.event_dates.length - 1} data(s) adicional(is)
-                        </div>
-                      )}
                     </div>
 
-                    {/* Availability */}
+                    {/* Availability - mostra vagas da data específica */}
                     <div className={`p-4 rounded-lg ${statusInfo.bgColor}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
@@ -186,7 +191,7 @@ const EventsSection = () => {
                           <span className="font-medium text-foreground">Vagas Disponíveis</span>
                         </div>
                         <span className={`font-semibold ${statusInfo.textColor}`}>
-                          {totalAvailable} de {totalSlots}
+                          {availableSlots} de {totalSlots}
                         </span>
                       </div>
                       
@@ -198,18 +203,18 @@ const EventsSection = () => {
                         ></div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {occupancyPercentage.toFixed(0)}% preenchido
+                        {occupancyPercentage.toFixed(0)}% preenchido para esta data
                       </p>
                     </div>
 
                     {/* Action Button */}
                     <Button 
-                      className={`w-full ${totalAvailable === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
-                      disabled={totalAvailable === 0 || isNavigating}
+                      className={`w-full ${availableSlots === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
+                      disabled={availableSlots === 0 || isNavigating}
                       onClick={handleEventClick}
                     >
-                      {isNavigating ? 'Redirecionando...' : totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
-                      {totalAvailable > 0 && !isNavigating && (
+                      {isNavigating ? 'Redirecionando...' : availableSlots === 0 ? 'Data Lotada' : 'Inscrever-se'}
+                      {availableSlots > 0 && !isNavigating && (
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       )}
                     </Button>

@@ -13,7 +13,7 @@ const EventsList = () => {
   const handleEventRegistration = (eventId: string, eventDateId: string) => {
     console.log('🎯 Navegando para registro de evento específico:', { eventId, eventDateId })
     // Navegação simples e direta - SEM redirecionamento automático
-    navigate(`/registration?eventId=${eventId}&eventDateId=${eventDateId}`)
+    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`)
   }
 
   const formatWeekday = (dateString: string) => {
@@ -111,6 +111,17 @@ const EventsList = () => {
       </div>
     </section>
   );
+
+  function formatWeekday(dateString: string) {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long'
+    });
+  }
+
+  function getOccupancyPercentage(available: number, total: number) {
+    return ((total - available) / total) * 100;
+  }
 };
 
 export default EventsList;
