@@ -52,7 +52,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     id: 'organizers',
-    label: 'Organizadores',
+    label: 'Promotores',
     path: '/admin-v2/organizers',
     icon: UserCog
   },
