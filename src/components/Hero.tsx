@@ -24,6 +24,15 @@ const Hero = () => {
     }
   };
 
+  const handleViewEventsClick = () => {
+    console.log('🎯 Redirecionando para lista de eventos');
+    // Scroll suave para a seção de eventos na mesma página
+    const eventsSection = document.getElementById('events');
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const formatWeekday = (dateString: string) => {
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('pt-BR', {
@@ -82,7 +91,7 @@ const Hero = () => {
                 Agendar Consulta
                 <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleViewEventsClick}>
                 <MapPin className="h-5 w-5 mr-2" />
                 Ver Próximos Eventos
               </Button>
