@@ -11,7 +11,7 @@ import {
   Calendar,
   UserCheck,
   Settings,
-  Sync,
+  RefreshCw,
   CreditCard,
   Heart,
   UserCog
@@ -72,7 +72,7 @@ const navigationItems: NavigationItem[] = [
     id: 'sync',
     label: 'Sincronização',
     path: '/admin-v2/sync',
-    icon: Sync
+    icon: RefreshCw
   },
   {
     id: 'settings',
