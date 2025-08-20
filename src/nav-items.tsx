@@ -1,61 +1,40 @@
 
-import Admin from "./pages/Admin";
-import AdminPatients from "./pages/AdminPatients";
-import AdminEvents from "./pages/AdminEvents";
-import AdminRegistrations from "./pages/AdminRegistrations";
-import AdminSync from "./pages/AdminSync";
-import AdminDonations from "./pages/AdminDonations";
-import AdminEventDetails from "./pages/AdminEventDetails";
-import AdminOrganizers from "./pages/AdminOrganizers";
-import AdminSettings from "./pages/AdminSettings";
+import {
+  HomeIcon,
+  Users,
+  Calendar,
+  Settings,
+  User,
+  Heart,
+  CreditCard,
+  FileBarChart,
+  Bell,
+  Shield,
+  Building2,
+  BarChart3,
+  FileText,
+  Download
+} from "lucide-react";
 
 export const navItems = [
   {
-    title: "Dashboard",
+    title: "Home",
+    to: "/",
+    icon: <HomeIcon className="h-4 w-4" />,
+  },
+  {
+    title: "Admin",
     to: "/admin",
-    icon: "home",
-    page: <Admin />,
-  },
-  {
-    title: "Pacientes",
-    to: "/admin/patients",
-    icon: "users",
-    page: <AdminPatients />,
-  },
-  {
-    title: "Eventos",
-    to: "/admin/events",
-    icon: "calendar",
-    page: <AdminEvents />,
-  },
-  {
-    title: "Inscrições",
-    to: "/admin/registrations",
-    icon: "clipboard-list",
-    page: <AdminRegistrations />,
+    icon: <Shield className="h-4 w-4" />,
   },
   {
     title: "Organizadores",
-    to: "/admin/organizers",
-    icon: "user-cog",
-    page: <AdminOrganizers />,
+    to: "/organizers",
+    icon: <Building2 className="h-4 w-4" />,
   },
   {
-    title: "Configurações",
-    to: "/admin/settings",
-    icon: "settings",
-    page: <AdminSettings />,
-  },
-  {
-    title: "Sincronização",
-    to: "/admin/sync",
-    icon: "refresh-cw",
-    page: <AdminSync />,
-  },
-  {
-    title: "Campanhas de Arrecadação",
-    to: "/admin/donations",
-    icon: "heart",
-    page: <AdminDonations />,
+    title: "Relatórios Temp",
+    to: "/reports-temp",
+    icon: <Download className="h-4 w-4" />,
   },
 ];
