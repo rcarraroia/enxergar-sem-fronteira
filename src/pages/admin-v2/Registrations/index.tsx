@@ -127,8 +127,8 @@ const AdminRegistrationsV2 = () => {
       // Preparar dados para a tabela
       const tableData = registrations.map((registration, index) => [
         index + 1,
-        registration.patient?.name || 'N/A',
-        registration.patient?.phone || 'N/A',
+        registration.patient?.nome || 'N/A',
+        registration.patient?.telefone || 'N/A',
         registration.event?.title || 'N/A',
         registration.event_date?.date ? format(new Date(registration.event_date.date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A',
         registration.event_date?.start_time || 'N/A',
@@ -363,10 +363,10 @@ const AdminRegistrationsV2 = () => {
                   {registrations.map((registration) => (
                     <tr key={registration.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4">
-                        <div className="font-medium">{registration.patient?.name || 'N/A'}</div>
+                        <div className="font-medium">{registration.patient?.nome || 'N/A'}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <Phone className="h-3 w-3" />
-                          {registration.patient?.phone || 'N/A'}
+                          {registration.patient?.telefone || 'N/A'}
                         </div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <Mail className="h-3 w-3" />

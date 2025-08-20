@@ -16,9 +16,10 @@ export interface RegistrationV2 {
   updated_at: string
   patient?: {
     id: string
-    name: string
+    nome: string
+    cpf: string
     email: string
-    phone: string
+    telefone: string
     city: string
     state: string
   }
@@ -55,12 +56,19 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         let query = supabase
           .from('registrations')
           .select(`
-            *,
+            id,
+            status,
+            created_at,
+            updated_at,
+            patient_id,
+            event_id,
+            event_date_id,
             patient:patients (
               id,
-              name,
+              nome,
+              cpf,
               email,
-              phone,
+              telefone,
               city,
               state
             ),
@@ -82,7 +90,7 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         // Aplicar filtros
         if (filters.search) {
           // Buscar por nome do paciente ou título do evento usando joins
-          query = query.or(`patients.name.ilike.%${filters.search}%,events.title.ilike.%${filters.search}%`)
+          query = query.or(`patients.nome.ilike.%${filters.search}%,events.title.ilike.%${filters.search}%`)
         }
 
         if (filters.event_id) {
@@ -120,7 +128,14 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
           status: registration.status || 'confirmed',
           created_at: registration.created_at,
           updated_at: registration.updated_at,
-          patient: registration.patient,
+          patient: registration.patient ? {
+            id: registration.patient.id,
+            name: registration.patient.nome, // Mapear nome correto
+            email: registration.patient.email,
+            phone: registration.patient.telefone, // Mapear telefone correto
+            city: registration.patient.city,
+            state: registration.patient.state
+          } : null,
           event: registration.event,
           event_date: registration.event_date
         }))
@@ -177,12 +192,12 @@ export const useRegistrationStatsV2 = () => {
           .from('registrations')
           .select(`
             event_id,
-            events(title)
+            event:events(title)
           `)
 
         const eventCounts = eventStats?.reduce((acc, reg) => {
           const eventId = reg.event_id
-          const eventTitle = (reg.events as any)?.title || 'Evento sem título'
+          const eventTitle = (reg.event as any)?.title || 'Evento sem título'
           
           if (!acc[eventId]) {
             acc[eventId] = { title: eventTitle, count: 0 }
