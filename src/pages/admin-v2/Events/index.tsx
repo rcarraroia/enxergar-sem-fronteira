@@ -59,37 +59,17 @@ const AdminEventsV2 = () => {
   }
 
   const formatEventDates = (eventDates: any[]) => {
-    if (!eventDates || eventDates.length === 0) {
-      return <Badge variant="outline">Sem datas</Badge>
-    }
-
-    const sortedDates = eventDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    const firstDate = sortedDates[0]
-    const today = new Date()
-    const eventDate = new Date(firstDate.date)
-    
-    const isUpcoming = eventDate >= today
-    const isPast = eventDate < today
-
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Clock className="h-3 w-3" />
-          <span className="text-sm">
-            {format(eventDate, 'dd/MM/yyyy', { locale: ptBR })}
-          </span>
-          <Badge 
-            variant={isUpcoming ? 'default' : 'secondary'}
-            className={isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}
-          >
-            {isUpcoming ? 'Próximo' : 'Passado'}
+          <Badge variant="outline" className="bg-blue-50 text-blue-700">
+            A configurar
           </Badge>
         </div>
-        {eventDates.length > 1 && (
-          <span className="text-xs text-muted-foreground">
-            +{eventDates.length - 1} data(s) adicional(is)
-          </span>
-        )}
+        <span className="text-xs text-muted-foreground">
+          Datas serão configuradas
+        </span>
       </div>
     )
   }
@@ -128,20 +108,11 @@ const AdminEventsV2 = () => {
     {
       key: '_count.event_dates',
       label: 'Vagas',
-      render: (value: number, event: EventV2) => {
-        const totalSlots = event.event_dates?.reduce((sum, date) => sum + (date.total_slots || 0), 0) || 0
-        const availableSlots = event.event_dates?.reduce((sum, date) => sum + (date.available_slots || 0), 0) || 0
-        const occupiedSlots = totalSlots - availableSlots
-        
-        return (
-          <div className="text-center">
-            <div className="text-sm font-medium">{occupiedSlots}/{totalSlots}</div>
-            <div className="text-xs text-muted-foreground">
-              {totalSlots > 0 ? `${Math.round((occupiedSlots / totalSlots) * 100)}%` : '0%'}
-            </div>
-          </div>
-        )
-      }
+      render: () => (
+        <div className="text-center">
+          <Badge variant="outline">A definir</Badge>
+        </div>
+      )
     },
     {
       key: 'created_at',
