@@ -1,139 +1,95 @@
 
-import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { MetricCard } from '@/components/admin/MetricCard';
-import { QuickActions } from '@/components/admin/QuickActions';
-import { ActivityFeed } from '@/components/admin/ActivityFeed';
-import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard';
-import { ReminderJobsCard } from '@/components/admin/ReminderJobsCard';
-import { SystemHealthCard } from '@/components/admin/SystemHealthCard';
-import { useAdminMetrics } from '@/hooks/useAdminMetrics';
-import { useRecentActivity } from '@/hooks/useRecentActivity';
-import { Users, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MetricCard } from '@/components/admin/MetricCard'
+import { ActivityFeed } from '@/components/admin/ActivityFeed'
+import { QuickActions } from '@/components/admin/QuickActions'
+import { AlertBanner } from '@/components/admin/AlertBanner'
+import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard'
+import { useAdminMetrics } from '@/hooks/useAdminMetrics'
 
 const Admin = () => {
-  const { user } = useAuth();
-  const { data: metrics, isLoading } = useAdminMetrics();
-  const { data: activities = [] } = useRecentActivity();
-  const navigate = useNavigate();
+  const { data: metrics, isLoading } = useAdminMetrics()
 
-  if (!user) return null;
-
-  const handleCreateEvent = () => {
-    navigate('/admin/events/new');
-  };
-
-  const handleCreateOrganizer = () => {
-    navigate('/admin/organizers');
-  };
-
-  const handleViewTodayRegistrations = () => {
-    navigate('/admin/registrations?filter=today');
-  };
-
-  const handleExportReports = () => {
-    toast.info('Funcionalidade de exportação em desenvolvimento');
-  };
-
-  // Limitar atividades recentes a 4 itens
-  const recentActivities = activities.slice(0, 4);
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Painel Administrativo
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Visão geral do sistema e ferramentas de gestão
-            </p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Dashboard Administrativo</h1>
+          <p className="text-muted-foreground">
+            Gerencie o sistema Enxergar sem Fronteiras
+          </p>
+        </div>
 
-          {/* Metrics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <MetricCard
-              title="Total de Pacientes"
-              value={metrics?.totalPatients || 0}
-              icon={Users}
-              trend={{
-                value: 5.2,
-                label: "vs mês anterior",
-                isPositive: true
-              }}
-            />
-            <MetricCard
-              title="Eventos Ativos"
-              value={metrics?.activeEvents || 0}
-              icon={Calendar}
-              trend={{
-                value: 2.1,
-                label: "vs semana anterior",
-                isPositive: true
-              }}
-            />
-            <MetricCard
-              title="Inscrições Este Mês"
-              value={metrics?.thisWeekRegistrations || 0}
-              icon={TrendingUp}
-              trend={{
-                value: 12.5,
-                label: "vs mês anterior",
-                isPositive: true
-              }}
-            />
-            <MetricCard
-              title="Taxa de Ocupação"
-              value={`${metrics?.occupancyRate || 0}%`}
-              icon={MessageSquare}
-              trend={{
-                value: 8.3,
-                label: "vs média anterior",
-                isPositive: true
-              }}
-            />
-          </div>
+        <AlertBanner />
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Actions & Health */}
-            <div className="space-y-6">
-              <QuickActions 
-                onCreateEvent={handleCreateEvent}
-                onCreateOrganizer={handleCreateOrganizer}
-                onViewTodayRegistrations={handleViewTodayRegistrations}
-                onExportReports={handleExportReports}
-              />
-              <SystemHealthCard />
-            </div>
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <MetricCard
+            title="Total de Eventos"
+            value={metrics?.totalEvents || 0}
+            icon="calendar"
+            trend={{ value: 12, isPositive: true, period: "último mês" }}
+          />
+          <MetricCard
+            title="Inscrições Ativas"
+            value={metrics?.totalRegistrations || 0}
+            icon="users"
+            trend={{ value: 8, isPositive: true, period: "última semana" }}
+          />
+          <MetricCard
+            title="Pacientes Cadastrados"
+            value={metrics?.totalPatients || 0}
+            icon="user-check"
+            trend={{ value: 15, isPositive: true, period: "último mês" }}
+          />
+          <MetricCard
+            title="Taxa de Ocupação"
+            value={`${metrics?.occupancyRate || 0}%`}
+            icon="activity"
+            trend={{ value: 5, isPositive: true, period: "média mensal" }}
+          />
+        </div>
 
-            {/* Middle Column - Activity Feed */}
-            <div>
-              <ActivityFeed activities={recentActivities} />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ações Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <QuickActions />
+            </CardContent>
+          </Card>
 
-            {/* Right Column - Templates & Jobs */}
-            <div className="space-y-6">
-              <NotificationTemplatesCard />
-            </div>
-          </div>
+          {/* Notification Templates */}
+          <NotificationTemplatesCard />
+        </div>
 
-          {/* Full Width - Reminder Jobs */}
-          <ReminderJobsCard />
+        {/* Activity Feed */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Atividades Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActivityFeed />
+            </CardContent>
+          </Card>
         </div>
       </main>
 
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default Admin;
+export default Admin

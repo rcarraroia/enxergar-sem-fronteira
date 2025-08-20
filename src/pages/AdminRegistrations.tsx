@@ -33,31 +33,8 @@ import {
 import { useRegistrations } from '@/hooks/useRegistrations'
 import { toast } from 'sonner'
 
-interface Registration {
-  id: string
-  status: string
-  created_at: string
-  patients: {
-    id: string
-    nome: string
-    email: string
-    telefone: string
-    cpf: string
-    data_nascimento?: string
-    diagnostico?: string
-  }
-  event_dates: {
-    id: string
-    date: string
-    start_time: string
-    events: {
-      id: string
-      title: string
-      location: string
-      address: string
-    }
-  }
-}
+// Usar a interface do hook ao invés da local
+import type { Registration } from '@/hooks/useRegistrations'
 
 export default function AdminRegistrations() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -68,23 +45,23 @@ export default function AdminRegistrations() {
 
   const filteredRegistrations = registrations.filter((registration: Registration) => {
     const matchesSearch = 
-      registration.patients.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.patients.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.event_dates.events.title.toLowerCase().includes(searchTerm.toLowerCase())
+      registration.patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.event_date.event.title.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
-    const matchesEvent = eventFilter === 'all' || registration.event_dates.events.id === eventFilter
+    const matchesEvent = eventFilter === 'all' || registration.event_date.event.id === eventFilter
     
     return matchesSearch && matchesStatus && matchesEvent
   })
 
   const uniqueEvents = Array.from(
-    new Set(registrations.map((r: Registration) => r.event_dates.events.id))
+    new Set(registrations.map((r: Registration) => r.event_date.event.id))
   ).map(eventId => {
-    const registration = registrations.find((r: Registration) => r.event_dates.events.id === eventId)
+    const registration = registrations.find((r: Registration) => r.event_date.event.id === eventId)
     return registration ? {
       id: eventId,
-      title: registration.event_dates.events.title
+      title: registration.event_date.event.title
     } : null
   }).filter(Boolean)
 
@@ -102,12 +79,12 @@ export default function AdminRegistrations() {
     const csvContent = [
       ['Nome', 'Email', 'Telefone', 'CPF', 'Evento', 'Data', 'Status'].join(','),
       ...filteredRegistrations.map((reg: Registration) => [
-        reg.patients.nome,
-        reg.patients.email,
-        reg.patients.telefone,
-        reg.patients.cpf,
-        reg.event_dates.events.title,
-        new Date(reg.event_dates.date).toLocaleDateString('pt-BR'),
+        reg.patient.nome,
+        reg.patient.email,
+        reg.patient.telefone,
+        reg.patient.cpf,
+        reg.event_date.event.title,
+        new Date(reg.event_date.date).toLocaleDateString('pt-BR'),
         reg.status
       ].join(','))
     ].join('\n')
@@ -276,9 +253,9 @@ export default function AdminRegistrations() {
                   <TableRow key={registration.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{registration.patients.nome}</div>
+                        <div className="font-medium">{registration.patient.nome}</div>
                         <div className="text-sm text-muted-foreground">
-                          CPF: {registration.patients.cpf}
+                          CPF: {registration.patient.cpf}
                         </div>
                       </div>
                     </TableCell>
@@ -286,27 +263,27 @@ export default function AdminRegistrations() {
                       <div className="space-y-1">
                         <div className="flex items-center text-sm">
                           <Mail className="h-3 w-3 mr-1" />
-                          {registration.patients.email}
+                          {registration.patient.email}
                         </div>
                         <div className="flex items-center text-sm">
                           <Phone className="h-3 w-3 mr-1" />
-                          {registration.patients.telefone}
+                          {registration.patient.telefone}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{registration.event_dates.events.title}</div>
+                        <div className="font-medium">{registration.event_date.event.title}</div>
                         <div className="text-sm text-muted-foreground">
-                          {registration.event_dates.events.location}
+                          {registration.event_date.event.location}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div>{new Date(registration.event_dates.date).toLocaleDateString('pt-BR')}</div>
+                        <div>{new Date(registration.event_date.date).toLocaleDateString('pt-BR')}</div>
                         <div className="text-sm text-muted-foreground">
-                          {registration.event_dates.start_time}
+                          {registration.event_date.start_time}
                         </div>
                       </div>
                     </TableCell>

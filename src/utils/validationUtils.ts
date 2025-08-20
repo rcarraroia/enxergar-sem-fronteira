@@ -27,6 +27,22 @@ const validateCPF = (cpf: string): boolean => {
   return parseInt(cleanCPF[10]) === digit2
 }
 
+// Adicionar a função formatPhoneNumber que estava sendo usada
+export const formatPhoneNumber = (value: string): string => {
+  if (!value) return ''
+  const cleanValue = value.replace(/\D/g, '')
+  
+  if (cleanValue.length <= 2) {
+    return cleanValue
+  } else if (cleanValue.length <= 7) {
+    return cleanValue.replace(/(\d{2})(\d{1,5})/, '($1) $2')
+  } else if (cleanValue.length <= 10) {
+    return cleanValue.replace(/(\d{2})(\d{4})(\d{1,4})/, '($1) $2-$3')
+  } else {
+    return cleanValue.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+  }
+}
+
 // Schemas de validação mais robustos
 export const patientValidationSchema = z.object({
   nome: z.string()

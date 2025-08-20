@@ -14,6 +14,22 @@ export const formatCPF = (cpf: string): string => {
   return cleanValue.slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
 }
 
+// Adicionar a função cpfMask que estava sendo usada
+export const cpfMask = (value: string): string => {
+  if (!value) return ''
+  const cleanValue = cleanCPF(value)
+  
+  if (cleanValue.length <= 3) {
+    return cleanValue
+  } else if (cleanValue.length <= 6) {
+    return cleanValue.replace(/(\d{3})(\d{1,3})/, '$1.$2')
+  } else if (cleanValue.length <= 9) {
+    return cleanValue.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3')
+  } else {
+    return cleanValue.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4')
+  }
+}
+
 export const validateCPF = (cpf: string): boolean => {
   const cleanCPF = cpf.replace(/\D/g, '')
   

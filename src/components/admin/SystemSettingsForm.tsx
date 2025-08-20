@@ -1,136 +1,226 @@
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { useSystemSettings } from '@/hooks/useSystemSettings'
 import { toast } from 'sonner'
+import { useSystemSettings } from '@/hooks/useSystemSettings'
 
-export const SystemSettingsForm = () => {
-  const { getSettingValue, getSettingJSON, updateSetting, isUpdating } = useSystemSettings()
-  
-  const [formData, setFormData] = useState({
-    projectName: '',
-    projectDescription: '',
-    socialLinks: {
-      facebook: '',
-      instagram: '',
-      linkedin: ''
-    }
-  })
+interface SystemSettingsFormProps {
+  section: 'general' | 'logos' | 'social' | 'apikeys'
+}
+
+export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
+  const { getSetting, setSetting, loading } = useSystemSettings()
+  const [formData, setFormData] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    const socialLinksData = getSettingJSON('social_links', {
-      facebook: '',
-      instagram: '',
-      linkedin: ''
-    })
-    
-    // Garantir que os valores são strings
-    const safeSocialLinks = {
-      facebook: typeof socialLinksData.facebook === 'string' ? socialLinksData.facebook : '',
-      instagram: typeof socialLinksData.instagram === 'string' ? socialLinksData.instagram : '',
-      linkedin: typeof socialLinksData.linkedin === 'string' ? socialLinksData.linkedin : ''
+    // Carregar configurações baseadas na seção
+    const loadSettings = () => {
+      switch (section) {
+        case 'general':
+          setFormData({
+            project_name: getSetting('project_name', 'Enxergar sem Fronteiras'),
+            project_description: getSetting('project_description', 'Cuidados oftalmológicos gratuitos para comunidades'),
+          })
+          break
+        case 'logos':
+          setFormData({
+            logo_header: getSetting('logo_header', ''),
+            logo_footer: getSetting('logo_footer', ''),
+          })
+          break
+        case 'social':
+          const socialLinks = getSetting('social_links', '{}')
+          const parsedLinks = typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks
+          setFormData({
+            facebook: parsedLinks.facebook || '',
+            instagram: parsedLinks.instagram || '',
+            linkedin: parsedLinks.linkedin || '',
+          })
+          break
+        case 'apikeys':
+          setFormData({
+            asaas_api_key: getSetting('asaas_api_key', ''),
+            vonage_api_key: getSetting('vonage_api_key', ''),
+            vonage_api_secret: getSetting('vonage_api_secret', ''),
+          })
+          break
+      }
     }
 
-    setFormData({
-      projectName: getSettingValue('project_name', 'Enxergar sem Fronteiras'),
-      projectDescription: getSettingValue('project_description', 'Cuidados oftalmológicos gratuitos'),
-      socialLinks: safeSocialLinks
-    })
-  }, [getSettingValue, getSettingJSON])
+    loadSettings()
+  }, [section, getSetting])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  const handleSave = async () => {
     try {
-      await updateSetting('project_name', formData.projectName)
-      await updateSetting('project_description', formData.projectDescription)
-      await updateSetting('social_links', JSON.stringify(formData.socialLinks))
-      
-      toast.success('Configurações atualizadas com sucesso!')
+      switch (section) {
+        case 'general':
+          await setSetting('project_name', formData.project_name)
+          await setSetting('project_description', formData.project_description)
+          break
+        case 'logos':
+          await setSetting('logo_header', formData.logo_header)
+          await setSetting('logo_footer', formData.logo_footer)
+          break
+        case 'social':
+          const socialData = {
+            facebook: formData.facebook,
+            instagram: formData.instagram,
+            linkedin: formData.linkedin,
+          }
+          await setSetting('social_links', JSON.stringify(socialData))
+          break
+        case 'apikeys':
+          await setSetting('asaas_api_key', formData.asaas_api_key)
+          await setSetting('vonage_api_key', formData.vonage_api_key)
+          await setSetting('vonage_api_secret', formData.vonage_api_secret)
+          break
+      }
+      toast.success('Configurações salvas com sucesso!')
     } catch (error) {
-      console.error('Erro ao salvar configurações:', error)
       toast.error('Erro ao salvar configurações')
+    }
+  }
+
+  const handleInputChange = (key: string, value: string) => {
+    setFormData(prev => ({ ...prev, [key]: value }))
+  }
+
+  const renderFields = () => {
+    switch (section) {
+      case 'general':
+        return (
+          <>
+            <div>
+              <Label htmlFor="project_name">Nome do Projeto</Label>
+              <Input
+                id="project_name"
+                value={formData.project_name || ''}
+                onChange={(e) => handleInputChange('project_name', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="project_description">Descrição do Projeto</Label>
+              <Textarea
+                id="project_description"
+                value={formData.project_description || ''}
+                onChange={(e) => handleInputChange('project_description', e.target.value)}
+              />
+            </div>
+          </>
+        )
+      case 'logos':
+        return (
+          <>
+            <div>
+              <Label htmlFor="logo_header">URL do Logo Header</Label>
+              <Input
+                id="logo_header"
+                value={formData.logo_header || ''}
+                onChange={(e) => handleInputChange('logo_header', e.target.value)}
+                placeholder="https://exemplo.com/logo-header.png"
+              />
+            </div>
+            <div>
+              <Label htmlFor="logo_footer">URL do Logo Footer</Label>
+              <Input
+                id="logo_footer"
+                value={formData.logo_footer || ''}
+                onChange={(e) => handleInputChange('logo_footer', e.target.value)}
+                placeholder="https://exemplo.com/logo-footer.png"
+              />
+            </div>
+          </>
+        )
+      case 'social':
+        return (
+          <>
+            <div>
+              <Label htmlFor="facebook">Facebook</Label>
+              <Input
+                id="facebook"
+                value={formData.facebook || ''}
+                onChange={(e) => handleInputChange('facebook', e.target.value)}
+                placeholder="https://facebook.com/perfil"
+              />
+            </div>
+            <div>
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                value={formData.instagram || ''}
+                onChange={(e) => handleInputChange('instagram', e.target.value)}
+                placeholder="https://instagram.com/perfil"
+              />
+            </div>
+            <div>
+              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Input
+                id="linkedin"
+                value={formData.linkedin || ''}
+                onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                placeholder="https://linkedin.com/company/perfil"
+              />
+            </div>
+          </>
+        )
+      case 'apikeys':
+        return (
+          <>
+            <div>
+              <Label htmlFor="asaas_api_key">Asaas API Key</Label>
+              <Input
+                id="asaas_api_key"
+                type="password"
+                value={formData.asaas_api_key || ''}
+                onChange={(e) => handleInputChange('asaas_api_key', e.target.value)}
+                placeholder="Chave da API do Asaas"
+              />
+            </div>
+            <div>
+              <Label htmlFor="vonage_api_key">Vonage API Key</Label>
+              <Input
+                id="vonage_api_key"
+                value={formData.vonage_api_key || ''}
+                onChange={(e) => handleInputChange('vonage_api_key', e.target.value)}
+                placeholder="Chave da API do Vonage"
+              />
+            </div>
+            <div>
+              <Label htmlFor="vonage_api_secret">Vonage API Secret</Label>
+              <Input
+                id="vonage_api_secret"
+                type="password"
+                value={formData.vonage_api_secret || ''}
+                onChange={(e) => handleInputChange('vonage_api_secret', e.target.value)}
+                placeholder="Secret da API do Vonage"
+              />
+            </div>
+          </>
+        )
+      default:
+        return null
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Configurações do Sistema</CardTitle>
+        <CardTitle>
+          {section === 'general' && 'Configurações Gerais'}
+          {section === 'logos' && 'Logos do Sistema'}
+          {section === 'social' && 'Redes Sociais'}
+          {section === 'apikeys' && 'Chaves de API'}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <Label htmlFor="projectName">Nome do Projeto</Label>
-            <Input
-              id="projectName"
-              value={formData.projectName}
-              onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-              placeholder="Nome do projeto"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="projectDescription">Descrição do Projeto</Label>
-            <Textarea
-              id="projectDescription"
-              value={formData.projectDescription}
-              onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
-              placeholder="Descrição do projeto"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <Label>Redes Sociais</Label>
-            
-            <div>
-              <Label htmlFor="facebook">Facebook</Label>
-              <Input
-                id="facebook"
-                value={formData.socialLinks.facebook}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  socialLinks: { ...formData.socialLinks, facebook: e.target.value }
-                })}
-                placeholder="https://facebook.com/..."
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="instagram">Instagram</Label>
-              <Input
-                id="instagram"
-                value={formData.socialLinks.instagram}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  socialLinks: { ...formData.socialLinks, instagram: e.target.value }
-                })}
-                placeholder="https://instagram.com/..."
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="linkedin">LinkedIn</Label>
-              <Input
-                id="linkedin"
-                value={formData.socialLinks.linkedin}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  socialLinks: { ...formData.socialLinks, linkedin: e.target.value }
-                })}
-                placeholder="https://linkedin.com/..."
-              />
-            </div>
-          </div>
-
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
-          </Button>
-        </form>
+      <CardContent className="space-y-4">
+        {renderFields()}
+        <Button onClick={handleSave} disabled={loading} className="w-full">
+          {loading ? 'Salvando...' : 'Salvar Configurações'}
+        </Button>
       </CardContent>
     </Card>
   )
