@@ -23,6 +23,9 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminSync from "./pages/AdminSync";
 import AdminPayments from "./pages/AdminPayments";
 import AdminDonations from "./pages/AdminDonations";
+// ADMIN V2 - Nova versão reconstruída
+import AdminDashboardV2 from "./pages/admin-v2/Dashboard";
+import AdminV2Access from "./pages/AdminV2Access";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import OrganizerEvents from "./pages/OrganizerEvents";
 import OrganizerEventForm from "./pages/OrganizerEventForm";
@@ -100,6 +103,18 @@ function App() {
               <Route path="/admin/donations" element={
                 <ProtectedRoute requireAdmin>
                   <AdminDonations />
+                </ProtectedRoute>
+              } />
+
+              {/* ADMIN V2 - Nova versão reconstruída (ISOLADA) */}
+              <Route path="/admin-v2-access" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminV2Access />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2" element={
+                <ProtectedRoute requireAdmin>
+                  <AdminDashboardV2 />
                 </ProtectedRoute>
               } />
 
