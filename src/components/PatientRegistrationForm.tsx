@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import { formatPhoneNumber } from '@/utils/validationUtils'
 
 interface PatientRegistrationFormProps {
   eventDateId: string
-  onSuccess: () => void
+  onSuccess: (patientName: string) => void
 }
 
 interface EventInfo {
@@ -150,7 +149,7 @@ export const PatientRegistrationForm = ({ eventDateId, onSuccess }: PatientRegis
       }
 
       toast.success('Inscrição realizada com sucesso!')
-      onSuccess()
+      onSuccess(formData.nome)
 
     } catch (error: any) {
       console.error('Erro ao realizar inscrição:', error)
