@@ -59,8 +59,6 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
           email: data.email,
           telefone: data.phone,
           cpf: data.cpf.replace(/\D/g, ''),
-          data_nascimento: data.birthdate,
-          diagnostico: data.comments || null,
           consentimento_lgpd: data.terms
         })
         .select()
@@ -152,26 +150,6 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               />
               {errors.cpf && <p className="text-sm text-red-500">{errors.cpf.message}</p>}
             </div>
-
-            <div>
-              <Label htmlFor="birthdate">Data de Nascimento *</Label>
-              <Input
-                id="birthdate"
-                type="date"
-                {...register('birthdate')}
-              />
-              {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate.message}</p>}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="comments">Observações Médicas</Label>
-            <Textarea
-              id="comments"
-              {...register('comments')}
-              placeholder="Descreva alguma condição específica ou observação importante"
-              rows={3}
-            />
           </div>
 
           <div className="flex items-center space-x-2">
