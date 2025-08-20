@@ -43,6 +43,10 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
   onCancel,
   isLoading = false
 }) => {
+  // CORREÇÃO: Garantir que todos os hooks sejam chamados no nível superior
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const subjectInputRef = useRef<HTMLInputElement>(null)
+  
   const [formData, setFormData] = useState<NotificationTemplateInput>({
     name: template?.name || '',
     type: template?.type || type,
@@ -55,9 +59,6 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
   const [isDirty, setIsDirty] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
   const [showVariables, setShowVariables] = useState(true)
-  
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
-  const subjectInputRef = useRef<HTMLInputElement>(null)
 
   // Validate form on changes
   useEffect(() => {
@@ -81,18 +82,34 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
   }
 
   const handleVariableClick = (variable: string) => {
+    // CORREÇÃO: Verificação mais robusta para evitar erros de ref
+    if (!contentTextareaRef.current) {
+      // Fallback: apenas adicionar ao final do conteúdo
+      handleInputChange('content', formData.content + variable)
+      return
+    }
+    
     const textarea = contentTextareaRef.current
-    if (textarea) {
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
+    try {
+      const start = textarea.selectionStart || 0
+      const end = textarea.selectionEnd || 0
       const newContent = formData.content.substring(0, start) + variable + formData.content.substring(end)
       
       handleInputChange('content', newContent)
       
-      setTimeout(() => {
-        textarea.focus()
-        textarea.setSelectionRange(start + variable.length, start + variable.length)
-      }, 0)
+      // Usar requestAnimationFrame para garantir que o DOM foi atualizado
+      requestAnimationFrame(() => {
+        if (textarea && textarea.focus) {
+          textarea.focus()
+          if (textarea.setSelectionRange) {
+            textarea.setSelectionRange(start + variable.length, start + variable.length)
+          }
+        }
+      })
+    } catch (error) {
+      console.warn('Erro ao inserir variável:', error)
+      // Fallback seguro
+      handleInputChange('content', formData.content + variable)
     }
   }
 
