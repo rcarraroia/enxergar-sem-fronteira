@@ -10,7 +10,7 @@
 export const formatDate = (dateString: string): string => {
   if (!dateString) return ''
   
-  // Evitar problemas de fuso horário criando a data diretamente
+  // Usar split para evitar problemas de fuso horário
   const [year, month, day] = dateString.split('-')
   return `${day}/${month}/${year}`
 }

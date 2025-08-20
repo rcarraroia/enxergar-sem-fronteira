@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +16,7 @@ import { toast } from 'sonner'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { Registration } from '@/hooks/useRegistrations'
+import { formatDate } from '@/utils/dateUtils'
 
 const ReportsTemp = () => {
   const [selectedCity, setSelectedCity] = useState<string>('all')
@@ -46,16 +46,8 @@ const ReportsTemp = () => {
       // Título do relatório
       const title = 'RELATÓRIO DE AGENDAMENTOS'
       
-      // Corrigir a formatação da data para o título
-      let dateDisplayText = 'Todas as Datas'
-      if (selectedDate) {
-        // Usar a data diretamente do input sem conversão que causa erro de timezone
-        const dateParts = selectedDate.split('-')
-        const day = dateParts[2]
-        const month = dateParts[1]
-        const year = dateParts[0]
-        dateDisplayText = `${day}/${month}/${year}`
-      }
+      // Usar a função formatDate corrigida
+      const dateDisplayText = selectedDate ? formatDate(selectedDate) : 'Todas as Datas'
       
       const subtitle = `${selectedCity !== 'all' ? selectedCity : 'Todas as Cidades'} - ${dateDisplayText}`
       
@@ -74,7 +66,7 @@ const ReportsTemp = () => {
         reg.patient.telefone,
         reg.patient.email,
         reg.event_date.event.city,
-        new Date(reg.event_date.date).toLocaleDateString('pt-BR'),
+        formatDate(reg.event_date.date),
         reg.event_date.start_time,
         reg.status === 'confirmed' ? 'Confirmado' :
         reg.status === 'pending' ? 'Pendente' :
@@ -254,7 +246,7 @@ const ReportsTemp = () => {
                             <td className="border border-gray-300 px-2 py-1">{reg.patient.nome}</td>
                             <td className="border border-gray-300 px-2 py-1">{reg.event_date.event.city}</td>
                             <td className="border border-gray-300 px-2 py-1">
-                              {new Date(reg.event_date.date).toLocaleDateString('pt-BR')}
+                              {formatDate(reg.event_date.date)}
                             </td>
                             <td className="border border-gray-300 px-2 py-1">
                               {reg.status === 'confirmed' ? 'Confirmado' : 
