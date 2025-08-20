@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { 
   Table, 
   TableBody, 
@@ -21,49 +20,36 @@ import {
 } from '@/components/ui/select'
 import { 
   Users, 
-  Search, 
   Calendar,
   MapPin,
   Phone,
   Mail,
-  FileText,
-  Download,
-  RefreshCw
+  FileText
 } from 'lucide-react'
-import { useRegistrations } from '@/hooks/useRegistrations'
+import { RegistrationFilters } from '@/components/admin/RegistrationFilters'
+import { useRegistrationsFiltered, useAvailableCities } from '@/hooks/useRegistrationsFiltered'
 import { toast } from 'sonner'
-
-// Usar a interface do hook ao invés da local
 import type { Registration } from '@/hooks/useRegistrations'
 
 export default function AdminRegistrations() {
+  // Estados dos filtros
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCity, setSelectedCity] = useState('all')
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [statusFilter, setStatusFilter] = useState('all')
-  const [eventFilter, setEventFilter] = useState('all')
-  
-  const { data: registrations = [], isLoading, refetch } = useRegistrations()
+  const [eventStatusFilter, setEventStatusFilter] = useState('all')
 
-  const filteredRegistrations = registrations.filter((registration: Registration) => {
-    const matchesSearch = 
-      registration.patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.event_date.event.title.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
-    const matchesEvent = eventFilter === 'all' || registration.event_date.event.id === eventFilter
-    
-    return matchesSearch && matchesStatus && matchesEvent
+  // Buscar dados com filtros
+  const { data: registrations = [], isLoading, refetch } = useRegistrationsFiltered({
+    searchTerm: searchTerm || undefined,
+    city: selectedCity !== 'all' ? selectedCity : undefined,
+    date: selectedDate,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    eventStatus: eventStatusFilter !== 'all' ? eventStatusFilter : undefined
   })
 
-  const uniqueEvents = Array.from(
-    new Set(registrations.map((r: Registration) => r.event_date.event.id))
-  ).map(eventId => {
-    const registration = registrations.find((r: Registration) => r.event_date.event.id === eventId)
-    return registration ? {
-      id: eventId,
-      title: registration.event_date.event.title
-    } : null
-  }).filter(Boolean)
+  // Buscar cidades disponíveis
+  const { data: availableCities = [] } = useAvailableCities()
 
   const handleStatusChange = async (registrationId: string, newStatus: string) => {
     try {
@@ -76,13 +62,19 @@ export default function AdminRegistrations() {
   }
 
   const exportRegistrations = () => {
+    if (registrations.length === 0) {
+      toast.error('Nenhuma inscrição para exportar')
+      return
+    }
+
     const csvContent = [
-      ['Nome', 'Email', 'Telefone', 'CPF', 'Evento', 'Data', 'Status'].join(','),
-      ...filteredRegistrations.map((reg: Registration) => [
+      ['Nome', 'Email', 'Telefone', 'CPF', 'Cidade', 'Evento', 'Data', 'Status'].join(','),
+      ...registrations.map((reg: Registration) => [
         reg.patient.nome,
         reg.patient.email,
         reg.patient.telefone,
         reg.patient.cpf,
+        reg.event_date.event.city,
         reg.event_date.event.title,
         new Date(reg.event_date.date).toLocaleDateString('pt-BR'),
         reg.status
@@ -98,6 +90,8 @@ export default function AdminRegistrations() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    
+    toast.success('Dados exportados com sucesso!')
   }
 
   if (isLoading) {
@@ -111,16 +105,6 @@ export default function AdminRegistrations() {
         <div>
           <h1 className="text-3xl font-bold">Inscrições</h1>
           <p className="text-muted-foreground">Gerencie todas as inscrições dos eventos</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportRegistrations}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-          <Button variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Atualizar
-          </Button>
         </div>
       </div>
 
@@ -181,58 +165,28 @@ export default function AdminRegistrations() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, email ou evento..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="confirmed">Confirmada</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="cancelled">Cancelada</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={eventFilter} onValueChange={setEventFilter}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Evento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Eventos</SelectItem>
-                {uniqueEvents.map((event: any) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Filtros Refatorados */}
+      <RegistrationFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedCity={selectedCity}
+        onCityChange={setSelectedCity}
+        selectedDate={selectedDate}
+        onDateChange={setSelectedDate}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        eventStatusFilter={eventStatusFilter}
+        onEventStatusChange={setEventStatusFilter}
+        availableCities={availableCities}
+        onExport={exportRegistrations}
+        onRefresh={() => refetch()}
+        filteredCount={registrations.length}
+      />
 
       {/* Registrations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Inscrições ({filteredRegistrations.length})</CardTitle>
+          <CardTitle>Inscrições ({registrations.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -249,7 +203,7 @@ export default function AdminRegistrations() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRegistrations.map((registration: Registration) => (
+                {registrations.map((registration: Registration) => (
                   <TableRow key={registration.id}>
                     <TableCell>
                       <div>
@@ -275,7 +229,7 @@ export default function AdminRegistrations() {
                       <div>
                         <div className="font-medium">{registration.event_date.event.title}</div>
                         <div className="text-sm text-muted-foreground">
-                          {registration.event_date.event.location}
+                          {registration.event_date.event.city} - {registration.event_date.event.location}
                         </div>
                       </div>
                     </TableCell>
@@ -295,7 +249,8 @@ export default function AdminRegistrations() {
                         }
                       >
                         {registration.status === 'confirmed' ? 'Confirmada' :
-                         registration.status === 'pending' ? 'Pendente' : 'Cancelada'}
+                         registration.status === 'pending' ? 'Pendente' : 
+                         registration.status === 'attended' ? 'Compareceu' : 'Cancelada'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -314,6 +269,7 @@ export default function AdminRegistrations() {
                         <SelectContent>
                           <SelectItem value="confirmed">Confirmar</SelectItem>
                           <SelectItem value="pending">Pendente</SelectItem>
+                          <SelectItem value="attended">Compareceu</SelectItem>
                           <SelectItem value="cancelled">Cancelar</SelectItem>
                         </SelectContent>
                       </Select>
@@ -323,6 +279,12 @@ export default function AdminRegistrations() {
               </TableBody>
             </Table>
           </div>
+
+          {registrations.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma inscrição encontrada com os filtros selecionados.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
