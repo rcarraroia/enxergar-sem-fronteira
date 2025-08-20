@@ -43,7 +43,6 @@ export interface RegistrationFilters {
   event_id?: string
   status?: string
   date_from?: string
-  date_to?: string
 }
 
 export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
@@ -103,10 +102,7 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
 
         // Filtros de data baseados na event_date usando join
         if (filters.date_from) {
-          query = query.gte('event_dates.date', filters.date_from)
-        }
-        if (filters.date_to) {
-          query = query.lte('event_dates.date', filters.date_to)
+          query = query.eq('event_dates.date', filters.date_from)
         }
 
         // Ordenar por data de criação (mais recente primeiro)

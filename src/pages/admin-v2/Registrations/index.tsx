@@ -53,7 +53,6 @@ const AdminRegistrationsV2 = () => {
   const [selectedEvent, setSelectedEvent] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [dateFrom, setDateFrom] = useState<string>('')
-  const [dateTo, setDateTo] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Hooks
@@ -63,12 +62,12 @@ const AdminRegistrationsV2 = () => {
   const updateStatusMutation = useUpdateRegistrationStatusV2()
 
   const handleSearch = () => {
+    // Função mantida para compatibilidade com o botão de busca
     setFilters({
       search: searchTerm || undefined,
       event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
-      date_from: dateFrom || undefined,
-      date_to: dateTo || undefined
+      date_from: dateFrom || undefined
     })
   }
 
@@ -189,7 +188,7 @@ const AdminRegistrationsV2 = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <Label htmlFor="search">Buscar</Label>
               <div className="flex gap-2">
@@ -197,8 +196,16 @@ const AdminRegistrationsV2 = () => {
                   id="search"
                   placeholder="Nome do paciente ou evento..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    // Aplicar filtro automaticamente
+                    setFilters({
+                      search: e.target.value || undefined,
+                      event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
+                      status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                      date_from: dateFrom || undefined
+                    })
+                  }}
                 />
                 <Button onClick={handleSearch} variant="outline">
                   <Search className="h-4 w-4" />
@@ -208,7 +215,16 @@ const AdminRegistrationsV2 = () => {
             
             <div>
               <Label htmlFor="event">Evento</Label>
-              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+              <Select value={selectedEvent} onValueChange={(value) => {
+                setSelectedEvent(value)
+                // Aplicar filtro automaticamente
+                setFilters({
+                  search: searchTerm || undefined,
+                  event_id: value !== 'all' ? value : undefined,
+                  status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                  date_from: dateFrom || undefined
+                })
+              }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -225,7 +241,16 @@ const AdminRegistrationsV2 = () => {
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <Select value={selectedStatus} onValueChange={(value) => {
+                setSelectedStatus(value)
+                // Aplicar filtro automaticamente
+                setFilters({
+                  search: searchTerm || undefined,
+                  event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
+                  status: value !== 'all' ? value : undefined,
+                  date_from: dateFrom || undefined
+                })
+              }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -240,22 +265,21 @@ const AdminRegistrationsV2 = () => {
             </div>
 
             <div>
-              <Label htmlFor="dateFrom">Data Início</Label>
+              <Label htmlFor="dateFrom">Data do Evento</Label>
               <Input
                 id="dateFrom"
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="dateTo">Data Fim</Label>
-              <Input
-                id="dateTo"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => {
+                  setDateFrom(e.target.value)
+                  // Aplicar filtro automaticamente
+                  setFilters({
+                    search: searchTerm || undefined,
+                    event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
+                    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                    date_from: e.target.value || undefined
+                  })
+                }}
               />
             </div>
           </div>
