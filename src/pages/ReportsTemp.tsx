@@ -45,7 +45,19 @@ const ReportsTemp = () => {
       
       // Título do relatório
       const title = 'RELATÓRIO DE AGENDAMENTOS'
-      const subtitle = `${selectedCity !== 'all' ? selectedCity : 'Todas as Cidades'} - ${selectedDate ? new Date(selectedDate).toLocaleDateString('pt-BR') : 'Todas as Datas'}`
+      
+      // Corrigir a formatação da data para o título
+      let dateDisplayText = 'Todas as Datas'
+      if (selectedDate) {
+        // Usar a data diretamente do input sem conversão que causa erro de timezone
+        const dateParts = selectedDate.split('-')
+        const day = dateParts[2]
+        const month = dateParts[1]
+        const year = dateParts[0]
+        dateDisplayText = `${day}/${month}/${year}`
+      }
+      
+      const subtitle = `${selectedCity !== 'all' ? selectedCity : 'Todas as Cidades'} - ${dateDisplayText}`
       
       doc.setFontSize(16)
       doc.text(title, 14, 20)
