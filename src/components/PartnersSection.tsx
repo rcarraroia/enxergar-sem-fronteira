@@ -3,24 +3,24 @@ import { Card } from '@/components/ui/card';
 const PartnersSection = () => {
   const partners = [
     {
-      name: 'ONG Coração Valente - Ipatinga',
+      name: 'ONG Coração Valente',
       logo: '/lovable-uploads/coracao-valente.png',
-      description: 'Organização principal do projeto'
+      description: 'Ipatinga - MG'
     },
     {
-      name: 'Paroquia Cristo Libertador - Ipatinga',
-      logo: '/lovable-uploads/195e33d8-8072-4e60-bc4c-ad46fd5d5f92.png',
-      description: 'Parceiro estratégico'
+      name: 'Paroquia Cristo Libertador',
+      logo: '/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png',
+      description: 'Ipatinga - MG'
     },
     {
       name: 'Paroquia São Jose - Timoteo',
       logo: '/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png',
-      description: 'Apoio comunitário'
+      description: 'Timóteo - MG'
     },
     {
       name: 'Wladimir Careca - Timoteo',
-      logo: '/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png',
-      description: 'Parceiro local'
+      logo: '/lovable-uploads/logo512x512.png',
+      description: 'Timóteo - MG'
     }
   ];
 
