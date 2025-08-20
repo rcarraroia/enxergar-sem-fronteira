@@ -14,14 +14,10 @@ const Hero = () => {
   const nextEvent = events?.[0];
   const nextEventDate = nextEvent?.event_dates?.[0];
 
+  // Navegação simples e direta - SEM lógica automática
   const handleRegisterClick = () => {
-    if (nextEvent && nextEventDate) {
-      console.log('🎯 Redirecionando para cadastro do próximo evento:', nextEvent.id);
-      // Redirecionar direto para o cadastro com o evento específico
-      navigate(`/registration?eventId=${nextEvent.id}&eventDateId=${nextEventDate.id}`);
-    } else {
-      navigate('/registration');
-    }
+    console.log('🎯 Navegando para página de cadastro');
+    navigate('/registration');
   };
 
   const handleViewEventsClick = () => {
@@ -182,7 +178,7 @@ const Hero = () => {
                     <p className="text-muted-foreground mb-4">
                       Não há eventos disponíveis no momento
                     </p>
-                    <Button className="w-full btn-secondary-hero" onClick={() => navigate('/registration')}>
+                    <Button className="w-full btn-secondary-hero" onClick={handleRegisterClick}>
                       Entrar na Lista de Espera
                     </Button>
                   </div>
