@@ -36,17 +36,12 @@ const EventsSection = () => {
     };
   };
 
-  const handleEventClick = (eventId: string, eventDateId?: string) => {
-    console.log('🎯 Redirecionando para registro do evento:', eventId);
-    // Navegar para a página de registro com parâmetros específicos do evento
-    const url = eventDateId 
-      ? `/registration?eventId=${eventId}&eventDateId=${eventDateId}`
-      : `/registration?eventId=${eventId}`;
-    navigate(url);
+  const handleEventClick = () => {
+    console.log('🎯 Redirecionando para página de registro');
+    navigate('/registration');
   };
 
   const handleWaitingListClick = () => {
-    console.log('🎯 Redirecionando para lista de espera');
     navigate('/registration');
   };
 
@@ -190,7 +185,7 @@ const EventsSection = () => {
                     <Button 
                       className={`w-full ${totalAvailable === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
                       disabled={totalAvailable === 0}
-                      onClick={() => handleEventClick(event.id, nextDate.id)}
+                      onClick={handleEventClick}
                     >
                       {totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
                       {totalAvailable > 0 && (

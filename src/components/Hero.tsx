@@ -9,36 +9,10 @@ import { formatTime, formatDate } from '@/utils/timeFormat';
 const Hero = () => {
   const { data: events } = useEvents();
   const navigate = useNavigate();
-  
+
   // Pegar o próximo evento (primeiro da lista ordenada por data mais próxima)
   const nextEvent = events?.[0];
   const nextEventDate = nextEvent?.event_dates?.[0];
-
-  // Navegação simples e direta - SEM lógica automática
-  const handleRegisterClick = () => {
-    console.log('🎯 Navegando para página de cadastro');
-    navigate('/registration');
-  };
-
-  const handleViewEventsClick = () => {
-    console.log('🎯 Redirecionando para lista de eventos');
-    // Scroll suave para a seção de eventos na mesma página
-    const eventsSection = document.getElementById('events');
-    if (eventsSection) {
-      eventsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const formatWeekday = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long'
-    });
-  };
-
-  const getOccupancyPercentage = (available: number, total: number) => {
-    return ((total - available) / total) * 100;
-  };
 
   const stats = [{
     icon: Eye,
@@ -59,11 +33,27 @@ const Hero = () => {
     sublabel: 'Suporte Médico'
   }];
 
+  const handleRegisterClick = () => {
+    console.log('🎯 Redirecionando para página de registro');
+    navigate('/registration');
+  };
+
+  const formatWeekday = (dateString: string) => {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long'
+    });
+  };
+
+  const getOccupancyPercentage = (available: number, total: number) => {
+    return ((total - available) / total) * 100;
+  };
+
   return (
     <section id="home" className="relative min-h-screen pt-16">
       {/* Background with gradient */}
       <div className="absolute inset-0 hero-gradient opacity-5"></div>
-      
+
       <div className="relative container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
@@ -73,11 +63,11 @@ const Hero = () => {
                 <Heart className="h-4 w-4 text-secondary mr-2" />
                 <span className="text-secondary font-semibold text-sm">Cuidado Oftalmológico Gratuito</span>
               </div>
-              
+
               <h1 className="text-hero bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Levamos cuidado oftalmológico até você
               </h1>
-              
+
               <p className="text-subtitle text-muted-foreground max-w-xl">O Projeto Enxergar sem Fronteira e uma parceira de varias entidades com Projeto Visão Itinerante que visa oferece atendimento oftalmológico gratuito em comunidades carentes, levando saúde visual de qualidade onde mais se precisa.</p>
             </div>
 
@@ -87,7 +77,7 @@ const Hero = () => {
                 Agendar Consulta
                 <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleViewEventsClick}>
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}>
                 <MapPin className="h-5 w-5 mr-2" />
                 Ver Próximos Eventos
               </Button>
