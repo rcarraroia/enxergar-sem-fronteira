@@ -14,25 +14,6 @@ const Hero = () => {
   const nextEvent = events?.[0];
   const nextEventDate = nextEvent?.event_dates?.[0];
 
-  const stats = [{
-    icon: Eye,
-    value: '10.000+',
-    label: 'Consultas Realizadas'
-  }, {
-    icon: Heart,
-    value: '95%',
-    label: 'Taxa de Satisfação'
-  }, {
-    icon: Users,
-    value: '50+',
-    label: 'Cidades Atendidas'
-  }, {
-    icon: Stethoscope,
-    value: '24',
-    label: 'horas por dia, 7 dias por semana',
-    sublabel: 'Suporte Médico'
-  }];
-
   const handleRegisterClick = () => {
     if (nextEvent && nextEventDate) {
       console.log('🎯 Redirecionando para cadastro do próximo evento:', nextEvent.id);
@@ -53,6 +34,25 @@ const Hero = () => {
   const getOccupancyPercentage = (available: number, total: number) => {
     return ((total - available) / total) * 100;
   };
+
+  const stats = [{
+    icon: Eye,
+    value: '10.000+',
+    label: 'Consultas Realizadas'
+  }, {
+    icon: Heart,
+    value: '95%',
+    label: 'Taxa de Satisfação'
+  }, {
+    icon: Users,
+    value: '50+',
+    label: 'Cidades Atendidas'
+  }, {
+    icon: Stethoscope,
+    value: '24',
+    label: 'horas por dia, 7 dias por semana',
+    sublabel: 'Suporte Médico'
+  }];
 
   return (
     <section id="home" className="relative min-h-screen pt-16">
