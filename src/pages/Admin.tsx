@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/admin/MetricCard'
 import { ActivityFeed } from '@/components/admin/ActivityFeed'
 import { QuickActions } from '@/components/admin/QuickActions'
-import { NotificationTemplatesCard } from '@/components/admin/NotificationTemplatesCard'
+
 import { useAdminMetrics } from '@/hooks/useAdminMetrics'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -43,7 +44,7 @@ const Admin = () => {
     try {
       // CORREÇÃO: Chamada para a Edge Function correta
       const { data: { session } } = await supabase.auth.getSession()
-      
+
       if (!session) {
         throw new Error('Usuário não autenticado')
       }
@@ -77,10 +78,10 @@ const Admin = () => {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      
+
       console.log('✅ Admin: Relatório exportado com sucesso')
       toast.success('Relatório exportado com sucesso!')
-      
+
     } catch (error) {
       console.error('❌ Admin: Erro ao exportar relatório:', error)
       toast.error('Erro ao exportar relatório: ' + error.message)
@@ -90,7 +91,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Dashboard Administrativo</h1>
@@ -134,7 +135,7 @@ const Admin = () => {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent>
-              <QuickActions 
+              <QuickActions
                 onCreateEvent={handleCreateEvent}
                 onCreateOrganizer={handleCreateOrganizer}
                 onViewTodayRegistrations={handleViewTodayRegistrations}
@@ -143,8 +144,25 @@ const Admin = () => {
             </CardContent>
           </Card>
 
-          {/* Notification Templates */}
-          <NotificationTemplatesCard />
+          {/* Simplified Notification Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sistema de Notificações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">
+                  Sistema de notificações temporariamente simplificado
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/admin/settings')}
+                >
+                  Gerenciar Configurações
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Activity Feed */}
