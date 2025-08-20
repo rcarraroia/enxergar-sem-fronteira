@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode
   requireAdmin?: boolean
   requireOrganizer?: boolean
-  allowedRoles?: ('admin' | 'organizer' | 'user')[]
+  allowedRoles?: ('admin' | 'organizer' | 'user' | 'superadmin')[]
 }
 
 export const ProtectedRoute = ({ 

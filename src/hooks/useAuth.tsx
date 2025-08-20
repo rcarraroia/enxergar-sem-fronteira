@@ -32,7 +32,7 @@ const determineUserRole = async (email: string): Promise<'admin' | 'organizer' |
       return 'user'
     }
 
-    if (organizerData && organizerData.role) {
+    if (organizerData?.role) {
       console.log('🔐 Usuário identificado como:', organizerData.role, 'via tabela organizers')
       return organizerData.role as 'admin' | 'organizer' | 'superadmin'
     }
