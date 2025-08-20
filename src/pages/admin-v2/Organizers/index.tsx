@@ -73,6 +73,7 @@ import {
   useUpdatePromoterV2,
   useUpdatePromoterStatusV2,
   useResetPromoterPasswordV2,
+  useUpdateAsaasApiKeyV2,
   useDeletePromoterV2,
   generateSecurePassword,
   type PromoterV2,
@@ -96,8 +97,11 @@ const AdminPromotersV2 = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showCredentialsDialog, setShowCredentialsDialog] = useState(false)
+  const [showAsaasDialog, setShowAsaasDialog] = useState(false)
   const [editingPromoter, setEditingPromoter] = useState<PromoterV2 | null>(null)
   const [generatedCredentials, setGeneratedCredentials] = useState<{email: string, password: string} | null>(null)
+  const [asaasApiKey, setAsaasApiKey] = useState('')
+  const [selectedPromoterId, setSelectedPromoterId] = useState('')
 
   // Form data
   const [formData, setFormData] = useState<PromoterCreation>({
@@ -108,6 +112,14 @@ const AdminPromotersV2 = () => {
     city: '',
     state: ''
   })
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    state: '',
+    asaas_wallet_id: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
 
   // Hooks
@@ -117,6 +129,7 @@ const AdminPromotersV2 = () => {
   const updatePromoterMutation = useUpdatePromoterV2()
   const updateStatusMutation = useUpdatePromoterStatusV2()
   const resetPasswordMutation = useResetPromoterPasswordV2()
+  const updateAsaasApiKeyMutation = useUpdateAsaasApiKeyV2()
   const deletePromoterMutation = useDeletePromoterV2()
 
   const handleSearch = () => {
@@ -156,7 +169,7 @@ const AdminPromotersV2 = () => {
   const handleEditPromoter = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!editingPromoter || !formData.name.trim() || !formData.email.trim()) {
+    if (!editingPromoter || !editFormData.name.trim() || !editFormData.email.trim()) {
       toast.error('Preencha todos os campos obrigatórios')
       return
     }
@@ -165,22 +178,23 @@ const AdminPromotersV2 = () => {
       await updatePromoterMutation.mutateAsync({
         id: editingPromoter.id,
         data: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          city: formData.city,
-          state: formData.state
+          name: editFormData.name,
+          email: editFormData.email,
+          phone: editFormData.phone,
+          city: editFormData.city,
+          state: editFormData.state,
+          asaas_wallet_id: editFormData.asaas_wallet_id
         }
       })
       setShowEditDialog(false)
       setEditingPromoter(null)
-      setFormData({
+      setEditFormData({
         name: '',
         email: '',
-        password: '',
         phone: '',
         city: '',
-        state: ''
+        state: '',
+        asaas_wallet_id: ''
       })
     } catch (error) {
       // Erro já tratado no hook
@@ -199,6 +213,25 @@ const AdminPromotersV2 = () => {
     const newPassword = generateSecurePassword()
     try {
       await resetPasswordMutation.mutateAsync({ id, newPassword })
+    } catch (error) {
+      // Erro já tratado no hook
+    }
+  }
+
+  const handleUpdateAsaasApiKey = async () => {
+    if (!asaasApiKey.trim()) {
+      toast.error('Digite uma API Key válida')
+      return
+    }
+
+    try {
+      await updateAsaasApiKeyMutation.mutateAsync({
+        id: selectedPromoterId,
+        apiKey: asaasApiKey
+      })
+      setShowAsaasDialog(false)
+      setAsaasApiKey('')
+      setSelectedPromoterId('')
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -486,6 +519,7 @@ const AdminPromotersV2 = () => {
                       />
                     </div>
                   </div>
+
                   <div className="flex gap-2 pt-4">
                     <Button 
                       type="button" 
@@ -600,9 +634,10 @@ const AdminPromotersV2 = () => {
                 <h4 className="font-medium text-blue-900 mb-2">Instruções para o Promoter:</h4>
                 <ol className="text-sm text-blue-800 space-y-1">
                   <li>1. Acesse: <strong>enxergarsemfronteira.com.br/auth</strong></li>
-                  <li>2. Use o email e senha fornecidos</li>
-                  <li>3. Será redirecionado para o painel do promoter</li>
-                  <li>4. Recomende alterar a senha no primeiro acesso</li>
+                  <li>2. Use o email cadastrado</li>
+                  <li>3. Clique em "Esqueci minha senha"</li>
+                  <li>4. Defina uma nova senha pelo email</li>
+                  <li>5. Faça login normalmente</li>
                 </ol>
               </div>
               <Button 
@@ -633,8 +668,8 @@ const AdminPromotersV2 = () => {
               <Label htmlFor="edit_name">Nome Completo *</Label>
               <Input
                 id="edit_name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                 placeholder="Nome do promoter"
                 required
               />
@@ -644,8 +679,8 @@ const AdminPromotersV2 = () => {
               <Input
                 id="edit_email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={editFormData.email}
+                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                 placeholder="email@exemplo.com"
                 required
               />
@@ -654,8 +689,8 @@ const AdminPromotersV2 = () => {
               <Label htmlFor="edit_phone">Telefone</Label>
               <Input
                 id="edit_phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                value={editFormData.phone}
+                onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                 placeholder="(11) 99999-9999"
               />
             </div>
@@ -664,8 +699,8 @@ const AdminPromotersV2 = () => {
                 <Label htmlFor="edit_city">Cidade</Label>
                 <Input
                   id="edit_city"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  value={editFormData.city}
+                  onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
                   placeholder="Cidade"
                 />
               </div>
@@ -673,12 +708,24 @@ const AdminPromotersV2 = () => {
                 <Label htmlFor="edit_state">Estado</Label>
                 <Input
                   id="edit_state"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  value={editFormData.state}
+                  onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
                   placeholder="UF"
                   maxLength={2}
                 />
               </div>
+            </div>
+            <div>
+              <Label htmlFor="edit_asaas_wallet_id">Wallet ID Asaas</Label>
+              <Input
+                id="edit_asaas_wallet_id"
+                value={editFormData.asaas_wallet_id}
+                onChange={(e) => setEditFormData({ ...editFormData, asaas_wallet_id: e.target.value })}
+                placeholder="ID da carteira Asaas para split de pagamentos"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Para receber 25% de comissão nos pagamentos via split
+              </p>
             </div>
             <div className="flex gap-2 pt-4">
               <Button 
@@ -687,13 +734,13 @@ const AdminPromotersV2 = () => {
                 onClick={() => {
                   setShowEditDialog(false)
                   setEditingPromoter(null)
-                  setFormData({
+                  setEditFormData({
                     name: '',
                     email: '',
-                    password: '',
                     phone: '',
                     city: '',
-                    state: ''
+                    state: '',
+                    asaas_wallet_id: ''
                   })
                 }}
                 className="flex-1"
@@ -802,6 +849,7 @@ const AdminPromotersV2 = () => {
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Contato</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Localização</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Wallet Asaas</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Eventos</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ações</th>
                   </tr>
@@ -841,6 +889,17 @@ const AdminPromotersV2 = () => {
                         {getStatusBadge(promoter.status)}
                       </td>
                       <td className="py-3 px-4">
+                        {promoter.asaas_wallet_id ? (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                            Configurada
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                            Não configurada
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
                         <Badge variant="outline">
                           {promoter.events_count || 0} evento(s)
                         </Badge>
@@ -855,13 +914,13 @@ const AdminPromotersV2 = () => {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => {
                               setEditingPromoter(promoter)
-                              setFormData({
+                              setEditFormData({
                                 name: promoter.name,
                                 email: promoter.email,
-                                password: '',
                                 phone: promoter.phone || '',
                                 city: promoter.city || '',
-                                state: promoter.state || ''
+                                state: promoter.state || '',
+                                asaas_wallet_id: promoter.asaas_wallet_id || ''
                               })
                               setShowEditDialog(true)
                             }}>
