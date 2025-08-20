@@ -181,7 +181,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Enxergar sem Fronteiras <noreply@enxergarsemfronteiras.org>',
+        from: 'Enxergar sem Fronteiras <noreply@enxergarsemfronteira.com.br>',
         to: [to],
         subject,
         html: htmlContent,

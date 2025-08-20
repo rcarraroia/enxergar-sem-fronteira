@@ -42,10 +42,30 @@ async function sendEmail({
     throw new Error('RESEND_API_KEY not configured')
   }
 
+  // Get verified domain from environment or use verified domain
+  const RESEND_FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'noreply@enxergarsemfronteira.com.br'
+  const RESEND_FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || 'Enxergar sem Fronteiras'
+
   console.log('📧 Sending email via Resend:', {
-    to,
+    to: to.substring(0, 5) + '***', // Mask email for security
     subject,
-    contentLength: html.length
+    contentLength: html.length,
+    from: RESEND_FROM_EMAIL
+  })
+  
+  const emailPayload = {
+    from: `${RESEND_FROM_NAME} <${RESEND_FROM_EMAIL}>`,
+    to: [to],
+    subject,
+    html,
+    text
+  }
+  
+  console.log('📤 Email payload prepared:', {
+    from: emailPayload.from,
+    to: emailPayload.to.length + ' recipients',
+    hasHtml: !!emailPayload.html,
+    hasText: !!emailPayload.text
   })
   
   const res = await fetch('https://api.resend.com/emails', {
@@ -54,21 +74,35 @@ async function sendEmail({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${RESEND_API_KEY}`,
     },
-    body: JSON.stringify({
-      from: 'Enxergar sem Fronteiras <noreply@enxergarsemfronteiras.org>',
-      to: [to],
-      subject,
-      html,
-      text
-    }),
+    body: JSON.stringify(emailPayload),
   })
 
+  console.log('📨 Resend response status:', res.status)
+
   if (!res.ok) {
-    const error = await res.text()
-    throw new Error(`Failed to send email: ${error}`)
+    const errorText = await res.text()
+    console.error('❌ Resend API error:', {
+      status: res.status,
+      statusText: res.statusText,
+      response: errorText
+    })
+    
+    // Log specific error for domain verification
+    if (res.status === 403 && errorText.includes('domain is not verified')) {
+      console.error('❌ Error sending via Resend: Domain verification required')
+      console.error('🔧 Action needed: Verify domain at https://resend.com/domains')
+      console.error('🔧 Current from email:', RESEND_FROM_EMAIL)
+    }
+    
+    throw new Error(`Resend API error: ${res.status} - ${errorText}`)
   }
 
   const result = await res.json()
+  console.log('✅ Email sent via Resend:', {
+    messageId: result.id,
+    from: emailPayload.from
+  })
+  
   return { success: true, messageId: result.id }
 }
 
