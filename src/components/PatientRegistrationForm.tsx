@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -58,11 +59,19 @@ const formSchema = z.object({
   comments: z.string().optional(),
 });
 
-const PatientRegistrationForm = () => {
+interface PatientRegistrationFormProps {
+  eventDateId?: string;
+  onSuccess?: (patientName: string) => void;
+}
+
+const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ 
+  eventDateId, 
+  onSuccess 
+}) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const eventId = searchParams.get('eventId');
-  const eventDateId = searchParams.get('eventDateId');
+  const dateId = eventDateId || searchParams.get('eventDateId');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,48 +90,69 @@ const PatientRegistrationForm = () => {
     },
   });
 
-  useEffect(() => {
-    // REMOVIDO: Qualquer lógica de redirecionamento automático baseado em eventos
-    // O formulário deve funcionar independentemente de eventos específicos
-    
-    if (eventId && eventDateId) {
-      console.log('📋 Formulário carregado para evento específico:', { eventId, eventDateId })
-      // Apenas registrar nos logs, sem redirecionamento
-    } else {
-      console.log('📋 Formulário carregado em modo geral')
-    }
-  }, [eventId, eventDateId]);
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log('🚀 Dados do formulário:', values);
 
     try {
-      // Simular envio para o Supabase (substitua com sua lógica real)
-      const { data, error } = await supabase
-        .from('registrations')
+      // Primeiro, criar o paciente
+      const { data: patientData, error: patientError } = await supabase
+        .from('patients')
         .insert([
           {
-            ...values,
-            event_id: eventId,
-            event_date_id: eventDateId,
-            status: 'pending', // ou 'confirmed', dependendo do seu fluxo
+            nome: values.name,
+            email: values.email,
+            telefone: values.phone,
+            cpf: '000.000.000-00', // Placeholder - você pode adicionar campo CPF ao form
+            data_nascimento: values.birthdate.toISOString().split('T')[0],
+            diagnostico: values.comments || '',
+            consentimento_lgpd: values.terms,
           },
-        ]);
+        ])
+        .select()
+        .single();
 
-      if (error) {
-        console.error('❌ Erro ao registrar paciente:', error);
-        toast.error('Erro ao registrar paciente: ' + error.message);
+      if (patientError) {
+        console.error('❌ Erro ao criar paciente:', patientError);
+        toast.error('Erro ao criar paciente: ' + patientError.message);
         return;
       }
 
-      console.log('✅ Paciente registrado com sucesso!', data);
-      toast.success('Paciente registrado com sucesso!');
+      console.log('✅ Paciente criado com sucesso!', patientData);
 
-      // Redirecionar para uma página de sucesso ou dashboard
-      navigate('/success');
+      // Se temos um event_date_id, criar a inscrição
+      if (dateId) {
+        const { data: registrationData, error: registrationError } = await supabase
+          .from('registrations')
+          .insert([
+            {
+              patient_id: patientData.id,
+              event_date_id: dateId,
+              status: 'confirmed',
+            },
+          ])
+          .select();
+
+        if (registrationError) {
+          console.error('❌ Erro ao criar inscrição:', registrationError);
+          toast.error('Erro ao criar inscrição: ' + registrationError.message);
+          return;
+        }
+
+        console.log('✅ Inscrição criada com sucesso!', registrationData);
+      }
+
+      toast.success('Cadastro realizado com sucesso!');
+
+      // Chamar callback se fornecido
+      if (onSuccess) {
+        onSuccess(values.name);
+      } else {
+        // Redirecionar para página de sucesso
+        navigate('/');
+      }
     } catch (error) {
-      console.error('❌ Erro ao registrar paciente:', error);
-      toast.error('Erro ao registrar paciente: ' + (error as Error).message);
+      console.error('❌ Erro ao processar cadastro:', error);
+      toast.error('Erro ao processar cadastro: ' + (error as Error).message);
     }
   };
 

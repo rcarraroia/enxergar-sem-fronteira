@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
-import { PatientRegistrationForm } from '@/components/PatientRegistrationForm'
+import PatientRegistrationForm from '@/components/PatientRegistrationForm'
 import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
 import Header from '@/components/Header'
 import { Footer } from '@/components/Footer'
