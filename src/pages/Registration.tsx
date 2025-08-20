@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
@@ -50,7 +49,7 @@ const Registration = () => {
             <p className="text-muted-foreground mb-4">
               O evento que você está procurando não existe ou não está mais disponível.
             </p>
-            <Button onClick={() => navigate('/events')}>
+            <Button onClick={() => navigate('/eventos')}>
               Ver Eventos Disponíveis
             </Button>
           </div>
@@ -71,7 +70,7 @@ const Registration = () => {
             <p className="text-muted-foreground mb-4">
               Infelizmente, não há mais vagas disponíveis para esta data do evento.
             </p>
-            <Button onClick={() => navigate('/events')}>
+            <Button onClick={() => navigate('/eventos')}>
               Ver Outras Datas Disponíveis
             </Button>
           </div>
