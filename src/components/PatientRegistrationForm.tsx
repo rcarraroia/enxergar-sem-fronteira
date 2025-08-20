@@ -1,262 +1,332 @@
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
-import { supabase } from '@/integrations/supabase/client'
-import { cpfMask, validateCPF } from '@/utils/cpfUtils'
-import { formatPhoneNumber } from '@/utils/validationUtils'
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-interface PatientRegistrationFormProps {
-  eventDateId: string
-  onSuccess: (patientName: string) => void
-}
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: 'Nome deve ter pelo menos 2 caracteres.',
+  }),
+  email: z.string().email({
+    message: 'Email inválido.',
+  }),
+  phone: z.string().min(10, {
+    message: 'Telefone deve ter pelo menos 10 dígitos.',
+  }),
+  birthdate: z.date({
+    required_error: 'Data de nascimento é obrigatória.',
+  }),
+  gender: z.enum(['male', 'female', 'other'], {
+    required_error: 'Gênero é obrigatório.',
+  }),
+  address: z.string().min(5, {
+    message: 'Endereço deve ter pelo menos 5 caracteres.',
+  }),
+  city: z.string().min(2, {
+    message: 'Cidade deve ter pelo menos 2 caracteres.',
+  }),
+  state: z.string().min(2, {
+    message: 'Estado deve ter pelo menos 2 caracteres.',
+  }),
+  zip: z.string().min(8, {
+    message: 'CEP deve ter pelo menos 8 caracteres.',
+  }),
+  terms: z.boolean().refine((value) => value === true, {
+    message: 'Você deve aceitar os termos e condições.',
+  }),
+  comments: z.string().optional(),
+});
 
-interface EventInfo {
-  title: string
-  date: string
-  start_time: string
-  location: string
-  address: string
-  available_slots: number
-}
+const PatientRegistrationForm = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const eventId = searchParams.get('eventId');
+  const eventDateId = searchParams.get('eventDateId');
 
-export const PatientRegistrationForm = ({ eventDateId, onSuccess }: PatientRegistrationFormProps) => {
-  const [loading, setLoading] = useState(false)
-  const [eventInfo, setEventInfo] = useState<EventInfo | null>(null)
-  const [formData, setFormData] = useState({
-    nome: '',
-    cpf: '',
-    email: '',
-    telefone: '',
-    data_nascimento: '',
-    diagnostico: ''
-  })
-
-  const fetchEventInfo = async () => {
-    const { data, error } = await supabase
-      .from('event_dates')
-      .select(`
-        date,
-        start_time,
-        available_slots,
-        events (
-          title,
-          location,
-          address
-        )
-      `)
-      .eq('id', eventDateId)
-      .single()
-
-    if (error) {
-      console.error('Erro ao buscar informações do evento:', error)
-      toast.error('Erro ao carregar informações do evento')
-      return
-    }
-
-    if (data?.events) {
-      setEventInfo({
-        title: data.events.title,
-        date: data.date,
-        start_time: data.start_time,
-        location: data.events.location,
-        address: data.events.address,
-        available_slots: data.available_slots
-      })
-    }
-  }
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      birthdate: new Date(),
+      gender: 'other',
+      address: '',
+      city: '',
+      state: '',
+      zip: '',
+      terms: false,
+      comments: '',
+    },
+  });
 
   useEffect(() => {
-    fetchEventInfo()
-  }, [eventDateId])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    // REMOVIDO: Qualquer lógica de redirecionamento automático baseado em eventos
+    // O formulário deve funcionar independentemente de eventos específicos
     
-    if (!validateCPF(formData.cpf)) {
-      toast.error('CPF inválido')
-      return
+    if (eventId && eventDateId) {
+      console.log('📋 Formulário carregado para evento específico:', { eventId, eventDateId })
+      // Apenas registrar nos logs, sem redirecionamento
+    } else {
+      console.log('📋 Formulário carregado em modo geral')
     }
+  }, [eventId, eventDateId]);
 
-    if (eventInfo && eventInfo.available_slots <= 0) {
-      toast.error('Não há mais vagas disponíveis para este evento')
-      return
-    }
-
-    setLoading(true)
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log('🚀 Dados do formulário:', values);
 
     try {
-      // Criar ou buscar paciente
-      const { data: existingPatient } = await supabase
-        .from('patients')
-        .select('id')
-        .eq('cpf', formData.cpf.replace(/\D/g, ''))
-        .single()
-
-      let patientId: string
-
-      if (existingPatient) {
-        patientId = existingPatient.id
-      } else {
-        const { data: newPatient, error: patientError } = await supabase
-          .from('patients')
-          .insert([{
-            nome: formData.nome,
-            cpf: formData.cpf.replace(/\D/g, ''),
-            email: formData.email,
-            telefone: formData.telefone.replace(/\D/g, ''),
-            data_nascimento: formData.data_nascimento || null,
-            diagnostico: formData.diagnostico || null,
-            consentimento_lgpd: true
-          }])
-          .select('id')
-          .single()
-
-        if (patientError) {
-          throw patientError
-        }
-
-        patientId = newPatient.id
-      }
-
-      // Verificar se já existe inscrição
-      const { data: existingRegistration } = await supabase
+      // Simular envio para o Supabase (substitua com sua lógica real)
+      const { data, error } = await supabase
         .from('registrations')
-        .select('id')
-        .eq('patient_id', patientId)
-        .eq('event_date_id', eventDateId)
-        .single()
+        .insert([
+          {
+            ...values,
+            event_id: eventId,
+            event_date_id: eventDateId,
+            status: 'pending', // ou 'confirmed', dependendo do seu fluxo
+          },
+        ]);
 
-      if (existingRegistration) {
-        toast.error('Você já está inscrito neste evento')
-        return
+      if (error) {
+        console.error('❌ Erro ao registrar paciente:', error);
+        toast.error('Erro ao registrar paciente: ' + error.message);
+        return;
       }
 
-      // Criar inscrição
-      const { error: registrationError } = await supabase
-        .from('registrations')
-        .insert([{
-          patient_id: patientId,
-          event_date_id: eventDateId,
-          status: 'confirmed'
-        }])
+      console.log('✅ Paciente registrado com sucesso!', data);
+      toast.success('Paciente registrado com sucesso!');
 
-      if (registrationError) {
-        throw registrationError
-      }
-
-      toast.success('Inscrição realizada com sucesso!')
-      onSuccess(formData.nome)
-
-    } catch (error: any) {
-      console.error('Erro ao realizar inscrição:', error)
-      
-      if (error.message?.includes('CPF')) {
-        toast.error('Já existe um cadastro com este CPF')
-      } else if (error.message?.includes('email')) {
-        toast.error('Já existe um cadastro com este email')
-      } else {
-        toast.error('Erro ao realizar inscrição. Tente novamente.')
-      }
-    } finally {
-      setLoading(false)
+      // Redirecionar para uma página de sucesso ou dashboard
+      navigate('/success');
+    } catch (error) {
+      console.error('❌ Erro ao registrar paciente:', error);
+      toast.error('Erro ao registrar paciente: ' + (error as Error).message);
     }
-  }
-
-  if (!eventInfo) {
-    return <div>Carregando informações do evento...</div>
-  }
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Inscrição para o Evento</CardTitle>
-        <div className="text-sm text-gray-600">
-          <p><strong>{eventInfo.title}</strong></p>
-          <p>📅 {new Date(eventInfo.date).toLocaleDateString('pt-BR')}</p>
-          <p>⏰ {eventInfo.start_time}</p>
-          <p>📍 {eventInfo.location}</p>
-          <p>🏠 {eventInfo.address}</p>
-          <p>🎫 Vagas disponíveis: {eventInfo.available_slots}</p>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="nome">Nome Completo *</Label>
-            <Input
-              id="nome"
-              value={formData.nome}
-              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-              required
+    <div className="container max-w-2xl mx-auto py-12">
+      <h1 className="text-3xl font-semibold mb-6">Registro de Paciente</h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome Completo</FormLabel>
+                <FormControl>
+                  <Input placeholder="Digite seu nome completo" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="seuemail@exemplo.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone</FormLabel>
+                <FormControl>
+                  <Input placeholder="(99) 99999-9999" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="birthdate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Data de Nascimento</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[240px] pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Selecione a data</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gênero</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o gênero" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="male">Masculino</SelectItem>
+                    <SelectItem value="female">Feminino</SelectItem>
+                    <SelectItem value="other">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço</FormLabel>
+                <FormControl>
+                  <Input placeholder="Rua, número, complemento" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex space-x-4">
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem className="w-1/2">
+                  <FormLabel>Cidade</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Cidade" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem className="w-1/4">
+                  <FormLabel>Estado</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Estado" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="zip"
+              render={({ field }) => (
+                <FormItem className="w-1/4">
+                  <FormLabel>CEP</FormLabel>
+                  <FormControl>
+                    <Input placeholder="CEP" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-
-          <div>
-            <Label htmlFor="cpf">CPF *</Label>
-            <Input
-              id="cpf"
-              value={formData.cpf}
-              onChange={(e) => setFormData({ ...formData, cpf: cpfMask(e.target.value) })}
-              placeholder="000.000.000-00"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="telefone">Telefone *</Label>
-            <Input
-              id="telefone"
-              value={formData.telefone}
-              onChange={(e) => setFormData({ ...formData, telefone: formatPhoneNumber(e.target.value) })}
-              placeholder="(11) 99999-9999"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="data_nascimento">Data de Nascimento</Label>
-            <Input
-              id="data_nascimento"
-              type="date"
-              value={formData.data_nascimento}
-              onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="diagnostico">Diagnóstico ou Observações</Label>
-            <Textarea
-              id="diagnostico"
-              value={formData.diagnostico}
-              onChange={(e) => setFormData({ ...formData, diagnostico: e.target.value })}
-              placeholder="Descreva sua condição ou observações relevantes"
-            />
-          </div>
-
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={loading || eventInfo.available_slots <= 0}
-          >
-            {loading ? 'Processando...' : 'Realizar Inscrição'}
-          </Button>
+          <FormField
+            control={form.control}
+            name="terms"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="text-sm font-normal pl-0">
+                  Eu concordo com os <a href="#" className="text-primary underline underline-offset-2">Termos e Condições</a>
+                </FormLabel>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="comments"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Comentários Adicionais</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Alguma informação adicional?"
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Enviar Registro</Button>
         </form>
-      </CardContent>
-    </Card>
-  )
-}
+      </Form>
+    </div>
+  );
+};
+
+export default PatientRegistrationForm;
