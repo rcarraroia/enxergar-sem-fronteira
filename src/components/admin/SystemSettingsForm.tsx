@@ -3,283 +3,322 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Settings, Image, Share2, Save, Key, ExternalLink } from 'lucide-react'
 import { useSystemSettings } from '@/hooks/useSystemSettings'
-import { ImageUpload } from './ImageUpload'
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
+import { Settings, Save, Loader2 } from 'lucide-react'
 
-interface SystemSettingsFormProps {
-  section: 'general' | 'logos' | 'social' | 'apikeys'
-}
-
-export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
-  const { getSettingValue, getSettingJSON, updateSetting, isLoading, isUpdating } = useSystemSettings()
+export const SystemSettingsForm = () => {
+  const { settings, isLoading, updateSetting, isUpdating, getSettingValue, getSettingJSON } = useSystemSettings()
+  
   const [formData, setFormData] = useState({
-    project_name: '',
-    project_description: '',
-    logo_header: '',
-    logo_footer: '',
-    social_links: { facebook: '', instagram: '', linkedin: '' },
-    asaas_ong_coracao_valente: '',
-    asaas_projeto_visao_itinerante: '',
-    asaas_renum_tecnologia: ''
+    // Organização
+    organization_name: '',
+    organization_description: '',
+    organization_phone: '',
+    organization_email: '',
+    organization_address: '',
+    
+    // Redes Sociais
+    social_media_links: {
+      facebook: '',
+      instagram: '',
+      linkedin: ''
+    },
+    
+    // Email
+    email_sender_name: '',
+    email_sender_email: '',
+    email_reply_to: '',
+    
+    // Notificações
+    sms_enabled: 'true',
+    email_enabled: 'true',
+    whatsapp_enabled: 'false',
+    
+    // Sistema
+    max_registrations_per_event: '100',
+    registration_deadline_hours: '24',
+    reminder_hours_before: '24'
   })
 
   useEffect(() => {
-    if (!isLoading) {
+    if (settings && settings.length > 0) {
+      const socialLinks = getSettingJSON('social_media_links', { facebook: '', instagram: '', linkedin: '' }) as { facebook: string; instagram: string; linkedin: string }
+      
       setFormData({
-        project_name: getSettingValue('project_name', 'Enxergar sem Fronteiras'),
-        project_description: getSettingValue('project_description', 'Sistema de gestão de eventos de saúde ocular'),
-        logo_header: getSettingValue('logo_header', ''),
-        logo_footer: getSettingValue('logo_footer', ''),
-        social_links: getSettingJSON('social_links', { facebook: '', instagram: '', linkedin: '' }),
-        asaas_ong_coracao_valente: getSettingValue('asaas_ong_coracao_valente', ''),
-        asaas_projeto_visao_itinerante: getSettingValue('asaas_projeto_visao_itinerante', ''),
-        asaas_renum_tecnologia: getSettingValue('asaas_renum_tecnologia', '')
+        organization_name: getSettingValue('organization_name', ''),
+        organization_description: getSettingValue('organization_description', ''),
+        organization_phone: getSettingValue('organization_phone', ''),
+        organization_email: getSettingValue('organization_email', ''),
+        organization_address: getSettingValue('organization_address', ''),
+        social_media_links: {
+          facebook: socialLinks.facebook || '',
+          instagram: socialLinks.instagram || '',
+          linkedin: socialLinks.linkedin || ''
+        },
+        email_sender_name: getSettingValue('email_sender_name', ''),
+        email_sender_email: getSettingValue('email_sender_email', ''),
+        email_reply_to: getSettingValue('email_reply_to', ''),
+        sms_enabled: getSettingValue('sms_enabled', 'true'),
+        email_enabled: getSettingValue('email_enabled', 'true'),
+        whatsapp_enabled: getSettingValue('whatsapp_enabled', 'false'),
+        max_registrations_per_event: getSettingValue('max_registrations_per_event', '100'),
+        registration_deadline_hours: getSettingValue('registration_deadline_hours', '24'),
+        reminder_hours_before: getSettingValue('reminder_hours_before', '24')
       })
     }
-  }, [isLoading, getSettingValue, getSettingJSON])
+  }, [settings, getSettingValue, getSettingJSON])
 
-  const handleSave = async () => {
-    try {
-      switch (section) {
-        case 'general':
-          await updateSetting('project_name', formData.project_name)
-          await updateSetting('project_description', formData.project_description)
-          break
-        case 'logos':
-          await updateSetting('logo_header', formData.logo_header)
-          await updateSetting('logo_footer', formData.logo_footer)
-          break
-        case 'social':
-          await updateSetting('social_links', JSON.stringify(formData.social_links))
-          break
-        case 'apikeys':
-          await updateSetting('asaas_ong_coracao_valente', formData.asaas_ong_coracao_valente)
-          await updateSetting('asaas_projeto_visao_itinerante', formData.asaas_projeto_visao_itinerante)
-          await updateSetting('asaas_renum_tecnologia', formData.asaas_renum_tecnologia)
-          break
-      }
-    } catch (error) {
-      console.error('Erro ao salvar configurações:', error)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Atualizar configurações individualmente
+    const updates = [
+      { key: 'organization_name', value: formData.organization_name },
+      { key: 'organization_description', value: formData.organization_description },
+      { key: 'organization_phone', value: formData.organization_phone },
+      { key: 'organization_email', value: formData.organization_email },
+      { key: 'organization_address', value: formData.organization_address },
+      { key: 'social_media_links', value: JSON.stringify(formData.social_media_links) },
+      { key: 'email_sender_name', value: formData.email_sender_name },
+      { key: 'email_sender_email', value: formData.email_sender_email },
+      { key: 'email_reply_to', value: formData.email_reply_to },
+      { key: 'sms_enabled', value: formData.sms_enabled },
+      { key: 'email_enabled', value: formData.email_enabled },
+      { key: 'whatsapp_enabled', value: formData.whatsapp_enabled },
+      { key: 'max_registrations_per_event', value: formData.max_registrations_per_event },
+      { key: 'registration_deadline_hours', value: formData.registration_deadline_hours },
+      { key: 'reminder_hours_before', value: formData.reminder_hours_before }
+    ]
+
+    for (const update of updates) {
+      updateSetting(update.key, update.value)
     }
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  if (section === 'general') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Informações Gerais</CardTitle>
-          <CardDescription>
-            Configure as informações básicas do projeto
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="project_name">Nome do Projeto</Label>
-            <Input
-              id="project_name"
-              value={formData.project_name}
-              onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
-              placeholder="Nome do projeto"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="project_description">Descrição do Projeto</Label>
-            <Input
-              id="project_description"
-              value={formData.project_description}
-              onChange={(e) => setFormData({ ...formData, project_description: e.target.value })}
-              placeholder="Descrição do projeto"
-            />
-          </div>
-
-          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
-            <Save className="h-4 w-4 mr-2" />
-            {isUpdating ? 'Salvando...' : 'Salvar Configurações Gerais'}
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (section === 'logos') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5" />
-            Configuração de Logos
-          </CardTitle>
-          <CardDescription>
-            Configure as logos que aparecerão no cabeçalho e rodapé do site
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <ImageUpload
-            label="Logo do Cabeçalho (Colorida)"
-            value={formData.logo_header}
-            onChange={(url) => setFormData({ ...formData, logo_header: url })}
-            placeholder="URL da logo colorida (recomendado: 200x50px)"
-            description="Tamanho recomendado: 200x50px para melhor qualidade no cabeçalho"
-            previewBg="bg-white"
-          />
-
-          <Separator />
-
-          <ImageUpload
-            label="Logo do Rodapé (Branca)"
-            value={formData.logo_footer}
-            onChange={(url) => setFormData({ ...formData, logo_footer: url })}
-            placeholder="URL da logo branca (recomendado: 150x40px)"
-            description="Tamanho recomendado: 150x40px para melhor qualidade no rodapé"
-            previewBg="bg-slate-800"
-          />
-
-          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
-            <Save className="h-4 w-4 mr-2" />
-            {isUpdating ? 'Salvando...' : 'Salvar Configurações de Logo'}
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (section === 'apikeys') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
-            Configuração das API Keys Asaas
-          </CardTitle>
-          <CardDescription>
-            Configure as chaves API das 3 entidades fixas que recebem 25% cada no split automático
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="asaas_ong_coracao_valente">API Key - ONG Coração Valente (25%)</Label>
-            <Input
-              id="asaas_ong_coracao_valente"
-              type="password"
-              value={formData.asaas_ong_coracao_valente}
-              onChange={(e) => setFormData({ ...formData, asaas_ong_coracao_valente: e.target.value })}
-              placeholder="Chave API do Asaas da ONG Coração Valente"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="asaas_projeto_visao">API Key - Projeto Visão Itinerante (25%)</Label>
-            <Input
-              id="asaas_projeto_visao"
-              type="password"
-              value={formData.asaas_projeto_visao_itinerante}
-              onChange={(e) => setFormData({ ...formData, asaas_projeto_visao_itinerante: e.target.value })}
-              placeholder="Chave API do Asaas do Projeto Visão Itinerante"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="asaas_renum">API Key - Renum Tecnologia (25%)</Label>
-            <Input
-              id="asaas_renum"
-              type="password"
-              value={formData.asaas_renum_tecnologia}
-              onChange={(e) => setFormData({ ...formData, asaas_renum_tecnologia: e.target.value })}
-              placeholder="Chave API do Asaas da Renum Tecnologia"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg">
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.open('https://www.asaas.com/r/51a27e42-08b8-495b-acfd-5f1369c2e104', '_blank')}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Criar conta no Asaas
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              Caso alguma entidade ainda não tenha conta no Asaas
-            </p>
-          </div>
-          
-          <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
-            <Save className="h-4 w-4 mr-2" />
-            {isUpdating ? 'Salvando...' : 'Salvar Configurações das API Keys'}
-          </Button>
-        </CardContent>
-      </Card>
-    )
+    return <LoadingSkeleton variant="card" />
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="h-5 w-5" />
-          Redes Sociais
+          <Settings className="h-5 w-5" />
+          Configurações do Sistema
         </CardTitle>
         <CardDescription>
-          Configure os links das redes sociais que aparecerão no rodapé
+          Configure as informações gerais da organização e parâmetros do sistema
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="facebook">Facebook</Label>
-          <Input
-            id="facebook"
-            value={formData.social_links.facebook}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              social_links: { ...formData.social_links, facebook: e.target.value }
-            })}
-            placeholder="https://facebook.com/sua-pagina"
-          />
-        </div>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informações da Organização */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Informações da Organização</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="organization_name">Nome da Organização</Label>
+                <Input
+                  id="organization_name"
+                  value={formData.organization_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, organization_name: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
 
-        <div>
-          <Label htmlFor="instagram">Instagram</Label>
-          <Input
-            id="instagram"
-            value={formData.social_links.instagram}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              social_links: { ...formData.social_links, instagram: e.target.value }
-            })}
-            placeholder="https://instagram.com/seu-perfil"
-          />
-        </div>
+              <div>
+                <Label htmlFor="organization_email">Email da Organização</Label>
+                <Input
+                  id="organization_email"
+                  type="email"
+                  value={formData.organization_email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, organization_email: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
 
-        <div>
-          <Label htmlFor="linkedin">LinkedIn</Label>
-          <Input
-            id="linkedin"
-            value={formData.social_links.linkedin}
-            onChange={(e) => setFormData({ 
-              ...formData, 
-              social_links: { ...formData.social_links, linkedin: e.target.value }
-            })}
-            placeholder="https://linkedin.com/company/sua-empresa"
-          />
-        </div>
+            <div>
+              <Label htmlFor="organization_description">Descrição</Label>
+              <Textarea
+                id="organization_description"
+                value={formData.organization_description}
+                onChange={(e) => setFormData(prev => ({ ...prev, organization_description: e.target.value }))}
+                disabled={isUpdating}
+                rows={3}
+              />
+            </div>
 
-        <Button onClick={handleSave} className="w-full" disabled={isUpdating}>
-          <Save className="h-4 w-4 mr-2" />
-          {isUpdating ? 'Salvando...' : 'Salvar Links das Redes Sociais'}
-        </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="organization_phone">Telefone</Label>
+                <Input
+                  id="organization_phone"
+                  value={formData.organization_phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, organization_phone: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="organization_address">Endereço</Label>
+                <Input
+                  id="organization_address"
+                  value={formData.organization_address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, organization_address: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Redes Sociais */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Redes Sociais</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="facebook">Facebook</Label>
+                <Input
+                  id="facebook"
+                  value={formData.social_media_links.facebook}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    social_media_links: { ...prev.social_media_links, facebook: e.target.value }
+                  }))}
+                  placeholder="https://facebook.com/..."
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input
+                  id="instagram"
+                  value={formData.social_media_links.instagram}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    social_media_links: { ...prev.social_media_links, instagram: e.target.value }
+                  }))}
+                  placeholder="https://instagram.com/..."
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="linkedin">LinkedIn</Label>
+                <Input
+                  id="linkedin"
+                  value={formData.social_media_links.linkedin}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    social_media_links: { ...prev.social_media_links, linkedin: e.target.value }
+                  }))}
+                  placeholder="https://linkedin.com/..."
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Configurações de Email */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Configurações de Email</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="email_sender_name">Nome do Remetente</Label>
+                <Input
+                  id="email_sender_name"
+                  value={formData.email_sender_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email_sender_name: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email_sender_email">Email do Remetente</Label>
+                <Input
+                  id="email_sender_email"
+                  type="email"
+                  value={formData.email_sender_email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email_sender_email: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="email_reply_to">Email de Resposta</Label>
+              <Input
+                id="email_reply_to"
+                type="email"
+                value={formData.email_reply_to}
+                onChange={(e) => setFormData(prev => ({ ...prev, email_reply_to: e.target.value }))}
+                disabled={isUpdating}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Configurações do Sistema */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Configurações do Sistema</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="max_registrations_per_event">Máximo de Inscrições por Evento</Label>
+                <Input
+                  id="max_registrations_per_event"
+                  type="number"
+                  value={formData.max_registrations_per_event}
+                  onChange={(e) => setFormData(prev => ({ ...prev, max_registrations_per_event: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="registration_deadline_hours">Prazo para Inscrição (horas)</Label>
+                <Input
+                  id="registration_deadline_hours"
+                  type="number"
+                  value={formData.registration_deadline_hours}
+                  onChange={(e) => setFormData(prev => ({ ...prev, registration_deadline_hours: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="reminder_hours_before">Lembrete (horas antes)</Label>
+                <Input
+                  id="reminder_hours_before"
+                  type="number"
+                  value={formData.reminder_hours_before}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reminder_hours_before: e.target.value }))}
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isUpdating}>
+              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Save className="mr-2 h-4 w-4" />
+              {isUpdating ? 'Salvando...' : 'Salvar Configurações'}
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   )
