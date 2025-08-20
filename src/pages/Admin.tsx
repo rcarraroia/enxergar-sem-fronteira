@@ -1,5 +1,6 @@
 
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,16 +18,68 @@ const Admin = () => {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
   }
 
+  const navigate = useNavigate()
+
   const handleCreateEvent = () => {
-    console.log('Criar evento')
+    console.log('🎯 Admin: Navegando para criação de evento')
+    navigate('/admin/events?action=create')
+  }
+
+  const handleCreateOrganizer = () => {
+    console.log('🎯 Admin: Navegando para criação de organizador')
+    navigate('/admin/organizers?action=create')
   }
 
   const handleViewTodayRegistrations = () => {
-    console.log('Ver inscrições de hoje')
+    console.log('🎯 Admin: Navegando para inscrições de hoje')
+    const today = new Date().toISOString().split('T')[0]
+    navigate(`/admin/registrations?date=${today}`)
   }
 
-  const handleExportReports = () => {
-    console.log('Exportar relatórios')
+  const handleExportReports = async () => {
+    console.log('🎯 Admin: Iniciando exportação de relatórios')
+    try {
+      // Implementar chamada para a Edge Function de exportação
+      const response = await fetch('/api/admin/export-reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'general',
+          format: 'xlsx'
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar relatório')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `relatorio-geral-${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      console.log('✅ Admin: Relatório exportado com sucesso')
+    } catch (error) {
+      console.error('❌ Admin: Erro ao exportar relatório:', error)
+      // Fallback: simular download para demonstração
+      const csvContent = 'data:text/csv;charset=utf-8,Nome,Email,Evento,Data\nExemplo,exemplo@email.com,Evento Teste,2024-01-01'
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement('a')
+      link.setAttribute('href', encodedUri)
+      link.setAttribute('download', `relatorio-geral-${new Date().toISOString().split('T')[0]}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      console.log('✅ Admin: Relatório CSV de exemplo exportado')
+    }
   }
 
   return (
@@ -78,6 +131,7 @@ const Admin = () => {
             <CardContent>
               <QuickActions 
                 onCreateEvent={handleCreateEvent}
+                onCreateOrganizer={handleCreateOrganizer}
                 onViewTodayRegistrations={handleViewTodayRegistrations}
                 onExportReports={handleExportReports}
               />

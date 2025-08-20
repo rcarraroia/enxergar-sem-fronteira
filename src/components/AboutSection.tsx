@@ -42,20 +42,7 @@ const AboutSection = () => {
   return (
     <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {features.map((feature, index) => (
-            <Card key={index} className={`p-6 text-center medical-card animate-slide-up stagger-${index + 1}`}>
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <feature.icon className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
-        </div>
-
-        {/* Mission Section */}
+        {/* Mission Section - Moved to top */}
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl font-bold text-foreground mb-6">{mission.title}</h2>
           <p className="text-subtitle text-muted-foreground max-w-4xl mx-auto mb-8">
@@ -96,6 +83,19 @@ const AboutSection = () => {
             <h3 className="text-2xl font-bold text-foreground mb-4">{mission.vision}</h3>
             <p className="text-muted-foreground">{mission.visionText}</p>
           </Card>
+        </div>
+
+        {/* Features Grid - Moved to bottom */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <Card key={index} className={`p-6 text-center medical-card animate-slide-up stagger-${index + 1}`}>
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <feature.icon className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground">{feature.description}</p>
+            </Card>
+          ))}
         </div>
       </div>
     </section>

@@ -6,10 +6,12 @@ import { Calendar, MapPin, Clock, Users, Eye, ArrowRight, RefreshCw } from 'luci
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
 import { formatTime, formatDate } from '@/utils/dateUtils';
+import { useState } from 'react';
 
 const EventsSection = () => {
   const { data: events, isLoading, refetch, isFetching } = useEvents();
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const getStatusInfo = (totalAvailable: number, totalSlots: number) => {
     if (totalAvailable === 0) {
@@ -36,12 +38,31 @@ const EventsSection = () => {
     };
   };
 
-  const handleEventClick = () => {
-    console.log('🎯 Redirecionando para seleção de eventos');
+  const handleEventClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isNavigating) {
+      console.log('⚠️ EventsSection: Navegação já em andamento, ignorando clique');
+      return;
+    }
+    
+    setIsNavigating(true);
+    console.log('🎯 EventsSection: Redirecionando para seleção de eventos (ÚNICO)');
     navigate('/events');
   };
 
-  const handleWaitingListClick = () => {
+  const handleWaitingListClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isNavigating) {
+      console.log('⚠️ EventsSection: Navegação já em andamento, ignorando clique da lista de espera');
+      return;
+    }
+    
+    setIsNavigating(true);
+    console.log('🎯 EventsSection: Redirecionando para lista de espera (ÚNICO)');
     navigate('/events');
   };
 
@@ -184,11 +205,11 @@ const EventsSection = () => {
                     {/* Action Button */}
                     <Button 
                       className={`w-full ${totalAvailable === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
-                      disabled={totalAvailable === 0}
+                      disabled={totalAvailable === 0 || isNavigating}
                       onClick={handleEventClick}
                     >
-                      {totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
-                      {totalAvailable > 0 && (
+                      {isNavigating ? 'Redirecionando...' : totalAvailable === 0 ? 'Evento Lotado' : 'Inscrever-se'}
+                      {totalAvailable > 0 && !isNavigating && (
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       )}
                     </Button>
@@ -214,8 +235,12 @@ const EventsSection = () => {
               <p className="text-muted-foreground">
                 Cadastre-se em nossa lista de espera e seja notificado sobre novos eventos em sua região.
               </p>
-              <Button className="btn-secondary-hero" onClick={handleWaitingListClick}>
-                Entrar na Lista de Espera
+              <Button 
+                className="btn-secondary-hero" 
+                onClick={handleWaitingListClick}
+                disabled={isNavigating}
+              >
+                {isNavigating ? 'Redirecionando...' : 'Entrar na Lista de Espera'}
               </Button>
             </div>
           </Card>

@@ -5,10 +5,12 @@ import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } f
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
 import { formatTime, formatDate } from '@/utils/timeFormat';
+import { useState } from 'react';
 
 const Hero = () => {
   const { data: events } = useEvents();
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Pegar o próximo evento (primeiro da lista ordenada por data mais próxima)
   const nextEvent = events?.[0];
@@ -33,8 +35,17 @@ const Hero = () => {
     sublabel: 'Suporte Médico'
   }];
 
-  const handleRegisterClick = () => {
-    console.log('🎯 Redirecionando para seleção de eventos');
+  const handleRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isNavigating) {
+      console.log('⚠️ Hero: Navegação já em andamento, ignorando clique');
+      return;
+    }
+
+    setIsNavigating(true);
+    console.log('🎯 Hero: Redirecionando para seleção de eventos (ÚNICO)');
     navigate('/events');
   };
 
@@ -72,10 +83,15 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="btn-hero group" onClick={handleRegisterClick}>
+              <Button
+                size="lg"
+                className="btn-hero group"
+                onClick={handleRegisterClick}
+                disabled={isNavigating}
+              >
                 <Calendar className="h-5 w-5 mr-2" />
-                Agendar Consulta
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                {isNavigating ? 'Redirecionando...' : 'Agendar Consulta'}
+                {!isNavigating && <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />}
               </Button>
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}>
                 <MapPin className="h-5 w-5 mr-2" />
@@ -159,8 +175,12 @@ const Hero = () => {
                       </div>
                     </div>
 
-                    <Button className="w-full btn-secondary-hero" onClick={handleRegisterClick}>
-                      Inscrever-se Agora
+                    <Button
+                      className="w-full btn-secondary-hero"
+                      onClick={handleRegisterClick}
+                      disabled={isNavigating}
+                    >
+                      {isNavigating ? 'Redirecionando...' : 'Inscrever-se Agora'}
                     </Button>
                   </>
                 ) : (
@@ -168,8 +188,12 @@ const Hero = () => {
                     <p className="text-muted-foreground mb-4">
                       Não há eventos disponíveis no momento
                     </p>
-                    <Button className="w-full btn-secondary-hero" onClick={handleRegisterClick}>
-                      Entrar na Lista de Espera
+                    <Button
+                      className="w-full btn-secondary-hero"
+                      onClick={handleRegisterClick}
+                      disabled={isNavigating}
+                    >
+                      {isNavigating ? 'Redirecionando...' : 'Entrar na Lista de Espera'}
                     </Button>
                   </div>
                 )}

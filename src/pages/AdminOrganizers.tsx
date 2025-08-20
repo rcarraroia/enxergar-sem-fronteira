@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,8 +14,21 @@ import { useOrganizers } from '@/hooks/useOrganizers'
 import { toast } from 'sonner'
 
 const AdminOrganizers = () => {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { organizers, loading, createOrganizer, editOrganizer, deleteOrganizer, updateOrganizerStatus, updateOrganizerApiKey, resendInvitation } = useOrganizers()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+
+  // Verificar se deve abrir o diálogo de criação automaticamente
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'create') {
+      console.log('🎯 AdminOrganizers: Abrindo diálogo de criação automaticamente')
+      setShowCreateDialog(true)
+      // Limpar o parâmetro da URL
+      navigate('/admin/organizers', { replace: true })
+    }
+  }, [searchParams, navigate])
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false)
   const [editingOrganizer, setEditingOrganizer] = useState<any>(null)

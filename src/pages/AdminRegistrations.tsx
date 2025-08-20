@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,12 +33,26 @@ import { toast } from 'sonner'
 import type { Registration } from '@/hooks/useRegistrations'
 
 export default function AdminRegistrations() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  
   // Estados dos filtros
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCity, setSelectedCity] = useState('all')
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [statusFilter, setStatusFilter] = useState('all')
   const [eventStatusFilter, setEventStatusFilter] = useState('all')
+
+  // Verificar se deve filtrar por data específica
+  useEffect(() => {
+    const dateParam = searchParams.get('date')
+    if (dateParam) {
+      console.log('🎯 AdminRegistrations: Aplicando filtro de data:', dateParam)
+      setSelectedDate(new Date(dateParam))
+      // Limpar o parâmetro da URL
+      navigate('/admin/registrations', { replace: true })
+    }
+  }, [searchParams, navigate])
 
   // Buscar dados com filtros
   const { data: registrations = [], isLoading, refetch } = useRegistrationsFiltered({

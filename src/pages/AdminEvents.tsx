@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useEventsAdmin, EventFormData } from '@/hooks/useEventsAdmin'
 import { EventForm } from '@/components/admin/EventForm'
@@ -38,7 +38,7 @@ import {
   Search,
   Loader2
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { formatDate, formatTimeRange } from '@/utils/dateUtils'
 
 type ViewMode = 'list' | 'create' | 'edit'
@@ -46,11 +46,23 @@ type ViewMode = 'list' | 'create' | 'edit'
 const AdminEvents = () => {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEventsAdmin()
   
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Verificar se deve abrir o formulário de criação automaticamente
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'create') {
+      console.log('🎯 AdminEvents: Abrindo formulário de criação automaticamente')
+      setViewMode('create')
+      // Limpar o parâmetro da URL
+      navigate('/admin/events', { replace: true })
+    }
+  }, [searchParams, navigate])
 
   const filteredEvents = events?.filter(event =>
     event.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
