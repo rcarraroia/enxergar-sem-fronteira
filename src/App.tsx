@@ -58,7 +58,7 @@ function App() {
               
               {/* Protected routes */}
               <Route path="/admin" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <RoleBasedRedirect>
                     <Admin />
                   </RoleBasedRedirect>
@@ -66,61 +66,61 @@ function App() {
               } />
               
               <Route path="/admin/events" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminEvents />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/events/:id" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminEventDetails />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/registrations" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminRegistrations />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/organizers" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminOrganizers />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/patients" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminPatients />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/donations" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminDonations />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/payments" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminPayments />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/settings" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminSettings />
                 </ProtectedRoute>
               } />
               
               <Route path="/admin/sync" element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requireAdmin={true}>
                   <AdminSync />
                 </ProtectedRoute>
               } />
               
               <Route path="/organizer" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <RoleBasedRedirect>
                     <OrganizerDashboard />
                   </RoleBasedRedirect>
@@ -128,31 +128,31 @@ function App() {
               } />
               
               <Route path="/organizer/events" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEvents />
                 </ProtectedRoute>
               } />
               
               <Route path="/organizer/registrations" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <OrganizerRegistrations />
                 </ProtectedRoute>
               } />
               
               <Route path="/organizer/events/new" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEventForm />
                 </ProtectedRoute>
               } />
               
               <Route path="/organizer/events/edit/:id" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEventForm />
                 </ProtectedRoute>
               } />
               
               <Route path="/organizer/profile" element={
-                <ProtectedRoute requiredRole="organizer">
+                <ProtectedRoute requireOrganizer={true}>
                   <OrganizerProfile />
                 </ProtectedRoute>
               } />
