@@ -42,7 +42,7 @@ const ReportsTemp = () => {
     setIsGenerating(true)
     
     try {
-      const doc = new jsPDF()
+      const doc = new jsPDF('landscape') // Modo paisagem para mais espaço
       
       // Título do relatório
       const title = 'RELATÓRIO DE AGENDAMENTOS'
@@ -86,25 +86,28 @@ const ReportsTemp = () => {
         'Agendado em'
       ]
 
-      // Gerar tabela
+      // Gerar tabela com larguras otimizadas para paisagem
       autoTable(doc, {
         head: [headers],
         body: tableData,
         startY: 60,
         styles: {
-          fontSize: 8,
-          cellPadding: 2
+          fontSize: 9,
+          cellPadding: 3,
+          valign: 'middle',
+          halign: 'left'
         },
         headStyles: {
           fillColor: [41, 128, 185],
           textColor: 255,
-          fontSize: 9,
-          fontStyle: 'bold'
+          fontSize: 10,
+          fontStyle: 'bold',
+          halign: 'center'
         },
         columnStyles: {
-          0: { cellWidth: 30 }, // Nome
-          1: { cellWidth: 25 }, // Telefone
-          2: { cellWidth: 35 }, // Email
+          0: { cellWidth: 40 }, // Nome - mais espaço
+          1: { cellWidth: 30 }, // Telefone
+          2: { cellWidth: 50 }, // Email - mais espaço
           3: { cellWidth: 25 }, // Cidade
           4: { cellWidth: 25 }, // Data
           5: { cellWidth: 20 }, // Horário
@@ -113,7 +116,9 @@ const ReportsTemp = () => {
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
-        }
+        },
+        tableWidth: 'auto',
+        margin: { left: 14, right: 14 }
       })
 
       // Nome do arquivo
@@ -135,7 +140,7 @@ const ReportsTemp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto"> {/* Aumentei a largura máxima */}
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -224,39 +229,51 @@ const ReportsTemp = () => {
                 </div>
               </div>
 
-              {/* Preview */}
+              {/* Preview com scroll horizontal melhorado */}
               {registrations.length > 0 && (
                 <div className="mt-4">
                   <h4 className="font-medium mb-2">Preview dos dados (primeiros 5 registros):</h4>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm border-collapse border border-gray-300">
+                  <div className="overflow-x-auto border rounded-lg">
+                    <table className="min-w-full text-sm border-collapse">
                       <thead>
                         <tr className="bg-gray-50">
-                          <th className="border border-gray-300 px-2 py-1 text-left">Nome</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left">Cidade</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left">Data</th>
-                          <th className="border border-gray-300 px-2 py-1 text-left">Status</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[200px]">Nome</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[120px]">Telefone</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[200px]">Email</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[100px]">Cidade</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[100px]">Data</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[80px]">Horário</th>
+                          <th className="border border-gray-300 px-4 py-3 text-left font-semibold min-w-[100px]">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {registrations.slice(0, 5).map((reg: Registration) => (
-                          <tr key={reg.id}>
-                            <td className="border border-gray-300 px-2 py-1">{reg.patient.nome}</td>
-                            <td className="border border-gray-300 px-2 py-1">{reg.event_date.event.city}</td>
-                            <td className="border border-gray-300 px-2 py-1">
+                          <tr key={reg.id} className="hover:bg-gray-50">
+                            <td className="border border-gray-300 px-4 py-3 break-words">{reg.patient.nome}</td>
+                            <td className="border border-gray-300 px-4 py-3">{reg.patient.telefone}</td>
+                            <td className="border border-gray-300 px-4 py-3 break-words">{reg.patient.email}</td>
+                            <td className="border border-gray-300 px-4 py-3">{reg.event_date.event.city}</td>
+                            <td className="border border-gray-300 px-4 py-3">
                               {formatDate(reg.event_date.date)}
                             </td>
-                            <td className="border border-gray-300 px-2 py-1">
-                              {reg.status === 'confirmed' ? 'Confirmado' : 
-                               reg.status === 'pending' ? 'Pendente' : 
-                               reg.status === 'attended' ? 'Compareceu' : 'Cancelado'}
+                            <td className="border border-gray-300 px-4 py-3">{reg.event_date.start_time}</td>
+                            <td className="border border-gray-300 px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                reg.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                                reg.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                reg.status === 'attended' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {reg.status === 'confirmed' ? 'Confirmado' : 
+                                 reg.status === 'pending' ? 'Pendente' : 
+                                 reg.status === 'attended' ? 'Compareceu' : 'Cancelado'}
+                              </span>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                     {registrations.length > 5 && (
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-gray-600 mt-2 px-4 pb-2">
                         ... e mais {registrations.length - 5} registros
                       </p>
                     )}
@@ -295,6 +312,7 @@ const ReportsTemp = () => {
               <li>• O arquivo será baixado automaticamente com nome descritivo</li>
               <li>• Por questões de privacidade, o CPF não é exibido no relatório</li>
               <li>• Os registros estão ordenados alfabeticamente por nome</li>
+              <li>• O PDF é gerado em formato paisagem para melhor visualização</li>
             </ul>
           </CardContent>
         </Card>
