@@ -81,7 +81,7 @@ src/
 ## 🎯 **COMO ACOMPANHAR O PROGRESSO**
 
 ### 📱 **VISUALIZAÇÃO EM TEMPO REAL:**
-1. **Acesse:** `https://seu-dominio.com/admin-v2/`
+1. **Acesse:** `https://www.enxergarsemfronteira.com.br/admin-v2/`
 2. **Login:** `rcarraro@admin.enxergar`
 3. **Navegue:** Pelas seções disponíveis
 
