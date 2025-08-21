@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
+// Layout será adicionado depois - usando div simples por enquanto
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -194,8 +194,8 @@ const AdminCampaignsV2 = () => {
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -646,7 +646,7 @@ const AdminCampaignsV2 = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
+    </div>
   )
 }
 
