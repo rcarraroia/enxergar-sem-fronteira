@@ -28,7 +28,7 @@ import EditEventV2 from "./pages/admin-v2/Events/edit";
 import AdminPatientsV2 from "./pages/admin-v2/Patients";
 import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminOrganizersV2 from "./pages/admin-v2/Organizers";
-import AdminCampaignsV2 from "./pages/admin-v2/Campaigns/test";
+import AdminCampaignsV2 from "./pages/admin-v2/Campaigns/debug";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminPaymentsV2 from "./pages/admin-v2/Payments";
@@ -69,62 +69,62 @@ function App() {
               <Route path="/lgpd" element={<LGPD />} />
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/reports-temp" element={<ReportsTemp />} />
-              
+
               {/* Protected routes */}
               <Route path="/admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <Admin />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/events" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminEvents />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/events/:id" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminEventDetails />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/registrations" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminRegistrations />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/organizers" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminOrganizers />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/patients" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminPatients />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/donations" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDonations />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/payments" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminPayments />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/settings" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminSettings />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/admin/sync" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminSync />
@@ -210,37 +210,37 @@ function App() {
                   <OrganizerDashboard />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/organizer/events" element={
                 <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEvents />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/organizer/registrations" element={
                 <ProtectedRoute requireOrganizer={true}>
                   <OrganizerRegistrations />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/organizer/events/new" element={
                 <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEventForm />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/organizer/events/edit/:id" element={
                 <ProtectedRoute requireOrganizer={true}>
                   <OrganizerEventForm />
                 </ProtectedRoute>
               } />
-              
+
               <Route path="/organizer/profile" element={
                 <ProtectedRoute requireOrganizer={true}>
                   <OrganizerProfile />
                 </ProtectedRoute>
               } />
-              
+
               {/* Catch all route - must be last */}
               <Route path="*" element={<NotFound />} />
             </Routes>
