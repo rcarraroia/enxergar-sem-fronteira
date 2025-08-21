@@ -127,7 +127,7 @@ export function QuickTestDialog({ open, onOpenChange }: QuickTestDialogProps) {
             <RadioGroup
               value={channel}
               onValueChange={(value) => setChannel(value as MessageChannel)}
-              className="grid grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="email" id="test-email" />
@@ -167,7 +167,7 @@ export function QuickTestDialog({ open, onOpenChange }: QuickTestDialogProps) {
           </div>
 
           {/* Opções de Teste */}
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             {/* Teste Rápido */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">

@@ -77,17 +77,15 @@ export function MessagesList() {
           <CardTitle className="text-lg">Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por destinatário, assunto ou conteúdo..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por destinatário, assunto ou conteúdo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2">
