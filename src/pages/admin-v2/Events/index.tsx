@@ -21,7 +21,7 @@ import {
   Users,
   AlertCircle
 } from 'lucide-react'
-import { useEventsV2, useDeleteEventV2, type EventV2, type EventFilters } from '@/hooks/admin-v2/useEventsV2'
+import { useEventsV2, type EventV2, type EventFilters } from '@/hooks/admin-v2/useEventsV2'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -34,7 +34,6 @@ const AdminEventsV2 = () => {
   })
 
   const { data: events = [], isLoading, error } = useEventsV2(filters)
-  const deleteEventMutation = useDeleteEventV2()
 
   const handleCreateEvent = () => {
     navigate('/admin-v2/events/create')
@@ -49,13 +48,8 @@ const AdminEventsV2 = () => {
   }
 
   const handleDeleteEvent = async (event: EventV2) => {
-    if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"? Esta ação não pode ser desfeita.`)) {
-      try {
-        await deleteEventMutation.mutateAsync(event.id)
-      } catch (error) {
-        console.error('Erro ao deletar evento:', error)
-      }
-    }
+    // Funcionalidade de deletar temporariamente desabilitada
+    alert('Funcionalidade de exclusão temporariamente indisponível')
   }
 
   const formatEventDates = (upcomingDates: any[]) => {
