@@ -199,24 +199,32 @@ export const useCreatePromoterV2 = () => {
                     throw new Error('Já existe um promoter com este email')
                 }
 
-                // Criar registro na tabela organizers
-                const insertData = {
-                    name: data.name,
-                    email: data.email,
-                    phone: data.phone || null,
-                    status: 'active' as const
-                }
-
-                const { data: promoter, error: dbError } = await supabase
-                    .from('organizers')
-                    .insert([insertData])
-                    .select('id, name, email, phone, status, created_at')
-                    .single()
+                // Usar função segura que bypassa RLS
+                const { data: promoterId, error: dbError } = await supabase
+                    .rpc('admin_create_organizer', {
+                        p_name: data.name,
+                        p_email: data.email,
+                        p_phone: data.phone || null
+                    })
 
                 if (dbError) {
-                    console.error('❌ [V2] Erro ao criar promoter no banco:', dbError)
+                    console.error('❌ [V2] Erro ao criar promoter via função:', dbError)
                     throw dbError
                 }
+
+                // Buscar o promoter criado para retornar os dados completos
+                const { data: promoter, error: fetchError } = await supabase
+                    .from('organizers')
+                    .select('id, name, email, phone, status, created_at')
+                    .eq('id', promoterId)
+                    .single()
+
+                if (fetchError) {
+                    console.error('❌ [V2] Erro ao buscar promoter criado:', fetchError)
+                    throw fetchError
+                }
+
+
 
                 console.log('✅ [V2] Promoter criado com sucesso:', promoter.id)
                 return { promoter, credentials: { email: data.email, password: data.password } }
