@@ -202,11 +202,7 @@ function App() {
                   <AdminSyncV2 />
                 </ProtectedRoute>
               } />
-              <Route path="/admin-v2/*" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <AdminDashboardV2 />
-                </ProtectedRoute>
-              } />
+              {/* Rota catch-all removida - causava conflito com rotas específicas */}
 
               {/* Protected Organizer Routes */}
               <Route path="/organizer" element={
