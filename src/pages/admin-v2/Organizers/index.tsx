@@ -152,9 +152,7 @@ const AdminPromotersV2 = () => {
         name: '',
         email: '',
         password: '',
-        phone: '',
-        city: '',
-        state: ''
+        phone: ''
       })
     } catch (error) {
       // Erro já tratado no hook
@@ -185,9 +183,7 @@ const AdminPromotersV2 = () => {
         name: '',
         email: '',
         phone: '',
-        city: '',
-        state: '',
-        asaas_wallet_id: ''
+        asaas_api_key: ''
       })
     } catch (error) {
       // Erro já tratado no hook
@@ -475,9 +471,7 @@ const AdminPromotersV2 = () => {
                           name: '',
                           email: '',
                           password: '',
-                          phone: '',
-                          city: '',
-                          state: ''
+                          phone: ''
                         })
                       }}
                       className="flex-1"
