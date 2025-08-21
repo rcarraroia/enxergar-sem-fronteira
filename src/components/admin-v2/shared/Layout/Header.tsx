@@ -1,3 +1,4 @@
+
 /**
  * ADMIN HEADER V2 - Header do painel administrativo
  */
@@ -19,7 +20,7 @@ interface AdminHeaderProps {
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -61,7 +62,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
               <User className="h-4 w-4" />
             </Button>
             
-            <Button variant="ghost" size="sm" onClick={logout}>
+            <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

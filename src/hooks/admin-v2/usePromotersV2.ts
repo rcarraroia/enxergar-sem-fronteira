@@ -1,5 +1,6 @@
+
 /**
- * PROMOTERS HOOK V2 - Gestão de promotores (versão robusta)
+ * PROMOTERS HOOK V2 - Gestão de promotores (versão simplificada)
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -38,33 +39,28 @@ export const usePromotersV2 = (filters: PromoterFilters = {}) => {
             try {
                 console.log('🔍 [V2] Buscando promotores com filtros:', filters)
 
-                // Usar função que bypassa RLS para buscar todos os promoters
-                const { data: allPromoters, error } = await supabase
-                    .rpc('get_all_promoters')
+                // Buscar diretamente da tabela organizers
+                let query = supabase
+                    .from('organizers')
+                    .select('*')
 
-                if (error) {
-                    console.error('❌ [V2] Erro ao buscar promoters via função:', error)
-                    throw error
-                }
-
-                // Aplicar filtros no lado cliente (já que a função retorna todos)
-                let promoters = allPromoters || []
-
+                // Aplicar filtros
                 if (filters.search) {
-                    const searchLower = filters.search.toLowerCase()
-                    promoters = promoters.filter(promoter => 
-                        promoter.name?.toLowerCase().includes(searchLower) ||
-                        promoter.email?.toLowerCase().includes(searchLower)
-                    )
+                    query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
                 }
 
                 if (filters.status) {
-                    promoters = promoters.filter(promoter => promoter.status === filters.status)
+                    query = query.eq('status', filters.status)
                 }
 
+                const { data: promoters, error } = await query.order('created_at', { ascending: false })
 
+                if (error) {
+                    console.error('❌ [V2] Erro ao buscar promoters:', error)
+                    throw error
+                }
 
-                // Buscar contagem de eventos para cada promoter (com tratamento de erro)
+                // Buscar contagem de eventos para cada promoter
                 const promotersWithEventCount = await Promise.all(
                     (promoters || []).map(async (promoter) => {
                         let eventsCount = 0
@@ -93,12 +89,12 @@ export const usePromotersV2 = (filters: PromoterFilters = {}) => {
                 throw error
             }
         },
-        staleTime: 5000, // Reduzido para 5 segundos
-        refetchOnWindowFocus: true // Ativado para refetch ao focar
+        staleTime: 5000,
+        refetchOnWindowFocus: true
     })
 }
 
-// Hook para estatísticas de promotores (simplificado)
+// Hook para estatísticas de promotores
 export const usePromoterStatsV2 = () => {
     return useQuery({
         queryKey: ['promoter-stats-v2'],
@@ -131,14 +127,11 @@ export const usePromoterStatsV2 = () => {
                     .select('*', { count: 'exact', head: true })
                     .gte('created_at', thirtyDaysAgo.toISOString())
 
-                // Top cidades (simplificado)
-                const topCities: { city: string, count: number }[] = []
-
                 return {
                     totalPromoters: totalPromoters || 0,
                     statusCounts,
                     recentPromoters: recentPromoters || 0,
-                    topCities
+                    topCities: []
                 }
 
             } catch (error) {
@@ -176,14 +169,14 @@ export const generateSecurePassword = (): string => {
     return password.split('').sort(() => Math.random() - 0.5).join('')
 }
 
-// Hook para criar promoter (versão robusta)
+// Hook para criar promoter
 export const useCreatePromoterV2 = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
         mutationFn: async (data: PromoterCreation) => {
             try {
-                console.log('🔨 [V2] Criando promoter via função bypass:', { ...data, password: '[HIDDEN]' })
+                console.log('🔨 [V2] Criando promoter:', { ...data, password: '[HIDDEN]' })
 
                 // Verificar se já existe um promoter com este email
                 const { data: existingPromoter, error: checkError } = await supabase
@@ -201,33 +194,25 @@ export const useCreatePromoterV2 = () => {
                     throw new Error('Já existe um promoter com este email')
                 }
 
-                // Usar função que bypassa RLS completamente
-                const { data: promoterId, error: dbError } = await supabase
-                    .rpc('admin_create_organizer_bypass', {
-                        p_name: data.name,
-                        p_email: data.email,
-                        p_phone: data.phone || null
+                // Criar promoter diretamente na tabela
+                const { data: newPromoter, error: insertError } = await supabase
+                    .from('organizers')
+                    .insert({
+                        name: data.name,
+                        email: data.email,
+                        phone: data.phone || null,
+                        status: 'active'
                     })
+                    .select()
+                    .single()
 
-                if (dbError) {
-                    console.error('❌ [V2] Erro ao criar promoter via função:', dbError)
-                    throw dbError
+                if (insertError) {
+                    console.error('❌ [V2] Erro ao criar promoter:', insertError)
+                    throw insertError
                 }
 
-                // Criar objeto promoter com os dados fornecidos (não precisamos buscar)
-                const promoter = {
-                    id: promoterId,
-                    name: data.name,
-                    email: data.email,
-                    phone: data.phone || null,
-                    status: 'active' as const,
-                    created_at: new Date().toISOString()
-                }
-
-
-
-                console.log('✅ [V2] Promoter criado com sucesso via função bypass:', promoter.id)
-                return { promoter, credentials: { email: data.email, password: data.password } }
+                console.log('✅ [V2] Promoter criado com sucesso:', newPromoter.id)
+                return { promoter: newPromoter, credentials: { email: data.email, password: data.password } }
 
             } catch (error: any) {
                 console.error('❌ [V2] Erro crítico ao criar promoter:', error)
@@ -237,7 +222,7 @@ export const useCreatePromoterV2 = () => {
         onSuccess: (result) => {
             queryClient.invalidateQueries({ queryKey: ['promoters-v2'] })
             queryClient.invalidateQueries({ queryKey: ['promoter-stats-v2'] })
-            toast.success(`Promoter criado! O promoter deve usar "Esqueci minha senha" no login com o email: ${result.credentials.email}`)
+            toast.success(`Promoter criado! Use "Esqueci minha senha" no login com: ${result.credentials.email}`)
         },
         onError: (error: any) => {
             console.error('❌ [V2] Erro na criação:', error)
@@ -250,7 +235,7 @@ export const useCreatePromoterV2 = () => {
     })
 }
 
-// Hook para atualizar promoter (versão robusta)
+// Hook para atualizar promoter
 export const useUpdatePromoterV2 = () => {
     const queryClient = useQueryClient()
 
@@ -259,26 +244,20 @@ export const useUpdatePromoterV2 = () => {
             try {
                 console.log('✏️ [V2] Atualizando promoter:', id, data)
 
-                // Preparar dados para atualização
                 const updateData: any = {
                     name: data.name,
                     email: data.email,
                     phone: data.phone || null
                 }
 
-                // Adicionar asaas_api_key apenas se fornecido
                 if (data.asaas_api_key !== undefined) {
                     updateData.asaas_api_key = data.asaas_api_key || null
                 }
 
-                console.log('🔄 [V2] Dados para atualização:', updateData)
-
-                const { data: result, error } = await supabase
+                const { error } = await supabase
                     .from('organizers')
                     .update(updateData)
                     .eq('id', id)
-                    .select('id')
-                    .single()
 
                 if (error) {
                     console.error('❌ [V2] Erro ao atualizar promoter:', error)
@@ -344,70 +323,6 @@ export const useUpdatePromoterStatusV2 = () => {
     })
 }
 
-// Hook para atualizar API Key do Asaas
-export const useUpdateAsaasApiKeyV2 = () => {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async ({ id, apiKey }: { id: string, apiKey: string }) => {
-            try {
-                console.log('🔑 [V2] Atualizando API Key do Asaas:', id)
-
-                const { error } = await supabase
-                    .from('organizers')
-                    .update({ asaas_api_key: apiKey })
-                    .eq('id', id)
-
-                if (error) {
-                    console.error('❌ [V2] Erro ao atualizar API Key:', error)
-                    throw error
-                }
-
-                console.log('✅ [V2] API Key atualizada com sucesso:', id)
-                return id
-
-            } catch (error) {
-                console.error('❌ [V2] Erro crítico ao atualizar API Key:', error)
-                throw error
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['promoters-v2'] })
-            toast.success('API Key do Asaas atualizada com sucesso!')
-        },
-        onError: (error: any) => {
-            console.error('❌ [V2] Erro na atualização da API Key:', error)
-            toast.error('Erro ao atualizar API Key: ' + (error.message || 'Erro desconhecido'))
-        }
-    })
-}
-
-// Hook para gerar nova senha (versão simplificada)
-export const useResetPromoterPasswordV2 = () => {
-    return useMutation({
-        mutationFn: async ({ id, newPassword }: { id: string, newPassword: string }) => {
-            try {
-                console.log('🔑 [V2] Gerando nova senha para promoter:', id)
-
-                // Sem acesso à API Admin, apenas geramos uma nova senha
-                // O promoter deve usar "Esqueci minha senha" no login
-                return { id, newPassword }
-
-            } catch (error) {
-                console.error('❌ [V2] Erro ao gerar nova senha:', error)
-                throw error
-            }
-        },
-        onSuccess: (result) => {
-            toast.success(`Nova senha gerada: ${result.newPassword}. O promoter deve usar "Esqueci minha senha" no login para definir esta senha.`)
-        },
-        onError: (error: any) => {
-            console.error('❌ [V2] Erro ao gerar senha:', error)
-            toast.error('Erro ao gerar nova senha: ' + (error.message || 'Erro desconhecido'))
-        }
-    })
-}
-
 // Hook para deletar promoter
 export const useDeletePromoterV2 = () => {
     const queryClient = useQueryClient()
@@ -417,18 +332,17 @@ export const useDeletePromoterV2 = () => {
             try {
                 console.log('🗑️ [V2] Deletando promoter:', id)
 
-                // Usar função que bypassa RLS para deletar
-                const { data: result, error: dbError } = await supabase
-                    .rpc('admin_delete_organizer', {
-                        p_organizer_id: id
-                    })
+                const { error } = await supabase
+                    .from('organizers')
+                    .delete()
+                    .eq('id', id)
 
-                if (dbError) {
-                    console.error('❌ [V2] Erro ao deletar via função:', dbError)
-                    throw dbError
+                if (error) {
+                    console.error('❌ [V2] Erro ao deletar promoter:', error)
+                    throw error
                 }
 
-                console.log('✅ [V2] Promoter deletado com sucesso via função:', id)
+                console.log('✅ [V2] Promoter deletado com sucesso:', id)
                 return id
 
             } catch (error) {
@@ -437,16 +351,9 @@ export const useDeletePromoterV2 = () => {
             }
         },
         onSuccess: () => {
-            // Invalidar todas as queries relacionadas
             queryClient.invalidateQueries({ queryKey: ['promoters-v2'] })
             queryClient.invalidateQueries({ queryKey: ['promoter-stats-v2'] })
-            // Forçar refetch imediato
-            queryClient.refetchQueries({ queryKey: ['promoters-v2'] })
-            // Remover cache completamente
-            queryClient.removeQueries({ queryKey: ['promoters-v2'] })
             toast.success('Promoter excluído com sucesso!')
-            // Forçar reload da página como último recurso
-            setTimeout(() => window.location.reload(), 1000)
         },
         onError: (error: any) => {
             console.error('❌ [V2] Erro na exclusão:', error)

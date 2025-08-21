@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEvents, Event } from '@/hooks/useEvents';
@@ -111,17 +112,6 @@ const EventsList = () => {
       </div>
     </section>
   );
-
-  function formatWeekday(dateString: string) {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long'
-    });
-  }
-
-  function getOccupancyPercentage(available: number, total: number) {
-    return ((total - available) / total) * 100;
-  }
 };
 
 export default EventsList;

@@ -1,3 +1,4 @@
+
 /**
  * PATIENTS HOOK V2 - Gestão de pacientes
  */
@@ -38,15 +39,15 @@ export const usePatientsV2 = (filters: PatientFilters = {}) => {
 
         // Aplicar filtros
         if (filters.search) {
-          query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,city.ilike.%${filters.search}%`)
+          query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
         }
 
         if (filters.city) {
-          query = query.eq('city', filters.city)
+          query = query.eq('cidade', filters.city)
         }
 
         if (filters.state) {
-          query = query.eq('state', filters.state)
+          query = query.eq('estado', filters.state)
         }
 
         // Ordenar por data de criação (mais recente primeiro)
@@ -59,8 +60,16 @@ export const usePatientsV2 = (filters: PatientFilters = {}) => {
           throw error
         }
 
+        // Mapear dados do banco para interface V2
         const processedPatients: PatientV2[] = (patients || []).map(patient => ({
-          ...patient,
+          id: patient.id,
+          name: patient.nome || '',
+          email: patient.email || '',
+          phone: patient.telefone || '',
+          birth_date: patient.data_nascimento || '',
+          city: patient.cidade || '',
+          state: patient.estado || '',
+          created_at: patient.created_at,
           _count: {
             registrations: 0 // TODO: Contar inscrições
           }
