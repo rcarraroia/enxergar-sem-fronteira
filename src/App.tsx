@@ -209,7 +209,7 @@ function App() {
                   <AdminSyncV2 />
                 </ProtectedRoute>
               } />
-              
+
               {/* Manter rotas admin-v2 para compatibilidade */}
               <Route path="/admin-v2/events" element={
                 <ProtectedRoute requireAdmin={true}>

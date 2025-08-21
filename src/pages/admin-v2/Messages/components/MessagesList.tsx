@@ -119,17 +119,18 @@ export function MessagesList() {
                 }
               >
                 <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="sent">Enviado</SelectItem>
-                <SelectItem value="delivered">Entregue</SelectItem>
-                <SelectItem value="failed">Falhou</SelectItem>
-              </SelectContent>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="sent">Enviado</SelectItem>
+                  <SelectItem value="delivered">Entregue</SelectItem>
+                  <SelectItem value="failed">Falhou</SelectItem>
+                </SelectContent>
               </Select>
             </div>
+          </div>
         </CardContent>
       </Card>
 
