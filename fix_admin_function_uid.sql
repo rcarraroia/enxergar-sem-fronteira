@@ -22,8 +22,8 @@ BEGIN
     -- Log para debug
     RAISE NOTICE 'Criando organizer: % (%)', p_name, p_email;
     
-    -- Verificar se email já existe
-    IF EXISTS (SELECT 1 FROM public.organizers WHERE email = p_email) THEN
+    -- Verificar se email já existe (case insensitive)
+    IF EXISTS (SELECT 1 FROM public.organizers WHERE LOWER(email) = LOWER(p_email)) THEN
         RAISE EXCEPTION 'Email % já existe na tabela organizers', p_email;
     END IF;
     
