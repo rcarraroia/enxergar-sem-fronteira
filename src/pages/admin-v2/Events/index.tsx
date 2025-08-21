@@ -49,7 +49,7 @@ const AdminEventsV2 = () => {
   }
 
   const handleDeleteEvent = async (event: EventV2) => {
-    if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"?`)) {
+    if (window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"? Esta ação não pode ser desfeita.`)) {
       try {
         await deleteEventMutation.mutateAsync(event.id)
       } catch (error) {
@@ -58,8 +58,8 @@ const AdminEventsV2 = () => {
     }
   }
 
-  const formatEventDates = (eventDates: any[]) => {
-    if (!eventDates || eventDates.length === 0) {
+  const formatEventDates = (upcomingDates: any[]) => {
+    if (!upcomingDates || upcomingDates.length === 0) {
       return (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ const AdminEventsV2 = () => {
       )
     }
 
-    const sortedDates = eventDates.sort((a, b) => a.date.localeCompare(b.date))
+    const sortedDates = upcomingDates.sort((a, b) => a.date.localeCompare(b.date))
     const firstDate = sortedDates[0]
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
     
@@ -101,9 +101,9 @@ const AdminEventsV2 = () => {
             {isUpcoming ? 'Próximo' : 'Passado'}
           </Badge>
         </div>
-        {eventDates.length > 1 && (
+        {upcomingDates.length > 1 && (
           <span className="text-xs text-muted-foreground">
-            +{eventDates.length - 1} data(s) adicional(is)
+            +{upcomingDates.length - 1} data(s) adicional(is)
           </span>
         )}
       </div>
@@ -125,34 +125,30 @@ const AdminEventsV2 = () => {
       )
     },
     {
-      key: 'organizer.name',
-      label: 'Organizador',
-      render: (value: string, event: EventV2) => (
-        <div>
-          <div className="text-sm">{value || 'N/A'}</div>
-          <div className="text-xs text-muted-foreground">
-            {event.organizer?.email}
-          </div>
-        </div>
+      key: 'city',
+      label: 'Cidade',
+      render: (value: string) => (
+        <div className="text-sm">{value || 'N/A'}</div>
       )
     },
     {
-      key: 'event_dates',
+      key: 'upcoming_dates',
       label: 'Datas',
       render: (value: any[], event: EventV2) => formatEventDates(value)
     },
     {
-      key: '_count.registrations',
-      label: 'Inscrições',
+      key: 'occupied_slots',
+      label: 'Ocupação',
       render: (value: number, event: EventV2) => {
-        const totalSlots = event.event_dates?.reduce((sum, date) => sum + (date.total_slots || 0), 0) || 0
-        const registrations = value || 0
+        const totalSlots = event.total_slots || 0
+        const occupiedSlots = value || 0
+        const occupancyRate = event.occupancy_rate || 0
         
         return (
           <div className="text-center">
-            <div className="text-sm font-medium">{registrations}</div>
+            <div className="text-sm font-medium">{occupiedSlots}/{totalSlots}</div>
             <div className="text-xs text-muted-foreground">
-              {totalSlots > 0 ? `de ${totalSlots} vagas` : 'inscrições'}
+              {occupancyRate}% ocupado
             </div>
           </div>
         )
