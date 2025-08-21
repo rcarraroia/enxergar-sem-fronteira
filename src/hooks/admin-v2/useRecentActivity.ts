@@ -51,6 +51,9 @@ export const useRecentActivityV2 = () => {
         }
 
         // Buscar eventos recentes (últimos 7 dias)
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        
         const { data: recentEvents } = await supabase
           .from('events')
           .select('id, title, created_at')
