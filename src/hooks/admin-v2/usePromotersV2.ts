@@ -442,7 +442,11 @@ export const useDeletePromoterV2 = () => {
             queryClient.invalidateQueries({ queryKey: ['promoter-stats-v2'] })
             // Forçar refetch imediato
             queryClient.refetchQueries({ queryKey: ['promoters-v2'] })
+            // Remover cache completamente
+            queryClient.removeQueries({ queryKey: ['promoters-v2'] })
             toast.success('Promoter excluído com sucesso!')
+            // Forçar reload da página como último recurso
+            setTimeout(() => window.location.reload(), 1000)
         },
         onError: (error: any) => {
             console.error('❌ [V2] Erro na exclusão:', error)
