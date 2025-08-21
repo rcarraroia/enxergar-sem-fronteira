@@ -49,6 +49,20 @@ export interface EventCreation {
   }[]
 }
 
+export interface EventFormData {
+  title: string
+  description: string
+  location: string
+  address: string
+  city: string
+  dates: {
+    date: string
+    start_time: string
+    end_time: string
+    total_slots: number
+  }[]
+}
+
 export interface EventFilters {
   search?: string
   city?: string
@@ -194,6 +208,71 @@ export const useEventStatsV2 = () => {
   })
 }
 
+// Hook para buscar um evento específico
+export const useEventV2 = (eventId: string) => {
+  return useQuery({
+    queryKey: ['event-v2', eventId],
+    queryFn: async (): Promise<EventV2> => {
+      try {
+        console.log('🔍 [Events V2] Buscando evento:', eventId)
+        
+        const { data: event, error } = await supabase
+          .from('events')
+          .select(`
+            *,
+            event_dates (
+              id,
+              date,
+              start_time,
+              end_time,
+              total_slots,
+              available_slots
+            )
+          `)
+          .eq('id', eventId)
+          .single()
+
+        if (error) {
+          console.error('❌ [Events V2] Erro ao buscar evento:', error)
+          throw error
+        }
+
+        // Processar dados do evento
+        const eventDates = event.event_dates || []
+        const totalSlots = eventDates.reduce((sum: number, date: any) => sum + date.total_slots, 0)
+        const occupiedSlots = eventDates.reduce((sum: number, date: any) => sum + (date.total_slots - date.available_slots), 0)
+        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0
+
+        const processedEvent: EventV2 = {
+          id: event.id,
+          title: event.title,
+          description: event.description || '',
+          location: event.location,
+          address: event.address,
+          city: event.city,
+          status: event.status,
+          organizer_id: event.organizer_id,
+          created_at: event.created_at,
+          updated_at: event.updated_at,
+          total_slots: totalSlots,
+          occupied_slots: occupiedSlots,
+          occupancy_rate: occupancyRate,
+          upcoming_dates: eventDates
+        }
+
+        console.log('✅ [Events V2] Evento carregado:', processedEvent.title)
+        return processedEvent
+
+      } catch (error) {
+        console.error('❌ [Events V2] Erro crítico ao carregar evento:', error)
+        throw error
+      }
+    },
+    enabled: !!eventId,
+    staleTime: 30000
+  })
+}
+
 // Hook para criar evento
 export const useCreateEventV2 = () => {
   const queryClient = useQueryClient()
@@ -253,6 +332,125 @@ export const useCreateEventV2 = () => {
     onError: (error: any) => {
       console.error('❌ [Events V2] Erro na criação:', error)
       toast.error('Erro ao criar evento: ' + (error.message || 'Erro desconhecido'))
+    }
+  })
+}
+
+// Hook para atualizar evento
+export const useUpdateEventV2 = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ eventId, data }: { eventId: string, data: Partial<EventFormData> }) => {
+      try {
+        console.log('🔨 [Events V2] Atualizando evento:', eventId)
+        
+        // Atualizar evento
+        const { data: event, error: eventError } = await supabase
+          .from('events')
+          .update({
+            title: data.title,
+            description: data.description,
+            location: data.location,
+            address: data.address,
+            city: data.city,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', eventId)
+          .select()
+          .single()
+
+        if (eventError) throw eventError
+
+        // Se há novas datas, remover as antigas e criar as novas
+        if (data.dates && data.dates.length > 0) {
+          // Remover datas antigas
+          const { error: deleteError } = await supabase
+            .from('event_dates')
+            .delete()
+            .eq('event_id', eventId)
+
+          if (deleteError) throw deleteError
+
+          // Criar novas datas
+          const eventDates = data.dates.map(date => ({
+            event_id: eventId,
+            date: date.date,
+            start_time: date.start_time,
+            end_time: date.end_time,
+            total_slots: date.total_slots,
+            available_slots: date.total_slots
+          }))
+
+          const { error: datesError } = await supabase
+            .from('event_dates')
+            .insert(eventDates)
+
+          if (datesError) throw datesError
+        }
+
+        console.log('✅ [Events V2] Evento atualizado:', event.id)
+        return event.id
+
+      } catch (error: any) {
+        console.error('❌ [Events V2] Erro crítico ao atualizar evento:', error)
+        throw error
+      }
+    },
+    onSuccess: (eventId) => {
+      queryClient.invalidateQueries({ queryKey: ['events-v2'] })
+      queryClient.invalidateQueries({ queryKey: ['event-v2', eventId] })
+      queryClient.invalidateQueries({ queryKey: ['event-stats-v2'] })
+      toast.success('Evento atualizado com sucesso!')
+    },
+    onError: (error: any) => {
+      console.error('❌ [Events V2] Erro na atualização:', error)
+      toast.error('Erro ao atualizar evento: ' + (error.message || 'Erro desconhecido'))
+    }
+  })
+}
+
+// Hook para deletar evento
+export const useDeleteEventV2 = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (eventId: string) => {
+      try {
+        console.log('🗑️ [Events V2] Deletando evento:', eventId)
+        
+        // Primeiro, deletar as datas do evento
+        const { error: datesError } = await supabase
+          .from('event_dates')
+          .delete()
+          .eq('event_id', eventId)
+
+        if (datesError) throw datesError
+
+        // Depois, deletar o evento
+        const { error: eventError } = await supabase
+          .from('events')
+          .delete()
+          .eq('id', eventId)
+
+        if (eventError) throw eventError
+
+        console.log('✅ [Events V2] Evento deletado:', eventId)
+        return eventId
+
+      } catch (error: any) {
+        console.error('❌ [Events V2] Erro crítico ao deletar evento:', error)
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events-v2'] })
+      queryClient.invalidateQueries({ queryKey: ['event-stats-v2'] })
+      toast.success('Evento deletado com sucesso!')
+    },
+    onError: (error: any) => {
+      console.error('❌ [Events V2] Erro na exclusão:', error)
+      toast.error('Erro ao deletar evento: ' + (error.message || 'Erro desconhecido'))
     }
   })
 }

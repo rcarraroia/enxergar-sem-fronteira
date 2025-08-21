@@ -218,3 +218,47 @@ export const useRegistrationStatsV2 = () => {
     staleTime: 60000
   })
 }
+
+// Hook para atualizar status de inscrição
+export const useUpdateRegistrationStatusV2 = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ registrationId, status }: { registrationId: string, status: 'confirmed' | 'cancelled' | 'pending' }) => {
+      try {
+        console.log('🔨 [Registrations V2] Atualizando status da inscrição:', registrationId, 'para', status)
+        
+        const { data: registration, error } = await supabase
+          .from('registrations')
+          .update({ 
+            status,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', registrationId)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('❌ [Registrations V2] Erro ao atualizar status:', error)
+          throw error
+        }
+
+        console.log('✅ [Registrations V2] Status atualizado:', registration.id)
+        return registration
+
+      } catch (error: any) {
+        console.error('❌ [Registrations V2] Erro crítico ao atualizar status:', error)
+        throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registrations-v2'] })
+      queryClient.invalidateQueries({ queryKey: ['registration-stats-v2'] })
+      toast.success('Status da inscrição atualizado com sucesso!')
+    },
+    onError: (error: any) => {
+      console.error('❌ [Registrations V2] Erro na atualização:', error)
+      toast.error('Erro ao atualizar status: ' + (error.message || 'Erro desconhecido'))
+    }
+  })
+}

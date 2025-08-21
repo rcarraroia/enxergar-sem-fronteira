@@ -45,8 +45,9 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
     title: '',
     description: '',
     location: '',
-    status: 'active',
-    event_dates: []
+    address: '',
+    city: '',
+    dates: []
   })
   const [eventDates, setEventDates] = useState<EventDateForm[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -62,12 +63,13 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
         title: existingEvent.title,
         description: existingEvent.description,
         location: existingEvent.location,
-        status: existingEvent.status,
-        event_dates: []
+        address: existingEvent.address || '',
+        city: existingEvent.city || '',
+        dates: []
       })
       
-      if (existingEvent.event_dates) {
-        setEventDates(existingEvent.event_dates.map(date => ({
+      if (existingEvent.upcoming_dates) {
+        setEventDates(existingEvent.upcoming_dates.map(date => ({
           date: date.date,
           start_time: date.start_time,
           end_time: date.end_time,
@@ -128,9 +130,11 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
     try {
       const eventData: EventFormData = {
         ...formData,
-        event_dates: eventDates.map(date => ({
-          ...date,
-          available_slots: date.total_slots // Inicialmente todas as vagas estão disponíveis
+        dates: eventDates.map(date => ({
+          date: date.date,
+          start_time: date.start_time,
+          end_time: date.end_time,
+          total_slots: date.total_slots
         }))
       }
 
