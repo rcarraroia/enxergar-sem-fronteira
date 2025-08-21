@@ -212,21 +212,19 @@ export const useCreatePromoterV2 = () => {
                     throw dbError
                 }
 
-                // Buscar o promoter criado para retornar os dados completos
-                const { data: promoter, error: fetchError } = await supabase
-                    .from('organizers')
-                    .select('id, name, email, phone, status, created_at')
-                    .eq('id', promoterId)
-                    .single()
-
-                if (fetchError) {
-                    console.error('❌ [V2] Erro ao buscar promoter criado:', fetchError)
-                    throw fetchError
+                // Criar objeto promoter com os dados fornecidos (não precisamos buscar)
+                const promoter = {
+                    id: promoterId,
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone || null,
+                    status: 'active' as const,
+                    created_at: new Date().toISOString()
                 }
 
 
 
-                console.log('✅ [V2] Promoter criado com sucesso:', promoter.id)
+                console.log('✅ [V2] Promoter criado com sucesso via função bypass:', promoter.id)
                 return { promoter, credentials: { email: data.email, password: data.password } }
 
             } catch (error: any) {
