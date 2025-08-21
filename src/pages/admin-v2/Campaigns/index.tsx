@@ -93,8 +93,8 @@ const AdminCampaignsV2 = () => {
     title: '',
     description: '',
     goal_amount: '',
-    start_date: '',
-    end_date: '',
+    start_date: new Date().toISOString().split('T')[0], // Data de hoje
+    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 dias a partir de hoje
     donation_type: 'both',
     suggested_amounts: '25,50,100,250,500',
     allow_custom_amount: true
@@ -106,15 +106,41 @@ const AdminCampaignsV2 = () => {
   const createCampaignMutation = useCreateCampaignV2()
 
   const handleCreateCampaign = async () => {
-    if (!formData.title.trim() || !formData.description.trim() || !formData.goal_amount) {
-      toast.error('Preencha todos os campos obrigatórios')
+    // Validações mais rigorosas
+    if (!formData.title.trim()) {
+      toast.error('Título é obrigatório')
+      return
+    }
+
+    if (!formData.description.trim()) {
+      toast.error('Descrição é obrigatória')
+      return
+    }
+
+    if (!formData.goal_amount || parseFloat(formData.goal_amount) <= 0) {
+      toast.error('Meta de arrecadação deve ser maior que zero')
+      return
+    }
+
+    if (!formData.start_date) {
+      toast.error('Data de início é obrigatória')
+      return
+    }
+
+    if (!formData.end_date) {
+      toast.error('Data de fim é obrigatória')
+      return
+    }
+
+    if (new Date(formData.end_date) <= new Date(formData.start_date)) {
+      toast.error('Data de fim deve ser posterior à data de início')
       return
     }
 
     try {
       await createCampaignMutation.mutateAsync({
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         goal_amount: parseFloat(formData.goal_amount),
         start_date: formData.start_date,
         end_date: formData.end_date,
@@ -128,12 +154,13 @@ const AdminCampaignsV2 = () => {
         title: '',
         description: '',
         goal_amount: '',
-        start_date: '',
-        end_date: '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         donation_type: 'both',
         suggested_amounts: '25,50,100,250,500',
         allow_custom_amount: true
       })
+      toast.success('Campanha criada com sucesso!')
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -587,8 +614,8 @@ const AdminCampaignsV2 = () => {
                     title: '',
                     description: '',
                     goal_amount: '',
-                    start_date: '',
-                    end_date: '',
+                    start_date: new Date().toISOString().split('T')[0],
+                    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                     donation_type: 'both',
                     suggested_amounts: '25,50,100,250,500',
                     allow_custom_amount: true
