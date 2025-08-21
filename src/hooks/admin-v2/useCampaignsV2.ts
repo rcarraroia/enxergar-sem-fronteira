@@ -1,130 +1,101 @@
-
 /**
- * CAMPAIGNS HOOK V2 - Gestão de campanhas de doação (versão simplificada)
+ * Hook para gestão de campanhas V2
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
 
 export interface CampaignV2 {
-    id: string
-    title: string
-    description: string
-    goal_amount: number
-    raised_amount: number
-    start_date: string
-    end_date: string
-    status: 'active' | 'inactive' | 'completed' | 'draft'
-    donation_type: 'one_time' | 'recurring' | 'both'
-    suggested_amounts: number[]
-    allow_custom_amount: boolean
-    created_by: string
-    created_at: string
-    updated_at: string
-    // Campos calculados
-    progress_percentage?: number
-    days_remaining?: number
-    total_donors?: number
-}
-
-export interface CampaignCreation {
-    title: string
-    description: string
-    goal_amount: number
-    start_date: string
-    end_date: string
-    donation_type: 'one_time' | 'recurring' | 'both'
-    suggested_amounts: number[]
-    allow_custom_amount: boolean
+  id: string
+  title: string
+  description: string
+  goal_amount: number
+  raised_amount: number
+  progress: number
+  status: 'active' | 'completed' | 'paused' | 'cancelled'
+  start_date: string
+  end_date?: string
+  created_at: string
 }
 
 export interface CampaignFilters {
-    search?: string
-    status?: string
-    donation_type?: string
+  search?: string
+  status?: string
 }
 
-// Hook para buscar campanhas (simulado)
+// Hook para buscar campanhas
 export const useCampaignsV2 = (filters: CampaignFilters = {}) => {
-    return useQuery({
-        queryKey: ['campaigns-v2', filters],
-        queryFn: async (): Promise<CampaignV2[]> => {
-            try {
-                console.log('🔍 [Campaigns V2] Buscando campanhas com filtros:', filters)
-                
-                // Por enquanto, retornar array vazio pois as tabelas de campanhas não existem
-                console.log('📊 [Campaigns V2] Campanhas simuladas: 0')
-                return []
+  return useQuery({
+    queryKey: ['campaigns-v2', filters],
+    queryFn: async (): Promise<CampaignV2[]> => {
+      try {
+        console.log('🔍 [Campaigns V2] Buscando campanhas com filtros:', filters)
+        
+        // Por enquanto, retornar dados simulados já que não temos tabela de campanhas
+        const mockCampaigns: CampaignV2[] = [
+          {
+            id: '1',
+            title: 'Campanha de Óculos 2025',
+            description: 'Arrecadação para compra de óculos para pacientes carentes',
+            goal_amount: 50000,
+            raised_amount: 32500,
+            progress: 65,
+            status: 'active',
+            start_date: '2025-01-01',
+            end_date: '2025-12-31',
+            created_at: '2025-01-01T00:00:00Z'
+          },
+          {
+            id: '2',
+            title: 'Equipamentos Médicos',
+            description: 'Compra de novos equipamentos para exames oftalmológicos',
+            goal_amount: 100000,
+            raised_amount: 25000,
+            progress: 25,
+            status: 'active',
+            start_date: '2025-02-01',
+            end_date: '2025-11-30',
+            created_at: '2025-02-01T00:00:00Z'
+          },
+          {
+            id: '3',
+            title: 'Cirurgias de Catarata',
+            description: 'Financiamento de cirurgias de catarata para idosos',
+            goal_amount: 75000,
+            raised_amount: 75000,
+            progress: 100,
+            status: 'completed',
+            start_date: '2024-06-01',
+            end_date: '2024-12-31',
+            created_at: '2024-06-01T00:00:00Z'
+          }
+        ]
 
-            } catch (error) {
-                console.error('❌ [Campaigns V2] Erro crítico ao carregar campanhas:', error)
-                throw error
-            }
-        },
-        staleTime: 30000,
-        refetchOnWindowFocus: false
-    })
-}
+        // Aplicar filtros
+        let filteredCampaigns = mockCampaigns
 
-// Hook para estatísticas de campanhas (simulado)
-export const useCampaignStatsV2 = () => {
-    return useQuery({
-        queryKey: ['campaign-stats-v2'],
-        queryFn: async () => {
-            try {
-                console.log('🔍 [Campaigns V2] Buscando estatísticas...')
-
-                return {
-                    total_campaigns: 0,
-                    active_campaigns: 0,
-                    total_raised: 0,
-                    total_donors: 0,
-                    avg_donation: 0,
-                    completion_rate: 0
-                }
-
-            } catch (error) {
-                console.error('❌ [Campaigns V2] Erro ao carregar estatísticas:', error)
-                return {
-                    total_campaigns: 0,
-                    active_campaigns: 0,
-                    total_raised: 0,
-                    total_donors: 0,
-                    avg_donation: 0,
-                    completion_rate: 0
-                }
-            }
-        },
-        staleTime: 60000
-    })
-}
-
-// Hook para criar campanha (simulado)
-export const useCreateCampaignV2 = () => {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async (data: CampaignCreation) => {
-            try {
-                console.log('🔨 [Campaigns V2] Criando campanha:', { ...data, description: '[TRUNCATED]' })
-                
-                // Simulação - por enquanto só retornar sucesso
-                console.log('✅ [Campaigns V2] Campanha simulada criada')
-                return 'simulated-id'
-
-            } catch (error: any) {
-                console.error('❌ [Campaigns V2] Erro crítico ao criar campanha:', error)
-                throw error
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['campaigns-v2'] })
-            toast.success('Campanha criada com sucesso! (Simulado)')
-        },
-        onError: (error: any) => {
-            console.error('❌ [Campaigns V2] Erro na criação:', error)
-            toast.error('Erro ao criar campanha: ' + (error.message || 'Erro desconhecido'))
+        if (filters.search) {
+          filteredCampaigns = filteredCampaigns.filter(campaign =>
+            campaign.title.toLowerCase().includes(filters.search!.toLowerCase()) ||
+            campaign.description.toLowerCase().includes(filters.search!.toLowerCase())
+          )
         }
-    })
+
+        if (filters.status && filters.status !== 'all') {
+          filteredCampaigns = filteredCampaigns.filter(campaign =>
+            campaign.status === filters.status
+          )
+        }
+
+        console.log('📊 [Campaigns V2] Campanhas carregadas:', filteredCampaigns.length)
+        return filteredCampaigns
+
+      } catch (error) {
+        console.error('❌ [Campaigns V2] Erro crítico ao carregar campanhas:', error)
+        throw error
+      }
+    },
+    staleTime: 60000,
+    refetchOnWindowFocus: false
+  })
 }

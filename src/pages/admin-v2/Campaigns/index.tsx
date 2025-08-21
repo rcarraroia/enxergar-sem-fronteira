@@ -1,14 +1,150 @@
 
 /**
  * ADMIN V2 - CAMPANHAS DE DOAÇÃO
- * Página temporária para navegação
+ * Gestão de campanhas de arrecadação
  */
 
+import { useState } from 'react'
 import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Heart, Construction } from 'lucide-react'
+import { DataTable } from '@/components/admin-v2/shared/DataTable'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { 
+  Heart, 
+  Plus, 
+  Edit, 
+  Eye,
+  Target,
+  DollarSign,
+  Calendar,
+  AlertCircle
+} from 'lucide-react'
+import { useCampaignsV2, type CampaignV2, type CampaignFilters } from '@/hooks/admin-v2/useCampaignsV2'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 const AdminCampaignsV2 = () => {
+  const [filters, setFilters] = useState<CampaignFilters>({
+    search: '',
+    status: 'all'
+  })
+
+  const { data: campaigns = [], isLoading, error } = useCampaignsV2(filters)
+
+  const handleViewCampaign = (campaign: CampaignV2) => {
+    console.log('Ver campanha:', campaign.id)
+  }
+
+  const handleEditCampaign = (campaign: CampaignV2) => {
+    console.log('Editar campanha:', campaign.id)
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+  }
+
+  const columns = [
+    {
+      key: 'title',
+      label: 'Campanha',
+      render: (value: string, campaign: CampaignV2) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-sm text-muted-foreground">
+            {campaign.description?.substring(0, 50)}...
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'goal_amount',
+      label: 'Meta',
+      render: (value: number, campaign: CampaignV2) => (
+        <div>
+          <div className="text-sm font-medium">{formatCurrency(value)}</div>
+          <div className="text-xs text-muted-foreground">
+            {formatCurrency(campaign.raised_amount || 0)} arrecadado
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'progress',
+      label: 'Progresso',
+      render: (value: number) => (
+        <div className="text-center">
+          <div className="text-sm font-medium">{value.toFixed(1)}%</div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+            <div 
+              className="bg-blue-600 h-2 rounded-full" 
+              style={{ width: `${Math.min(value, 100)}%` }}
+            ></div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (value: string) => (
+        <Badge variant={
+          value === 'active' ? 'default' :
+          value === 'completed' ? 'secondary' :
+          value === 'paused' ? 'outline' : 'destructive'
+        }>
+          {value === 'active' ? 'Ativa' :
+           value === 'completed' ? 'Concluída' :
+           value === 'paused' ? 'Pausada' : 'Cancelada'}
+        </Badge>
+      )
+    },
+    {
+      key: 'end_date',
+      label: 'Prazo',
+      render: (value: string) => (
+        <span className="text-sm text-muted-foreground">
+          {value ? format(new Date(value), 'dd/MM/yyyy', { locale: ptBR }) : 'Sem prazo'}
+        </span>
+      )
+    }
+  ]
+
+  const actions = [
+    {
+      label: 'Visualizar',
+      onClick: handleViewCampaign,
+      icon: Eye
+    },
+    {
+      label: 'Editar',
+      onClick: handleEditCampaign,
+      icon: Edit
+    }
+  ]
+
+  if (error) {
+    return (
+      <AdminLayout 
+        title="Campanhas de Doação" 
+        breadcrumbs={[
+          { label: 'Dashboard', path: '/admin-v2' },
+          { label: 'Campanhas', path: '/admin-v2/campaigns' }
+        ]}
+      >
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Erro ao carregar campanhas. Verifique sua conexão e tente novamente.
+          </AlertDescription>
+        </Alert>
+      </AdminLayout>
+    )
+  }
+
   return (
     <AdminLayout 
       title="Campanhas de Doação" 
@@ -16,28 +152,23 @@ const AdminCampaignsV2 = () => {
         { label: 'Dashboard', path: '/admin-v2' },
         { label: 'Campanhas', path: '/admin-v2/campaigns' }
       ]}
+      actions={
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Campanha
+        </Button>
+      }
     >
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5" />
-            Campanhas de Doação
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Construction className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Página em Desenvolvimento
-              </h3>
-              <p className="text-muted-foreground">
-                Esta funcionalidade será implementada na Fase 2 da reconstrução.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <DataTable
+        data={campaigns}
+        columns={columns}
+        actions={actions}
+        loading={isLoading}
+        searchable={true}
+        searchPlaceholder="Buscar campanhas..."
+        onSearch={(search) => setFilters(prev => ({ ...prev, search }))}
+        emptyMessage="Nenhuma campanha encontrada. Clique em 'Nova Campanha' para começar."
+      />
     </AdminLayout>
   )
 }

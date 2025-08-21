@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { AdminLayout } from '@/components/admin-v2/shared/Layout'
 import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,15 +36,13 @@ export default function MessagesPage() {
     const activeRules = automationRules.filter(r => r.is_active).length
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mensagens</h1>
-                    <p className="text-muted-foreground text-sm sm:text-base">
-                        Gerencie comunicações multi-canal com pacientes, doadores e promotores
-                    </p>
-                </div>
+        <AdminLayout 
+            title="Mensagens" 
+            breadcrumbs={[
+                { label: 'Dashboard', path: '/admin-v2' },
+                { label: 'Mensagens', path: '/admin-v2/messages' }
+            ]}
+            actions={
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Button
                         variant="outline"
@@ -75,7 +74,10 @@ export default function MessagesPage() {
                         <span className="sm:hidden">Enviar</span>
                     </Button>
                 </div>
-            </div>
+            }
+        >
+        <div className="space-y-6">
+
 
             {/* Cards de estatísticas rápidas */}
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -277,5 +279,6 @@ export default function MessagesPage() {
                 onOpenChange={setQuickTestOpen}
             />
         </div>
+        </AdminLayout>
     )
 }

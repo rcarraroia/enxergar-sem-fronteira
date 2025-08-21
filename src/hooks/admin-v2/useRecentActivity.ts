@@ -1,112 +1,82 @@
-
 /**
- * RECENT ACTIVITY HOOK V2 - Atividades recentes (versão corrigida)
+ * Hook para atividades recentes do dashboard admin v2
+ * Limitado a 4 atividades conforme solicitado
  */
 
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 
-export interface ActivityItem {
+interface RecentActivity {
   id: string
-  type: 'patient_registered' | 'event_created' | 'registration_completed' | 'sync_completed'
+  type: string
   title: string
   description: string
   timestamp: string
-  metadata?: Record<string, any>
 }
 
 export const useRecentActivityV2 = () => {
   return useQuery({
     queryKey: ['recent-activity-v2'],
-    queryFn: async (): Promise<ActivityItem[]> => {
+    queryFn: async (): Promise<RecentActivity[]> => {
       try {
-        console.log('🔍 [Activity V2] Buscando atividades recentes...')
-        
-        const activities: ActivityItem[] = []
-        const now = new Date()
-        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+        const activities: RecentActivity[] = []
 
-        // Buscar pacientes registrados recentemente
-        const { data: patients } = await supabase
-          .from('patients')
-          .select('id, nome, created_at')
-          .gte('created_at', yesterday.toISOString())
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        patients?.forEach(patient => {
-          activities.push({
-            id: `patient-${patient.id}`,
-            type: 'patient_registered',
-            title: 'Novo paciente cadastrado',
-            description: `${patient.nome} se cadastrou no sistema`,
-            timestamp: patient.created_at,
-            metadata: { patientName: patient.nome }
-          })
-        })
-
-        // Buscar eventos criados recentemente
-        const { data: events } = await supabase
+        // Buscar eventos recentes (últimos 2)
+        const { data: recentEvents } = await supabase
           .from('events')
           .select('id, title, created_at')
-          .gte('created_at', yesterday.toISOString())
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(2)
 
-        events?.forEach(event => {
-          activities.push({
-            id: `event-${event.id}`,
-            type: 'event_created',
-            title: 'Novo evento criado',
-            description: `Evento "${event.title}" foi criado`,
-            timestamp: event.created_at,
-            metadata: { eventTitle: event.title }
+        if (recentEvents) {
+          recentEvents.forEach(event => {
+            activities.push({
+              id: `event-${event.id}`,
+              type: 'event_created',
+              title: 'Novo evento criado',
+              description: `Evento "${event.title}" foi criado`,
+              timestamp: event.created_at
+            })
           })
-        })
+        }
 
-        // Buscar inscrições recentes
-        const { data: registrations } = await supabase
+        // Buscar inscrições recentes (últimas 2)
+        const { data: recentRegistrations } = await supabase
           .from('registrations')
           .select(`
-            id,
+            id, 
             created_at,
-            patient:patients(nome),
-            event_date:event_dates(
-              event:events(title)
-            )
+            patients!inner(nome),
+            events!inner(title)
           `)
-          .gte('created_at', yesterday.toISOString())
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(2)
 
-        registrations?.forEach(registration => {
-          const patientName = (registration.patient as any)?.nome || 'Paciente'
-          const eventTitle = (registration.event_date as any)?.event?.title || 'Evento'
-          
-          activities.push({
-            id: `registration-${registration.id}`,
-            type: 'registration_completed',
-            title: 'Nova inscrição',
-            description: `${patientName} se inscreveu em "${eventTitle}"`,
-            timestamp: registration.created_at,
-            metadata: { patientName, eventTitle }
+        if (recentRegistrations) {
+          recentRegistrations.forEach(registration => {
+            activities.push({
+              id: `registration-${registration.id}`,
+              type: 'registration_completed',
+              title: 'Nova inscrição',
+              description: `${registration.patients?.nome} se inscreveu em "${registration.events?.title}"`,
+              timestamp: registration.created_at
+            })
           })
-        })
+        }
 
-        // Ordenar por timestamp (mais recente primeiro)
-        const sortedActivities = activities.sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        ).slice(0, 20) // Limitar a 20 atividades
+        // Ordenar por timestamp (mais recente primeiro) e limitar a 4
+        const sortedActivities = activities
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 4)
 
-        console.log('📊 [Activity V2] Atividades carregadas:', sortedActivities.length)
         return sortedActivities
 
       } catch (error) {
-        console.error('❌ [Activity V2] Erro ao carregar atividades:', error)
+        console.error('Erro ao buscar atividades recentes:', error)
         return []
       }
     },
-    staleTime: 60000,
-    refetchInterval: 120000 // Atualizar a cada 2 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    refetchInterval: 5 * 60 * 1000 // 5 minutos
   })
 }

@@ -1,6 +1,5 @@
-
 /**
- * REGISTRATIONS HOOK V2 - Gestão de inscrições (versão corrigida)
+ * Hook para gestão de inscrições V2
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -9,42 +8,46 @@ import { toast } from 'sonner'
 
 export interface RegistrationV2 {
   id: string
-  status: 'confirmed' | 'cancelled' | 'pending'
+  patient_id: string
+  event_id: string
+  event_date_id: string
+  status: 'pending' | 'confirmed' | 'cancelled' | 'attended'
   created_at: string
-  patient: {
-    id: string
-    name: string
+  updated_at: string
+  // Dados relacionados
+  patient?: {
+    nome: string
+    telefone: string
     email: string
-    phone: string
-    cpf: string
-    birth_date: string
-    diagnosis: string
-    city: string
-    state: string
   }
-  event_date: {
-    id: string
+  event?: {
+    title: string
+    location: string
+  }
+  event_date?: {
     date: string
     start_time: string
     end_time: string
-    total_slots: number
-    available_slots: number
-    event: {
-      id: string
-      title: string
-      location: string
-      address: string
-      city: string
-    }
   }
 }
 
 export interface RegistrationFilters {
   search?: string
-  status?: string
   event_id?: string
+  status?: string
   date_from?: string
   date_to?: string
+}
+
+export interface RegistrationStats {
+  totalRegistrations: number
+  statusCounts: {
+    pending: number
+    confirmed: number
+    cancelled: number
+    attended: number
+  }
+  recentRegistrations: number
 }
 
 // Hook para buscar inscrições
@@ -58,43 +61,31 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         let query = supabase
           .from('registrations')
           .select(`
-            id,
-            status,
-            created_at,
-            patient:patients (
-              id,
-              nome,
-              email,
-              telefone,
-              cpf,
-              data_nascimento,
-              diagnostico
-            ),
-            event_date:event_dates (
-              id,
-              date,
-              start_time,
-              end_time,
-              total_slots,
-              available_slots,
-              event:events (
-                id,
-                title,
-                location,
-                address,
-                city
-              )
-            )
+            *,
+            patients!inner(nome, telefone, email),
+            events!inner(title, location),
+            event_dates!inner(date, start_time, end_time)
           `)
 
         // Aplicar filtros
         if (filters.search) {
-          // Para busca, precisamos fazer uma consulta mais complexa
-          // Por agora, vamos buscar todas e filtrar depois
+          query = query.or(`patients.nome.ilike.%${filters.search}%,events.title.ilike.%${filters.search}%`)
+        }
+
+        if (filters.event_id) {
+          query = query.eq('event_id', filters.event_id)
         }
 
         if (filters.status) {
           query = query.eq('status', filters.status)
+        }
+
+        if (filters.date_from) {
+          query = query.gte('event_dates.date', filters.date_from)
+        }
+
+        if (filters.date_to) {
+          query = query.lte('event_dates.date', filters.date_to)
         }
 
         // Ordenar por data de criação (mais recente primeiro)
@@ -110,49 +101,19 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
         // Processar dados das inscrições
         const processedRegistrations: RegistrationV2[] = (registrations || []).map(registration => ({
           id: registration.id,
-          status: registration.status as 'confirmed' | 'cancelled' | 'pending',
+          patient_id: registration.patient_id,
+          event_id: registration.event_id,
+          event_date_id: registration.event_date_id,
+          status: registration.status,
           created_at: registration.created_at,
-          patient: {
-            id: (registration.patient as any)?.id || '',
-            name: (registration.patient as any)?.nome || '',
-            email: (registration.patient as any)?.email || '',
-            phone: (registration.patient as any)?.telefone || '',
-            cpf: (registration.patient as any)?.cpf || '',
-            birth_date: (registration.patient as any)?.data_nascimento || '',
-            diagnosis: (registration.patient as any)?.diagnostico || '',
-            city: 'N/A', // Campo não existe na tabela atual
-            state: 'N/A' // Campo não existe na tabela atual
-          },
-          event_date: {
-            id: (registration.event_date as any)?.id || '',
-            date: (registration.event_date as any)?.date || '',
-            start_time: (registration.event_date as any)?.start_time || '',
-            end_time: (registration.event_date as any)?.end_time || '',
-            total_slots: (registration.event_date as any)?.total_slots || 0,
-            available_slots: (registration.event_date as any)?.available_slots || 0,
-            event: {
-              id: (registration.event_date as any)?.event?.id || '',
-              title: (registration.event_date as any)?.event?.title || '',
-              location: (registration.event_date as any)?.event?.location || '',
-              address: (registration.event_date as any)?.event?.address || '',
-              city: (registration.event_date as any)?.event?.city || ''
-            }
-          }
+          updated_at: registration.updated_at,
+          patient: registration.patients,
+          event: registration.events,
+          event_date: registration.event_dates
         }))
 
-        // Aplicar filtro de busca após o processamento
-        let filteredRegistrations = processedRegistrations
-        if (filters.search) {
-          const searchLower = filters.search.toLowerCase()
-          filteredRegistrations = processedRegistrations.filter(reg =>
-            reg.patient.name.toLowerCase().includes(searchLower) ||
-            reg.patient.email.toLowerCase().includes(searchLower) ||
-            reg.event_date.event.title.toLowerCase().includes(searchLower)
-          )
-        }
-
-        console.log('📊 [Registrations V2] Inscrições carregadas:', filteredRegistrations.length)
-        return filteredRegistrations
+        console.log('📊 [Registrations V2] Inscrições carregadas:', processedRegistrations.length)
+        return processedRegistrations
 
       } catch (error) {
         console.error('❌ [Registrations V2] Erro crítico ao carregar inscrições:', error)
@@ -168,50 +129,46 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
 export const useRegistrationStatsV2 = () => {
   return useQuery({
     queryKey: ['registration-stats-v2'],
-    queryFn: async () => {
+    queryFn: async (): Promise<RegistrationStats> => {
       try {
         console.log('🔍 [Registrations V2] Buscando estatísticas...')
 
         // Buscar todas as inscrições
         const { data: registrations, error } = await supabase
           .from('registrations')
-          .select(`
-            id,
-            status,
-            created_at
-          `)
+          .select('id, status, created_at')
 
         if (error) throw error
 
         const totalRegistrations = registrations?.length || 0
-        const confirmedRegistrations = registrations?.filter(r => r.status === 'confirmed').length || 0
-        const cancelledRegistrations = registrations?.filter(r => r.status === 'cancelled').length || 0
-        const pendingRegistrations = registrations?.filter(r => r.status === 'pending').length || 0
+        
+        // Contar por status
+        const statusCounts = {
+          pending: registrations?.filter(r => r.status === 'pending').length || 0,
+          confirmed: registrations?.filter(r => r.status === 'confirmed').length || 0,
+          cancelled: registrations?.filter(r => r.status === 'cancelled').length || 0,
+          attended: registrations?.filter(r => r.status === 'attended').length || 0
+        }
 
-        // Inscrições de hoje
-        const today = new Date().toISOString().split('T')[0]
-        const todayRegistrations = registrations?.filter(r => 
-          r.created_at.startsWith(today)
+        // Inscrições dos últimos 7 dias
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const recentRegistrations = registrations?.filter(r => 
+          new Date(r.created_at) >= sevenDaysAgo
         ).length || 0
 
         return {
-          total_registrations: totalRegistrations,
-          confirmed_registrations: confirmedRegistrations,
-          cancelled_registrations: cancelledRegistrations,
-          pending_registrations: pendingRegistrations,
-          today_registrations: todayRegistrations,
-          confirmation_rate: totalRegistrations > 0 ? Math.round((confirmedRegistrations / totalRegistrations) * 100) : 0
+          totalRegistrations,
+          statusCounts,
+          recentRegistrations
         }
 
       } catch (error) {
         console.error('❌ [Registrations V2] Erro ao carregar estatísticas:', error)
         return {
-          total_registrations: 0,
-          confirmed_registrations: 0,
-          cancelled_registrations: 0,
-          pending_registrations: 0,
-          today_registrations: 0,
-          confirmation_rate: 0
+          totalRegistrations: 0,
+          statusCounts: { pending: 0, confirmed: 0, cancelled: 0, attended: 0 },
+          recentRegistrations: 0
         }
       }
     },
@@ -224,11 +181,11 @@ export const useUpdateRegistrationStatusV2 = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ registrationId, status }: { registrationId: string, status: 'confirmed' | 'cancelled' | 'pending' }) => {
+    mutationFn: async ({ registrationId, status }: { registrationId: string, status: string }) => {
       try {
-        console.log('🔨 [Registrations V2] Atualizando status da inscrição:', registrationId, 'para', status)
+        console.log('🔨 [Registrations V2] Atualizando status:', registrationId, status)
         
-        const { data: registration, error } = await supabase
+        const { data, error } = await supabase
           .from('registrations')
           .update({ 
             status,
@@ -238,13 +195,10 @@ export const useUpdateRegistrationStatusV2 = () => {
           .select()
           .single()
 
-        if (error) {
-          console.error('❌ [Registrations V2] Erro ao atualizar status:', error)
-          throw error
-        }
+        if (error) throw error
 
-        console.log('✅ [Registrations V2] Status atualizado:', registration.id)
-        return registration
+        console.log('✅ [Registrations V2] Status atualizado:', data.id)
+        return data
 
       } catch (error: any) {
         console.error('❌ [Registrations V2] Erro crítico ao atualizar status:', error)
