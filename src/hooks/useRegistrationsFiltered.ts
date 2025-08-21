@@ -30,7 +30,6 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
             nome,
             email,
             telefone,
-            cpf,
             data_nascimento,
             diagnostico
           ),
@@ -85,7 +84,6 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
           const matchesSearch = 
             patient.nome.toLowerCase().includes(searchLower) ||
             patient.email.toLowerCase().includes(searchLower) ||
-            patient.cpf.includes(searchLower) ||
             event.title.toLowerCase().includes(searchLower)
           
           if (!matchesSearch) return false
@@ -126,7 +124,15 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
         created_at: reg.created_at,
         updated_at: reg.updated_at,
         event_date_id: reg.event_date_id,
-        patient: reg.patients,
+        patient: {
+          id: reg.patients.id,
+          nome: reg.patients.nome,
+          email: reg.patients.email,
+          telefone: reg.patients.telefone,
+          cpf: '', // CPF removido por questões de privacidade
+          data_nascimento: reg.patients.data_nascimento,
+          diagnostico: reg.patients.diagnostico
+        },
         event_date: {
           id: reg.event_dates.id,
           date: reg.event_dates.date,
@@ -137,6 +143,14 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
           event: reg.event_dates.events
         }
       }))
+
+      // Aplicar ordenação alfabética por nome do paciente
+      transformedRegistrations.sort((a, b) => 
+        a.patient.nome.localeCompare(b.patient.nome, 'pt-BR', { 
+          sensitivity: 'base',
+          ignorePunctuation: true 
+        })
+      )
 
       console.log(`✅ Encontradas ${transformedRegistrations.length} inscrições após filtros`)
       return transformedRegistrations

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,10 +60,9 @@ const ReportsTemp = () => {
       doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 40)
       doc.text(`Total de registros: ${registrations.length}`, 14, 50)
 
-      // Preparar dados para a tabela
+      // Preparar dados para a tabela (sem CPF, ordenado alfabeticamente)
       const tableData = registrations.map((reg: Registration) => [
         reg.patient.nome,
-        reg.patient.cpf,
         reg.patient.telefone,
         reg.patient.email,
         reg.event_date.event.city,
@@ -74,10 +74,9 @@ const ReportsTemp = () => {
         new Date(reg.created_at).toLocaleDateString('pt-BR')
       ])
 
-      // Cabeçalhos da tabela
+      // Cabeçalhos da tabela (sem CPF)
       const headers = [
         'Nome',
-        'CPF',
         'Telefone', 
         'Email',
         'Cidade',
@@ -103,15 +102,14 @@ const ReportsTemp = () => {
           fontStyle: 'bold'
         },
         columnStyles: {
-          0: { cellWidth: 25 }, // Nome
-          1: { cellWidth: 20 }, // CPF
-          2: { cellWidth: 20 }, // Telefone
-          3: { cellWidth: 30 }, // Email
-          4: { cellWidth: 20 }, // Cidade
-          5: { cellWidth: 20 }, // Data
-          6: { cellWidth: 15 }, // Horário
-          7: { cellWidth: 20 }, // Status
-          8: { cellWidth: 20 }  // Agendado em
+          0: { cellWidth: 30 }, // Nome
+          1: { cellWidth: 25 }, // Telefone
+          2: { cellWidth: 35 }, // Email
+          3: { cellWidth: 25 }, // Cidade
+          4: { cellWidth: 25 }, // Data
+          5: { cellWidth: 20 }, // Horário
+          6: { cellWidth: 25 }, // Status
+          7: { cellWidth: 25 }  // Agendado em
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
@@ -295,6 +293,8 @@ const ReportsTemp = () => {
               <li>• Visualize o preview dos dados que serão incluídos no relatório</li>
               <li>• Clique em "Gerar Relatório PDF" para fazer o download</li>
               <li>• O arquivo será baixado automaticamente com nome descritivo</li>
+              <li>• Por questões de privacidade, o CPF não é exibido no relatório</li>
+              <li>• Os registros estão ordenados alfabeticamente por nome</li>
             </ul>
           </CardContent>
         </Card>

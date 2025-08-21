@@ -83,12 +83,11 @@ export default function AdminRegistrations() {
     }
 
     const csvContent = [
-      ['Nome', 'Email', 'Telefone', 'CPF', 'Cidade', 'Evento', 'Data', 'Status'].join(','),
+      ['Nome', 'Email', 'Telefone', 'Cidade', 'Evento', 'Data', 'Status'].join(','),
       ...registrations.map((reg: Registration) => [
         reg.patient.nome,
         reg.patient.email,
         reg.patient.telefone,
-        reg.patient.cpf,
         reg.event_date.event.city,
         reg.event_date.event.title,
         new Date(reg.event_date.date).toLocaleDateString('pt-BR'),
@@ -224,7 +223,7 @@ export default function AdminRegistrations() {
                       <div>
                         <div className="font-medium">{registration.patient.nome}</div>
                         <div className="text-sm text-muted-foreground">
-                          CPF: {registration.patient.cpf}
+                          ID: {registration.patient.id.slice(0, 8)}...
                         </div>
                       </div>
                     </TableCell>
