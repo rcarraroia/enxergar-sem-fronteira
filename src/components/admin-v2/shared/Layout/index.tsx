@@ -36,20 +36,31 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <AdminNavigation />
         
         {/* Main Content */}
-        <main className="flex-1 p-6">
-          {/* Breadcrumbs */}
-          {breadcrumbs.length > 0 && (
-            <AdminBreadcrumbs items={breadcrumbs} />
-          )}
-          
-          {/* Page Title */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          </div>
-          
-          {/* Page Content */}
-          <div className="space-y-6">
-            {children}
+        <main className="flex-1 lg:ml-0 ml-0 transition-all duration-300">
+          <div className="p-4 lg:p-6">
+            {/* Breadcrumbs */}
+            {breadcrumbs.length > 0 && (
+              <div className="mb-4">
+                <AdminBreadcrumbs items={breadcrumbs} />
+              </div>
+            )}
+            
+            {/* Page Title */}
+            <div className="mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 truncate">{title}</h1>
+                {actions && (
+                  <div className="flex-shrink-0">
+                    {actions}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Page Content */}
+            <div className="space-y-4 lg:space-y-6">
+              {children}
+            </div>
           </div>
         </main>
       </div>
