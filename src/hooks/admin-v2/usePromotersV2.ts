@@ -417,28 +417,18 @@ export const useDeletePromoterV2 = () => {
             try {
                 console.log('🗑️ [V2] Deletando promoter:', id)
 
-                // Verificar se tem eventos associados
-                const { count: eventsCount } = await supabase
-                    .from('events')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('organizer_id', id)
-
-                if (eventsCount && eventsCount > 0) {
-                    throw new Error(`Não é possível excluir este promoter pois ele possui ${eventsCount} evento(s) associado(s)`)
-                }
-
-                // Deletar do banco
-                const { error: dbError } = await supabase
-                    .from('organizers')
-                    .delete()
-                    .eq('id', id)
+                // Usar função que bypassa RLS para deletar
+                const { data: result, error: dbError } = await supabase
+                    .rpc('admin_delete_organizer', {
+                        p_organizer_id: id
+                    })
 
                 if (dbError) {
-                    console.error('❌ [V2] Erro ao deletar do banco:', dbError)
+                    console.error('❌ [V2] Erro ao deletar via função:', dbError)
                     throw dbError
                 }
 
-                console.log('✅ [V2] Promoter deletado com sucesso:', id)
+                console.log('✅ [V2] Promoter deletado com sucesso via função:', id)
                 return id
 
             } catch (error) {
