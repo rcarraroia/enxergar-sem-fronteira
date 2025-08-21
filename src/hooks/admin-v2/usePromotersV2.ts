@@ -93,8 +93,8 @@ export const usePromotersV2 = (filters: PromoterFilters = {}) => {
                 throw error
             }
         },
-        staleTime: 30000,
-        refetchOnWindowFocus: false
+        staleTime: 5000, // Reduzido para 5 segundos
+        refetchOnWindowFocus: true // Ativado para refetch ao focar
     })
 }
 
@@ -437,8 +437,11 @@ export const useDeletePromoterV2 = () => {
             }
         },
         onSuccess: () => {
+            // Invalidar todas as queries relacionadas
             queryClient.invalidateQueries({ queryKey: ['promoters-v2'] })
             queryClient.invalidateQueries({ queryKey: ['promoter-stats-v2'] })
+            // Forçar refetch imediato
+            queryClient.refetchQueries({ queryKey: ['promoters-v2'] })
             toast.success('Promoter excluído com sucesso!')
         },
         onError: (error: any) => {
