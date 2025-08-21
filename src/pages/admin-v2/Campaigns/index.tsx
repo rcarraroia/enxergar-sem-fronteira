@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,13 +27,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -44,7 +44,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { 
+import {
   Heart,
   Plus,
   Search,
@@ -66,11 +66,11 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { 
-  useCampaignsV2, 
-  useCampaignStatsV2, 
-  useCreateCampaignV2, 
-  useUpdateCampaignV2, 
+import {
+  useCampaignsV2,
+  useCampaignStatsV2,
+  useCreateCampaignV2,
+  useUpdateCampaignV2,
   useDeleteCampaignV2,
   type CampaignV2 as Campaign
 } from '@/hooks/admin-v2/useCampaignsV2'
@@ -177,7 +177,7 @@ const AdminCampaignsV2 = () => {
       completed: { label: 'Concluída', className: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
       draft: { label: 'Rascunho', className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }
     }
-    
+
     const config = statusConfig[status]
     return <Badge className={config.className}>{config.label}</Badge>
   }
@@ -292,7 +292,7 @@ const AdminCampaignsV2 = () => {
                   }}
                 />
               </div>
-              
+
               <div className="w-full md:w-48">
                 <Label htmlFor="status">Status</Label>
                 <Select value={selectedStatus} onValueChange={(value) => {
@@ -362,7 +362,7 @@ const AdminCampaignsV2 = () => {
                 </AlertDescription>
               </Alert>
             )}
-            
+
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -388,7 +388,7 @@ const AdminCampaignsV2 = () => {
                           {getStatusBadge(campaign.status)}
                         </div>
                         <p className="text-muted-foreground mb-3">{campaign.description}</p>
-                        
+
                         {/* Barra de Progresso */}
                         <div className="mb-3">
                           <div className="flex justify-between text-sm mb-1">
@@ -396,8 +396,8 @@ const AdminCampaignsV2 = () => {
                             <span>{getProgressPercentage(campaign.raised_amount, campaign.goal_amount).toFixed(1)}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                            <div
+                              className="bg-green-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${getProgressPercentage(campaign.raised_amount, campaign.goal_amount)}%` }}
                             ></div>
                           </div>
@@ -419,8 +419,8 @@ const AdminCampaignsV2 = () => {
                           <div className="flex items-center gap-1">
                             <Target className="h-4 w-4" />
                             <span>
-                              {campaign.donation_type === 'one_time' ? 'Pontual' : 
-                               campaign.donation_type === 'recurring' ? 'Recorrente' : 'Ambos'}
+                              {campaign.donation_type === 'one_time' ? 'Pontual' :
+                                campaign.donation_type === 'recurring' ? 'Recorrente' : 'Ambos'}
                             </span>
                           </div>
                         </div>
@@ -451,7 +451,7 @@ const AdminCampaignsV2 = () => {
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
                           </DropdownMenuItem>
-                          
+
                           <DropdownMenuItem>
                             <PieChart className="h-4 w-4 mr-2" />
                             Relatório de Split
@@ -475,13 +475,13 @@ const AdminCampaignsV2 = () => {
                                 <AlertDialogDescription>
                                   Tem certeza que deseja excluir a campanha "{campaign.title}"?
                                   <br /><br />
-                                  <strong>Atenção:</strong> Esta ação não pode ser desfeita e removerá 
+                                  <strong>Atenção:</strong> Esta ação não pode ser desfeita e removerá
                                   todos os dados relacionados à campanha.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
+                                <AlertDialogAction
                                   className="bg-red-600 hover:bg-red-700"
                                   onClick={() => {
                                     // TODO: Implementar exclusão
@@ -512,7 +512,7 @@ const AdminCampaignsV2 = () => {
                 Crie uma nova campanha com regras de split automático
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="title">Título da Campanha *</Label>
@@ -552,8 +552,8 @@ const AdminCampaignsV2 = () => {
 
                 <div>
                   <Label htmlFor="donation_type">Tipo de Doação *</Label>
-                  <Select 
-                    value={formData.donation_type} 
+                  <Select
+                    value={formData.donation_type}
                     onValueChange={(value) => setFormData({ ...formData, donation_type: value })}
                   >
                     <SelectTrigger>
@@ -618,8 +618,8 @@ const AdminCampaignsV2 = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowCreateDialog(false)
                   setFormData({
@@ -636,7 +636,7 @@ const AdminCampaignsV2 = () => {
               >
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 onClick={handleCreateCampaign}
                 disabled={createCampaignMutation.isPending}
               >
