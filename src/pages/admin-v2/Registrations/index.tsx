@@ -166,8 +166,8 @@ const AdminRegistrationsV2 = () => {
     <AdminLayout 
       title="Gestão de Inscrições" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Inscrições', path: '/admin-v2/registrations' }
+        { label: 'Dashboard', path: '/admin' },
+        { label: 'Inscrições', path: '/admin/registrations' }
       ]}
     >
       {error && (

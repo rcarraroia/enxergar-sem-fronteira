@@ -140,8 +140,8 @@ const AdminOrganizersV2 = () => {
     <AdminLayout 
       title="Gestão de Organizadores" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Organizadores', path: '/admin-v2/organizers' }
+        { label: 'Dashboard', path: '/admin' },
+        { label: 'Organizadores', path: '/admin/organizers' }
       ]}
       actions={
         <Button>

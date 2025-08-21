@@ -30,55 +30,55 @@ const navigationItems: NavigationItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    path: '/admin-v2',
+    path: '/admin',
     icon: LayoutDashboard
   },
   {
     id: 'events',
     label: 'Eventos',
-    path: '/admin-v2/events',
+    path: '/admin/events',
     icon: Calendar
   },
   {
     id: 'patients',
     label: 'Pacientes',
-    path: '/admin-v2/patients',
+    path: '/admin/patients',
     icon: Users
   },
   {
     id: 'registrations',
     label: 'Inscrições',
-    path: '/admin-v2/registrations',
+    path: '/admin/registrations',
     icon: UserCheck
   },
   {
     id: 'organizers',
     label: 'Promotores',
-    path: '/admin-v2/organizers',
+    path: '/admin/organizers',
     icon: UserCog
   },
   {
     id: 'messages',
     label: 'Mensagens',
-    path: '/admin-v2/messages',
+    path: '/admin/messages',
     icon: MessageSquare
   },
   {
     id: 'campaigns',
     label: 'Campanhas',
-    path: '/admin-v2/campaigns',
+    path: '/admin/campaigns',
     icon: Heart
   },
   {
     id: 'sync',
     label: 'Sincronização',
-    path: '/admin-v2/sync',
+    path: '/admin/sync',
     icon: RefreshCw
   },
   {
     id: 'settings',
     label: 'Configurações',
-    path: '/admin-v2/settings',
+    path: '/admin/settings',
     icon: Settings
   }
 ]

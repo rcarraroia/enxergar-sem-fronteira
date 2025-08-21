@@ -183,8 +183,8 @@ const AdminEventsV2 = () => {
       <AdminLayout 
         title="Gestão de Eventos" 
         breadcrumbs={[
-          { label: 'Dashboard', path: '/admin-v2' },
-          { label: 'Eventos', path: '/admin-v2/events' }
+          { label: 'Dashboard', path: '/admin' },
+          { label: 'Eventos', path: '/admin/events' }
         ]}
       >
         <Alert variant="destructive">

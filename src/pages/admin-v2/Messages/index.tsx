@@ -39,8 +39,8 @@ export default function MessagesPage() {
         <AdminLayout 
             title="Mensagens" 
             breadcrumbs={[
-                { label: 'Dashboard', path: '/admin-v2' },
-                { label: 'Mensagens', path: '/admin-v2/messages' }
+                { label: 'Dashboard', path: '/admin' },
+                { label: 'Mensagens', path: '/admin/messages' }
             ]}
             actions={
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

@@ -149,8 +149,8 @@ const AdminCampaignsV2 = () => {
     <AdminLayout 
       title="Campanhas de Doação" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Campanhas', path: '/admin-v2/campaigns' }
+        { label: 'Dashboard', path: '/admin' },
+        { label: 'Campanhas', path: '/admin/campaigns' }
       ]}
       actions={
         <Button>
