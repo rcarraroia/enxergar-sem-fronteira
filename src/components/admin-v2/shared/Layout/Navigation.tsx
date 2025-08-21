@@ -63,18 +63,6 @@ const navigationItems: NavigationItem[] = [
     icon: Heart
   },
   {
-    id: 'payments',
-    label: 'Pagamentos',
-    path: '/admin-v2/payments',
-    icon: CreditCard
-  },
-  {
-    id: 'donations',
-    label: 'Doações',
-    path: '/admin-v2/donations',
-    icon: Heart
-  },
-  {
     id: 'sync',
     label: 'Sincronização',
     path: '/admin-v2/sync',
