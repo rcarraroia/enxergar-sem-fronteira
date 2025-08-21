@@ -181,7 +181,7 @@ export const useCreatePromoterV2 = () => {
     return useMutation({
         mutationFn: async (data: PromoterCreation) => {
             try {
-                console.log('🔨 [V2] Criando promoter:', { ...data, password: '[HIDDEN]' })
+                console.log('🔨 [V2] Criando promoter via função bypass:', { ...data, password: '[HIDDEN]' })
 
                 // Verificar se já existe um promoter com este email
                 const { data: existingPromoter, error: checkError } = await supabase
@@ -199,9 +199,9 @@ export const useCreatePromoterV2 = () => {
                     throw new Error('Já existe um promoter com este email')
                 }
 
-                // Usar função segura que bypassa RLS
+                // Usar função que bypassa RLS completamente
                 const { data: promoterId, error: dbError } = await supabase
-                    .rpc('admin_create_organizer', {
+                    .rpc('admin_create_organizer_bypass', {
                         p_name: data.name,
                         p_email: data.email,
                         p_phone: data.phone || null
