@@ -34,6 +34,7 @@ import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminPaymentsV2 from "./pages/admin-v2/Payments";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
 import AdminSyncV2 from "./pages/admin-v2/Sync";
+import AdminMessagesV2 from "./pages/admin-v2/Messages";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import OrganizerEvents from "./pages/OrganizerEvents";
 import OrganizerRegistrations from "./pages/OrganizerRegistrations";
@@ -170,6 +171,11 @@ function App() {
               <Route path="/admin-v2/organizers" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminOrganizersV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/messages" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminMessagesV2 />
                 </ProtectedRoute>
               } />
               <Route path="/admin-v2/campaigns" element={

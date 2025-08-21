@@ -14,7 +14,8 @@ import {
   RefreshCw,
   CreditCard,
   Heart,
-  UserCog
+  UserCog,
+  MessageSquare
 } from 'lucide-react'
 
 interface NavigationItem {
@@ -55,6 +56,12 @@ const navigationItems: NavigationItem[] = [
     label: 'Promotores',
     path: '/admin-v2/organizers',
     icon: UserCog
+  },
+  {
+    id: 'messages',
+    label: 'Mensagens',
+    path: '/admin-v2/messages',
+    icon: MessageSquare
   },
   {
     id: 'campaigns',
