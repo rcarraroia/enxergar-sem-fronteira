@@ -25,7 +25,7 @@ export class SMSProvider {
   }
 
   /**
-   * Envia SMS através da Edge Function existente
+   * Envia SMS através da Edge Function do Supabase
    */
   async send(data: SMSData): Promise<SMSResponse> {
     try {
@@ -40,7 +40,7 @@ export class SMSProvider {
         return this.simulateSend(data)
       }
 
-      // Chamar Edge Function existente
+      // Chamar Edge Function do Supabase
       const response = await fetch(`${this.baseUrl}/functions/v1/send-sms`, {
         method: 'POST',
         headers: {
@@ -60,13 +60,13 @@ export class SMSProvider {
 
       const result = await response.json()
 
-      console.log('✅ [SMSProvider] SMS enviado:', result.messageId || result.id)
+      console.log('✅ [SMSProvider] SMS enviado:', result.id)
 
       return {
-        id: result.messageId || result.id || `sms_${Date.now()}`,
-        status: 'sent',
-        provider: 'vonage',
-        timestamp: new Date().toISOString()
+        id: result.id,
+        status: result.status,
+        provider: result.provider,
+        timestamp: result.timestamp
       }
 
     } catch (error) {

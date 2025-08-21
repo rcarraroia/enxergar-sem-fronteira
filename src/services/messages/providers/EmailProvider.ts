@@ -18,46 +18,44 @@ interface EmailResponse {
 }
 
 export class EmailProvider {
-  private apiKey: string
-  private fromEmail: string
+  private baseUrl: string
 
   constructor() {
-    // Configurações do Resend via variáveis de ambiente
-    this.apiKey = import.meta.env.VITE_RESEND_API_KEY || ''
-    this.fromEmail = import.meta.env.VITE_FROM_EMAIL || 'noreply@enxergarsemfronteiras.com'
+    // URL base das Edge Functions (Supabase)
+    this.baseUrl = import.meta.env.VITE_SUPABASE_URL || ''
   }
 
   /**
-   * Envia email através do Resend
+   * Envia email através da Edge Function do Supabase
    */
   async send(data: EmailData): Promise<EmailResponse> {
     try {
       console.log('📧 [EmailProvider] Enviando email para:', data.to)
 
-      // Se não temos API key, simular envio em desenvolvimento
-      if (!this.apiKey) {
-        console.log('⚠️ [EmailProvider] API Key não configurada, simulando envio')
+      // Se não temos URL base, simular envio em desenvolvimento
+      if (!this.baseUrl) {
+        console.log('⚠️ [EmailProvider] URL base não configurada, simulando envio')
         return this.simulateSend(data)
       }
 
-      const response = await fetch('https://api.resend.com/emails', {
+      // Chamar Edge Function do Supabase
+      const response = await fetch(`${this.baseUrl}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
         },
         body: JSON.stringify({
-          from: data.from || this.fromEmail,
-          to: [data.to],
+          to: data.to,
           subject: data.subject,
-          html: this.formatContent(data.content),
-          text: data.content
+          content: data.content,
+          from: data.from
         })
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(`Resend API Error: ${errorData.message || response.statusText}`)
+        const errorData = await response.text()
+        throw new Error(`Email API Error: ${errorData || response.statusText}`)
       }
 
       const result = await response.json()
@@ -66,9 +64,9 @@ export class EmailProvider {
 
       return {
         id: result.id,
-        status: 'sent',
-        provider: 'resend',
-        timestamp: new Date().toISOString()
+        status: result.status,
+        provider: result.provider,
+        timestamp: result.timestamp
       }
 
     } catch (error) {
@@ -82,21 +80,17 @@ export class EmailProvider {
    */
   async getStatus(emailId: string): Promise<any> {
     try {
-      if (!this.apiKey) {
+      if (!this.baseUrl) {
         return { status: 'delivered' } // Simular em desenvolvimento
       }
 
-      const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Resend API Error: ${response.statusText}`)
+      // Por enquanto, retornar status simulado
+      // Em produção, isso poderia consultar webhooks ou logs do Supabase
+      return {
+        messageId: emailId,
+        status: 'delivered',
+        timestamp: new Date().toISOString()
       }
-
-      return await response.json()
 
     } catch (error) {
       console.error('❌ [EmailProvider] Erro ao verificar status:', error)
@@ -104,74 +98,7 @@ export class EmailProvider {
     }
   }
 
-  /**
-   * Formata conteúdo para HTML
-   */
-  private formatContent(content: string): string {
-    // Converter quebras de linha para HTML
-    const htmlContent = content
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')
 
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enxergar Sem Fronteiras</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .header {
-      text-align: center;
-      border-bottom: 2px solid #2563eb;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2563eb;
-    }
-    .content {
-      margin-bottom: 30px;
-    }
-    .footer {
-      border-top: 1px solid #e5e7eb;
-      padding-top: 20px;
-      text-align: center;
-      font-size: 14px;
-      color: #6b7280;
-    }
-    p {
-      margin-bottom: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo">Enxergar Sem Fronteiras</div>
-  </div>
-  
-  <div class="content">
-    <p>${htmlContent}</p>
-  </div>
-  
-  <div class="footer">
-    <p>Esta é uma mensagem automática do sistema Enxergar Sem Fronteiras.</p>
-    <p>Se você não solicitou esta mensagem, pode ignorá-la com segurança.</p>
-  </div>
-</body>
-</html>
-    `.trim()
-  }
 
   /**
    * Simula envio para desenvolvimento

@@ -1,278 +1,68 @@
-DFP: Breach notification feature flag is enabled. true
-uoermayoxjaaomzjmuhp.supabase.co/functions/v1/send-email:1  Failed to load resource: the server responded with a status of 500 ()Entenda o erro
-index-B0OSvZFk.js:586 Erro no envio: Error: Edge Function returned a non-2xx status code
-    at r (index-B0OSvZFk.js:586:574)
-r @ index-B0OSvZFk.js:586Entenda o erro
+SOLICITAÇÃO DE ALTERAÇÃO TÉCNICA - REFACTOR DE SEGURANÇA
+Para: Kiro Dev
+De: [Seu Nome/Time]
+Data: 21 de Agosto de 2025
+Assunto: Mover Chaves de API do Frontend para Edge Functions do Supabase
 
-| event_message                                                                                                                                                                                                                                                                                             | event_type | function_id                          | id                                   | level | timestamp        |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------ | ------------------------------------ | ----- | ---------------- |
-| 📨 Vonage response received: {
-  success: true,
-  messageId: "f6b3ddbe-098b-4715-9578-ce36bfa26c27",
-  error: undefined
-}
-                                                                                                                                                                                | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b21f8d10-fb71-4b30-a4fd-721575e28636 | log   | 1755645435151000 |
-| ✅ SMS sent successfully to: 339983****
-                                                                                                                                                                                                                                                                   | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 9b3973f2-d3f1-4f8d-853c-de53f6692618 | log   | 1755645435151000 |
-| 📱 Sending sms via Vonage to: 339983****
-                                                                                                                                                                                                                                                                 | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 5f098150-4e04-4a94-804d-a1ed8431124b | log   | 1755645434689000 |
-| 📤 Sending REAL SMS via Vonage...
-                                                                                                                                                                                                                                                                        | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | a2e0315e-6102-452e-872b-f0c30d764a47 | log   | 1755645434689000 |
-| 🔄 Content processed: { processedLength: 5, testMode: false, preview: "TESTE" }
-                                                                                                                                                                                                                          | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 899e3bfc-e144-4400-a924-a9a48174f5e7 | log   | 1755645434689000 |
-| 📞 Phone formatted and validated: 339983****
-                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 39969e73-3fec-4329-8d73-fdf63a6fde1f | log   | 1755645434688000 |
-| 📝 Manual message mode detected
-                                                                                                                                                                                                                                                                          | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 4402c7f6-7b5f-4c98-8692-a669313007cb | log   | 1755645434688000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: false,
-  hasTemplateData: true,
-  dataKeys: [
-    "patient_name",
-    "event_title",
-    "event_date",
-    "event_time",
-    "event_location",
-    "custom_message"
-  ]
-}
- | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 2d8a5976-4887-4e0d-bbc4-d7a440af3b8e | log   | 1755645434688000 |
-| 📝 Using custom message from templateData
-                                                                                                                                                                                                                                                                | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 2d56cd1d-d33d-478e-85a0-febbf5d1ca65 | log   | 1755645434688000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | cb1a5c41-60bc-4645-a562-415c880bf94b | log   | 1755645434683000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 0114ed73-8fd3-4dc6-ae57-216151e8f7a7 | log   | 1755645434681000 |
-| booted (time: 21ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b5593a8d-d62e-49e7-a70e-9f15a77608c2 | log   | 1755645434670000 |
-| shutdown                                                                                                                                                                                                                                                                                                  | Shutdown   | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | c6d0de31-87ed-45ae-b6ba-2886e73133ab | log   | 1755644828648000 |
-| 🧪 Test mode: SMS not actually sent
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b66c829d-5aec-4988-8b54-9100e0018ee1 | log   | 1755644628648000 |
-| 🔄 Content processed: { processedLength: 5, testMode: true, preview: "teste" }
-                                                                                                                                                                                                                           | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | d0386aeb-ce3e-4e42-a0a5-5a6b38bfdaac | log   | 1755644628647000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: true,
-  hasTemplateData: true,
-  dataKeys: [
-    "patient_name",
-    "event_title",
-    "event_date",
-    "event_time",
-    "event_location",
-    "custom_message"
-  ]
-}
-  | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b3988f71-5b28-4a0b-9a10-8f73db307ea9 | log   | 1755644628647000 |
-| 📝 Using custom message from templateData
-                                                                                                                                                                                                                                                                | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 70641aab-b7e7-424e-acd8-51088e80ccb8 | log   | 1755644628647000 |
-| 🧪 Manual test mode detected
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 79c145b7-7b4b-4434-92e5-a34709af49e3 | log   | 1755644628647000 |
-| 📞 Phone formatted and validated: 339983****
-                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 02d22088-870b-4dd8-9b96-1f558e246c13 | log   | 1755644628647000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 47a0b520-643b-4da6-bec8-e1b2846e45a1 | log   | 1755644628640000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | f85858f4-54ea-4ab5-9263-90b1dc1108ca | log   | 1755644628637000 |
-| booted (time: 31ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 59ee4c5a-2415-4538-ac63-ed6d32befe05 | log   | 1755644628623000 |
-| shutdown                                                                                                                                                                                                                                                                                                  | Shutdown   | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | eb8217ea-7374-49d4-be07-be9c655e8254 | log   | 1755643325663000 |
-| shutdown                                                                                                                                                                                                                                                                                                  | Shutdown   | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 423af56a-5c27-40b8-916f-0421bd4a14cb | log   | 1755643179019000 |
-| 📞 Phone formatted and validated
-                                                                                                                                                                                                                                                                         | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | d9a707f5-9e53-42c2-bd6d-18248f6e8f9b | log   | 1755643125661000 |
-| 🧪 Test mode: SMS not actually sent
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | d5495070-93c5-495c-8838-af2130c96089 | log   | 1755643125661000 |
-| 🧪 Manual test mode detected
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 372ff7d9-0e22-469b-bdb0-e501b2b21e21 | log   | 1755643125661000 |
-| 🔄 Content processed: { processedLength: 6, testMode: true }
-                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 6c78ea77-44b5-4d02-85d4-9a99655179c7 | log   | 1755643125661000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: true
-}
-                                                                                                                                                                    | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | f9b827ea-7573-4437-9b07-ccdf43a699c6 | log   | 1755643125661000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 6b9e8428-205d-4e8f-9451-4957c4aeceef | log   | 1755643125654000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 4a9a9f95-f32e-46f5-9b7d-cff00ec9d779 | log   | 1755643125652000 |
-| booted (time: 23ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 1ddbb4f5-a567-4df3-9bec-57aef0159e82 | log   | 1755643125640000 |
-| 🔄 Content processed: { processedLength: 6, testMode: true }
-                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | e9118171-1bdd-413b-ba03-1bdeea77b09f | log   | 1755642979021000 |
-| 🧪 Test mode: SMS not actually sent
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | a72d951c-f367-4175-a75c-5cb9fb1f3e7f | log   | 1755642979021000 |
-| 📞 Phone formatted and validated
-                                                                                                                                                                                                                                                                         | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b8d7cda9-756a-48a3-bcba-c82a5d10403b | log   | 1755642979021000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: true
-}
-                                                                                                                                                                    | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | d3e54d24-99f7-4fdd-b368-74a6932b9a0e | log   | 1755642979021000 |
-| 🧪 Manual test mode detected
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | b4309654-dcd3-4400-83c3-a85dbd5c3757 | log   | 1755642979021000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 6aaa495a-2fbe-416b-988e-54fdd02777d2 | log   | 1755642979016000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | e8d74a87-a3c3-4a60-9925-f04b4a8a40df | log   | 1755642979011000 |
-| booted (time: 24ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 004e917f-1f4d-42f9-99ea-a374efbd14c9 | log   | 1755642979000000 |
-| shutdown                                                                                                                                                                                                                                                                                                  | Shutdown   | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 2285ae36-4740-41fd-9f2a-26d031144177 | log   | 1755642748415000 |
-| ❌ Send SMS error: {}
-                                                                                                                                                                                                                                                                                     | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 92ad11b3-2578-4c7b-8961-10c68cbcf9f9 | error | 1755642548503000 |
-| ❌ Template fetch error: {
-  code: "PGRST116",
-  details: "The result contains 0 rows",
-  hint: null,
-  message: "Cannot coerce the result to a single JSON object"
-}
-                                                                                                                                     | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | fb190823-1717-4d3f-8390-e719acf797c1 | error | 1755642548502000 |
-| 📞 Phone formatted and validated
-                                                                                                                                                                                                                                                                         | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | be367475-bc2e-49b9-8dda-3798d18384e0 | log   | 1755642548406000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: true
-}
-                                                                                                                                                                    | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | f1aedb34-9353-4938-ba7b-780101681bbd | log   | 1755642548406000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | d527f973-f190-4835-a6a0-80b32a8b8f59 | log   | 1755642548397000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 66fc3919-1c4c-45a5-b93d-fa392b5e616f | log   | 1755642548394000 |
-| booted (time: 32ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 36f3f296-6709-455d-9b2a-0b0a42c4d0e2 | log   | 1755642548381000 |
-| shutdown                                                                                                                                                                                                                                                                                                  | Shutdown   | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 1a39fa60-e677-445b-b340-349c6db8495d | log   | 1755642222091000 |
-| ❌ Template fetch error: {
-  code: "PGRST116",
-  details: "The result contains 0 rows",
-  hint: null,
-  message: "Cannot coerce the result to a single JSON object"
-}
-                                                                                                                                     | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 7b1fc7c6-7c7f-4f44-ad0c-cd55083ace5b | error | 1755642022313000 |
-| ❌ Send SMS error: {}
-                                                                                                                                                                                                                                                                                     | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 61594145-549b-4ff7-9142-f7722c15a9ac | error | 1755642022313000 |
-| 📋 SMS request details: {
-  templateId: undefined,
-  templateName: "teste_manual",
-  recipientPhone: "339983****",
-  testMode: true
-}
-                                                                                                                                                                    | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 72b6ab0d-69d2-4ee7-818f-8b4453f4c2b0 | log   | 1755642022092000 |
-| 📞 Phone formatted and validated
-                                                                                                                                                                                                                                                                         | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 18115e28-9ecc-4d20-b38c-daa2d0b13f7d | log   | 1755642022092000 |
-| 📱 Send SMS function started
-                                                                                                                                                                                                                                                                             | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 7056cadc-099b-40a3-8e86-30ff5e36e0d5 | log   | 1755642022086000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                      | Log        | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 1fff2210-ddcb-4d6d-b6d9-3f7d9d9db5bc | log   | 1755642022083000 |
-| booted (time: 31ms)                                                                                                                                                                                                                                                                                       | Boot       | f67ebe73-72aa-4a25-93b7-57e49be2a4bf | 05ea6e36-5f02-4923-a547-91e1ff93801a | log   | 1755642022070000 |
+1. Visão Geral e Problema Identificado
+Identificamos uma vulnerabilidade crítica de segurança: todas as variáveis de ambiente que começam com o prefixo VITE_ são expostas publicamente no código do frontend. Isso inclui chaves de API sensíveis como a do Resend e da Vonage.
 
-LOG DO EMAIL
-| event_message                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | event_type | function_id                          | id                                   | level | timestamp        |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------ | ------------------------------------ | ----- | ---------------- |
-| ❌ Error sending via Resend: Error: Resend API error: 403 - {"statusCode":403,"error":"The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains","name":"validation_error"}
-    at Server.<anonymous> (file:///tmp/user_fn_uoermayoxjaaomzjmuhp_fd3139e7-ef72-4487-847b-0c837c312184_19/source/supabase/functions/send-email/index.ts:103:17)
-    at eventLoopTick (ext:core/01_core.js:175:7)
-    at async Server.#respond (https://deno.land/std@0.168.0/http/server.ts:221:18)
-                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 24557a06-87a3-4f2f-958f-a50ff6c58f29 | error | 1755645412519000 |
-| ❌ Send email error: Error: Failed to send email: Resend API error: 403 - {"statusCode":403,"error":"The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains","name":"validation_error"}
-    at Server.<anonymous> (file:///tmp/user_fn_uoermayoxjaaomzjmuhp_fd3139e7-ef72-4487-847b-0c837c312184_19/source/supabase/functions/send-email/index.ts:121:15)
-    at eventLoopTick (ext:core/01_core.js:175:7)
-    at async Server.#respond (https://deno.land/std@0.168.0/http/server.ts:221:18)
-                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | b041c33f-b286-4704-a31b-2064f6327330 | error | 1755645412519000 |
-| 📨 Resend response status: 403
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 077ec5d0-39f0-4d0e-a8e3-bad0b3609824 | log   | 1755645412518000 |
-| ❌ Resend API error: {
-  status: 403,
-  statusText: "Forbidden",
-  response: '{"statusCode":403,"error":"The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains","name":"validation_error"}'
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | e174e973-5aec-45c2-b368-868ed39b199c | error | 1755645412518000 |
-| 📨 Resend response: {"statusCode":403,"error":"The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains","name":"validation_error"}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 38981c72-137c-42f7-b7f5-06b37d176ff0 | log   | 1755645412518000 |
-| 📦 Email payload: {
-  from: "Enxergar sem Fronteiras <coracaovalenteorg@gmail.com>",
-  to: [ "rca****" ],
-  subject: "Mensagem - Enxergar sem Fronteiras",
-  html: "\n" +
-    '              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">\n' +
-    '                <h2 style="color: #333;">Enxergar sem Fronteiras</h2>\n' +
-    "                <p>TESTE</p>\n" +
-    '                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">\n' +
-    '                <p style="color: #666; font-size: 12px;">\n' +
-    "                  Esta mensagem foi enviada pelo sistema Enxergar sem Fronteiras.\n" +
-    "                </p>\n" +
-    "              </div>\n" +
-    "            "
-}
- | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 52f00e77-216f-49cc-afa2-67723bdc656f | log   | 1755645411650000 |
-| 📋 Email request received: {
-  to: "rcarraro2015@gmail.com",
-  subject: "Mensagem - Enxergar sem Fronteiras",
-  templateName: undefined,
-  testMode: false
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 130a706d-aabe-4ff7-8f84-47a89c0ea4d6 | log   | 1755645411649000 |
-| 📤 Sending REAL email via Resend...
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | d821ad16-f659-465e-80ec-f62c36b2cdc5 | log   | 1755645411649000 |
-| 📧 Direct email sending mode
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | fd08d63f-90bb-44db-8e51-f33cb85a45e0 | log   | 1755645411649000 |
-| 📧 Send Email function started
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | e7a0c7bd-1636-404d-9725-39be2905e1a8 | log   | 1755645411644000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 6c04ecb2-6b2a-418a-9b2e-bc4f34c756f2 | log   | 1755645411642000 |
-| booted (time: 22ms)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Boot       | fd3139e7-ef72-4487-847b-0c837c312184 | aef2474f-e4a9-4980-bb27-838b05955138 | log   | 1755645411632000 |
-| shutdown                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Shutdown   | fd3139e7-ef72-4487-847b-0c837c312184 | a3f88b17-1078-42bc-94ec-b4b65acdbb6d | log   | 1755644112226000 |
-| 📋 Email request received: {
-  to: "rcarraro2015@gmail.com",
-  subject: "Teste - teste_manual",
-  templateName: undefined,
-  testMode: true
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | cffe1ef9-a96e-409c-9018-46fc488834dc | log   | 1755643912225000 |
-| 🧪 Test mode: Email processed but not sent
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 23dcaf4f-0f45-4981-9752-c07033681a24 | log   | 1755643912225000 |
-| 📧 Direct email sending mode
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 8a5a8470-bbf9-4d6e-b78d-d556bc6f10f3 | log   | 1755643912225000 |
-| 📧 Send Email function started
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 158505d5-c6c9-4795-b9cd-634e6e2f4e93 | log   | 1755643912220000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | dcd97a56-faee-47b3-a8dc-d35704879ab2 | log   | 1755643912217000 |
-| booted (time: 29ms)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Boot       | fd3139e7-ef72-4487-847b-0c837c312184 | 13aa8781-7387-4df4-8bcc-f55a0990e06c | log   | 1755643912205000 |
-| shutdown                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Shutdown   | fd3139e7-ef72-4487-847b-0c837c312184 | da635ada-ab23-4a91-a650-02a37747102f | log   | 1755643370601000 |
-| shutdown                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Shutdown   | fd3139e7-ef72-4487-847b-0c837c312184 | 2e080900-2e93-46da-a76e-193eff3df466 | log   | 1755643249482000 |
-| 📋 Email request received: {
-  to: "rcarraro2015@gmail.com",
-  subject: "Teste - teste",
-  templateName: undefined,
-  testMode: true
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | ef120dde-bf46-475b-b7ea-01dc3a40e1c6 | log   | 1755643170611000 |
-| 🧪 Test mode: Email processed but not sent
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 7322fd89-301e-4aef-b8a5-895ddb6fc60c | log   | 1755643170611000 |
-| 📧 Direct email sending mode
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | b1889793-d86c-4633-a88c-004cc19cd85c | log   | 1755643170611000 |
-| 📧 Send Email function started
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | aa17ef2c-258d-482a-9959-a4968a91e162 | log   | 1755643170604000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 9b0480ff-e03c-4b3c-9816-80f42c047f16 | log   | 1755643170601000 |
-| booted (time: 32ms)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Boot       | fd3139e7-ef72-4487-847b-0c837c312184 | 5e3e54e7-6353-44b0-8fb6-0559b3168eb8 | log   | 1755643170577000 |
-| 🧪 Test mode: Email processed but not sent
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 8c4d1eac-d5fb-497c-b1ce-7d6e06065bca | log   | 1755643049480000 |
-| 📧 Direct email sending mode
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | eadf7b3e-d1fc-4c25-8fc3-149a446739ef | log   | 1755643049480000 |
-| 📋 Email request received: {
-  to: "rcarraro2015@gmail.com",
-  subject: "Teste - teste",
-  templateName: undefined,
-  testMode: true
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 8cbdd716-9098-4833-b090-a4531398ea94 | log   | 1755643049480000 |
-| 📧 Send Email function started
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | 9ed2b1ac-4480-4e12-b3d5-a4fef042f6cc | log   | 1755643049476000 |
-| Listening on http://localhost:9999/
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Log        | fd3139e7-ef72-4487-847b-0c837c312184 | cb300ce3-2c78-46e5-9b61-641389b1ea5d | log   | 1755643049473000 |
-| booted (time: 23ms)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Boot       | fd3139e7-ef72-4487-847b-0c837c312184 | 91e4c6f9-a412-4840-b8a7-2f0430748d14 | log   | 1755643049464000 |
+O objetivo desta solicitação é refatorar o código para que todas as chamadas de API que exigem segredos sejam feitas exclusivamente no servidor, garantindo que as chaves nunca sejam expostas ao navegador.
+
+2. Arquitetura Proposta
+Adotaremos um novo fluxo de comunicação. Em vez de chamar as APIs de terceiros diretamente do frontend, o fluxo será:
+
+Frontend (Vite) ➔ Supabase Edge Function ➔ API de Terceiros (Resend/Vonage)
+
+As chaves de API serão armazenadas como Secrets no Supabase e acessadas apenas pelas Edge Functions.
+
+3. Plano de Ação (A ser executado pelo Kiro)
+3.1. Refatoração do Backend (Edge Functions)
+
+Criar as Funções:
+
+Crie uma Edge Function para o envio de e-mails, por exemplo, send-email-resend.
+
+Crie uma Edge Function para o envio de SMS, por exemplo, send-sms-vonage.
+
+Acessar Segredos: Dentro de cada Edge Function, o Kiro deve acessar a chave da API do Supabase usando Deno.env.get('NOME_DA_VARIAVEL'). O nome da variável aqui deve ser exatamente como foi configurado no painel do Supabase (por exemplo, RESEND_API_KEY).
+
+Lógica de Envio: Mova a lógica de envio de e-mail e SMS para dentro dessas funções. As funções devem receber os dados necessários (e-mail do destinatário, corpo da mensagem, etc.) no corpo da requisição (request.json()).
+
+3.2. Refatoração do Frontend (Código do Cliente)
+
+Remover as Variáveis: O Kiro deve remover todas as variáveis de ambiente sensíveis do código que tem o prefixo VITE_ (por exemplo, import.meta.env.VITE_RESEND_API_KEY).
+
+Alterar as Chamadas: Substitua as chamadas diretas para as APIs de terceiros por uma chamada fetch simples para a URL da Edge Function correspondente.
+
+Exemplo de Código (para o Kiro):
+
+Antes (Inseguro):
+
+JavaScript
+
+// Exposto no navegador!
+const resendApiKey = import.meta.env.VITE_RESEND_API_KEY; 
+// ...código para enviar email com a chave exposta.
+Depois (Seguro):
+
+JavaScript
+
+// Código seguro no frontend, sem chaves expostas
+const response = await fetch('SUA_URL_DA_EDGE_FUNCTION', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    to: 'destinatario@email.com',
+    subject: 'Assunto do E-mail',
+    content: 'Conteúdo da mensagem',
+  }),
+});
+4. Validação e Teste
+Teste Funcional: Verifique se o envio de e-mails e SMS continua funcionando corretamente após as alterações.
+
+Teste de Segurança: Peça ao Kiro para inspecionar o código-fonte da página (no navegador) e confirmar que nenhuma chave de API é visível.
+
+Esta refatoração é crucial para a segurança do projeto e deve ser tratada com a máxima prioridade.
