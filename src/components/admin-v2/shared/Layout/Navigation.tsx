@@ -57,6 +57,12 @@ const navigationItems: NavigationItem[] = [
     icon: UserCog
   },
   {
+    id: 'campaigns',
+    label: 'Campanhas',
+    path: '/admin-v2/campaigns',
+    icon: Heart
+  },
+  {
     id: 'payments',
     label: 'Pagamentos',
     path: '/admin-v2/payments',
