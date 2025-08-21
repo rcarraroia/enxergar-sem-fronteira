@@ -38,29 +38,31 @@ export const usePromotersV2 = (filters: PromoterFilters = {}) => {
             try {
                 console.log('🔍 [V2] Buscando promotores com filtros:', filters)
 
-                // Query específica para evitar erros
-                let query = supabase
-                    .from('organizers')
-                    .select('id, name, email, phone, status, asaas_api_key, created_at, updated_at')
+                // Usar função que bypassa RLS para buscar todos os promoters
+                const { data: allPromoters, error } = await supabase
+                    .rpc('get_all_promoters')
 
-                // Aplicar filtros
+                if (error) {
+                    console.error('❌ [V2] Erro ao buscar promoters via função:', error)
+                    throw error
+                }
+
+                // Aplicar filtros no lado cliente (já que a função retorna todos)
+                let promoters = allPromoters || []
+
                 if (filters.search) {
-                    query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+                    const searchLower = filters.search.toLowerCase()
+                    promoters = promoters.filter(promoter => 
+                        promoter.name?.toLowerCase().includes(searchLower) ||
+                        promoter.email?.toLowerCase().includes(searchLower)
+                    )
                 }
 
                 if (filters.status) {
-                    query = query.eq('status', filters.status)
+                    promoters = promoters.filter(promoter => promoter.status === filters.status)
                 }
 
-                // Ordenar por data de criação (mais recente primeiro)
-                query = query.order('created_at', { ascending: false })
 
-                const { data: promoters, error } = await query
-
-                if (error) {
-                    console.error('❌ [V2] Erro ao buscar promotores:', error)
-                    throw error
-                }
 
                 // Buscar contagem de eventos para cada promoter (com tratamento de erro)
                 const promotersWithEventCount = await Promise.all(

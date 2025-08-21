@@ -776,7 +776,6 @@ const AdminPromotersV2 = () => {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Promoter</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Contato</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Localização</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Wallet Asaas</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Eventos</th>
