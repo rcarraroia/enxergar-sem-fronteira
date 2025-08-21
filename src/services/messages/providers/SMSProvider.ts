@@ -21,7 +21,7 @@ export class SMSProvider {
 
   constructor() {
     // URL base das Edge Functions (Supabase)
-    this.baseUrl = process.env.SUPABASE_URL || ''
+    this.baseUrl = import.meta.env.VITE_SUPABASE_URL || ''
   }
 
   /**
@@ -45,7 +45,7 @@ export class SMSProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || ''}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
         },
         body: JSON.stringify({
           to: formattedPhone,

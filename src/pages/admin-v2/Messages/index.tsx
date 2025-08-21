@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react'
-import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock } from 'lucide-react'
+import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { useMessages, useMessageStats, useMessageTemplates, useAutomationRules } from '@/hooks/messages/useMessages'
 import { MessagesList } from './components/MessagesList'
 import { SendMessageDialog } from './components/SendMessageDialog'
+import { QuickTestDialog } from './components/QuickTestDialog'
 import { TemplatesManager } from './components/TemplatesManager'
 import { AutomationManager } from './components/AutomationManager'
 import { MessageStats } from './components/MessageStats'
@@ -19,6 +20,7 @@ import { MessageStats } from './components/MessageStats'
 export default function MessagesPage() {
     const [activeTab, setActiveTab] = useState('overview')
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
+    const [quickTestOpen, setQuickTestOpen] = useState(false)
 
     // Hooks para dados
     const { data: messages = [], isLoading: messagesLoading } = useMessages()
@@ -43,6 +45,14 @@ export default function MessagesPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setQuickTestOpen(true)}
+                    >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Teste Rápido
+                    </Button>
                     <Button
                         variant="outline"
                         size="sm"
@@ -253,6 +263,12 @@ export default function MessagesPage() {
             <SendMessageDialog
                 open={sendDialogOpen}
                 onOpenChange={setSendDialogOpen}
+            />
+
+            {/* Dialog para teste rápido */}
+            <QuickTestDialog
+                open={quickTestOpen}
+                onOpenChange={setQuickTestOpen}
             />
         </div>
     )

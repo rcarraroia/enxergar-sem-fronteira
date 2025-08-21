@@ -22,9 +22,9 @@ export class EmailProvider {
   private fromEmail: string
 
   constructor() {
-    // Configurações do Resend (serão movidas para variáveis de ambiente)
-    this.apiKey = process.env.RESEND_API_KEY || ''
-    this.fromEmail = process.env.FROM_EMAIL || 'noreply@enxergarsemfronteiras.com'
+    // Configurações do Resend via variáveis de ambiente
+    this.apiKey = import.meta.env.VITE_RESEND_API_KEY || ''
+    this.fromEmail = import.meta.env.VITE_FROM_EMAIL || 'noreply@enxergarsemfronteiras.com'
   }
 
   /**
