@@ -1,6 +1,6 @@
 
 /**
- * PATIENTS HOOK V2 - Gestão de pacientes
+ * PATIENTS HOOK V2 - Gestão de pacientes (versão corrigida)
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -42,14 +42,6 @@ export const usePatientsV2 = (filters: PatientFilters = {}) => {
           query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
         }
 
-        if (filters.city) {
-          query = query.eq('cidade', filters.city)
-        }
-
-        if (filters.state) {
-          query = query.eq('estado', filters.state)
-        }
-
         // Ordenar por data de criação (mais recente primeiro)
         query = query.order('created_at', { ascending: false })
 
@@ -67,8 +59,8 @@ export const usePatientsV2 = (filters: PatientFilters = {}) => {
           email: patient.email || '',
           phone: patient.telefone || '',
           birth_date: patient.data_nascimento || '',
-          city: patient.cidade || '',
-          state: patient.estado || '',
+          city: 'N/A', // Campo não existe na tabela atual
+          state: 'N/A', // Campo não existe na tabela atual
           created_at: patient.created_at,
           _count: {
             registrations: 0 // TODO: Contar inscrições

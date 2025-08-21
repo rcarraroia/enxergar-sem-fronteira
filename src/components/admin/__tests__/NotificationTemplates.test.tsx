@@ -73,7 +73,7 @@ describe('TemplateForm', () => {
     render(
       <TestWrapper>
         <TemplateForm
-          type="create"
+          type="email"
           onSave={mockOnSave}
           onCancel={mockOnCancel}
         />
@@ -88,7 +88,7 @@ describe('TemplateForm', () => {
     render(
       <TestWrapper>
         <TemplateForm
-          type="create"
+          type="email"
           onSave={mockOnSave}
           onCancel={mockOnCancel}
         />
@@ -106,7 +106,7 @@ describe('TemplateForm', () => {
       <TestWrapper>
         <TemplateForm
           template={mockTemplate}
-          type="edit"
+          type="sms"
           onSave={mockOnSave}
           onCancel={mockOnCancel}
         />
