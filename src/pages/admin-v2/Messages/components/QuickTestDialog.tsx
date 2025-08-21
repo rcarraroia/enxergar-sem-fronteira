@@ -167,7 +167,7 @@ export function QuickTestDialog({ open, onOpenChange }: QuickTestDialogProps) {
           </div>
 
           {/* Opções de Teste */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             {/* Teste Rápido */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
@@ -241,7 +241,7 @@ export function QuickTestDialog({ open, onOpenChange }: QuickTestDialogProps) {
             <CardContent className="pt-4">
               <div className="text-sm space-y-2">
                 <p className="font-medium">Status da Configuração:</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-blue-500" />
                     <span>Email:</span>

@@ -37,42 +37,48 @@ export default function MessagesPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Mensagens</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mensagens</h1>
+                    <p className="text-muted-foreground text-sm sm:text-base">
                         Gerencie comunicações multi-canal com pacientes, doadores e promotores
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setQuickTestOpen(true)}
+                        className="w-full sm:w-auto"
                     >
                         <Zap className="h-4 w-4 mr-2" />
-                        Teste Rápido
+                        <span className="hidden sm:inline">Teste Rápido</span>
+                        <span className="sm:hidden">Teste</span>
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setActiveTab('templates')}
+                        className="w-full sm:w-auto"
                     >
                         <Settings className="h-4 w-4 mr-2" />
-                        Configurar
+                        <span className="hidden sm:inline">Configurar</span>
+                        <span className="sm:hidden">Config</span>
                     </Button>
                     <Button
                         onClick={() => setSendDialogOpen(true)}
                         size="sm"
+                        className="w-full sm:w-auto"
                     >
                         <Send className="h-4 w-4 mr-2" />
-                        Enviar Mensagem
+                        <span className="hidden sm:inline">Enviar Mensagem</span>
+                        <span className="sm:hidden">Enviar</span>
                     </Button>
                 </div>
             </div>
 
             {/* Cards de estatísticas rápidas */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Mensagens Hoje</CardTitle>
@@ -139,7 +145,7 @@ export default function MessagesPage() {
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                         {/* Mensagens recentes */}
                         <Card>
                             <CardHeader>

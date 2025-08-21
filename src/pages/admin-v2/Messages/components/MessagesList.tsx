@@ -77,7 +77,7 @@ export function MessagesList() {
           <CardTitle className="text-lg">Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -90,36 +90,37 @@ export function MessagesList() {
               </div>
             </div>
             
-            <Select
-              value={filters.channel || 'all'}
-              onValueChange={(value) => 
-                setFilters(prev => ({ 
-                  ...prev, 
-                  channel: value === 'all' ? undefined : value as MessageChannel 
-                }))
-              }
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Canal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="sms">SMS</SelectItem>
-                <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select
+                value={filters.channel || 'all'}
+                onValueChange={(value) => 
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    channel: value === 'all' ? undefined : value as MessageChannel 
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Canal" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="sms">SMS</SelectItem>
+                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select
-              value={filters.status || 'all'}
-              onValueChange={(value) => 
-                setFilters(prev => ({ 
-                  ...prev, 
-                  status: value === 'all' ? undefined : value as MessageStatus 
-                }))
-              }
-            >
-              <SelectTrigger className="w-[140px]">
+              <Select
+                value={filters.status || 'all'}
+                onValueChange={(value) => 
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    status: value === 'all' ? undefined : value as MessageStatus 
+                  }))
+                }
+              >
+                <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -129,8 +130,8 @@ export function MessagesList() {
                 <SelectItem value="delivered">Entregue</SelectItem>
                 <SelectItem value="failed">Falhou</SelectItem>
               </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </div>
         </CardContent>
       </Card>
 
@@ -149,94 +150,151 @@ export function MessagesList() {
               ))}
             </div>
           ) : filteredMessages.length > 0 ? (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Canal</TableHead>
-                    <TableHead>Destinatário</TableHead>
-                    <TableHead>Assunto/Conteúdo</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Enviado</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMessages.map((message) => (
-                    <TableRow key={message.id}>
-                      <TableCell>
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Canal</TableHead>
+                      <TableHead>Destinatário</TableHead>
+                      <TableHead>Assunto/Conteúdo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Enviado</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredMessages.map((message) => (
+                      <TableRow key={message.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getChannelIcon(message.channel)}
+                            <span className="text-sm capitalize">
+                              {message.channel}
+                            </span>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">
+                              {message.recipient_contact}
+                            </p>
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {message.recipient_type}
+                            </p>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="max-w-[300px]">
+                            {message.subject && (
+                              <p className="font-medium text-sm truncate">
+                                {message.subject}
+                              </p>
+                            )}
+                            <p className="text-sm text-muted-foreground truncate">
+                              {message.content}
+                            </p>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          {getStatusBadge(message.status)}
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="text-sm">
+                            {message.sent_at ? (
+                              <span>{formatDate(message.sent_at)}</span>
+                            ) : message.scheduled_for ? (
+                              <span className="text-orange-600">
+                                Agendado para {formatDate(message.scheduled_for)}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {formatDate(message.created_at)}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver Detalhes
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-4">
+                {filteredMessages.map((message) => (
+                  <Card key={message.id} className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {getChannelIcon(message.channel)}
-                          <span className="text-sm capitalize">
+                          <span className="text-sm font-medium capitalize">
                             {message.channel}
                           </span>
                         </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {message.recipient_contact}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {message.recipient_type}
-                          </p>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="max-w-[300px]">
-                          {message.subject && (
-                            <p className="font-medium text-sm truncate">
-                              {message.subject}
-                            </p>
-                          )}
-                          <p className="text-sm text-muted-foreground truncate">
-                            {message.content}
-                          </p>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
                         {getStatusBadge(message.status)}
-                      </TableCell>
+                      </div>
                       
-                      <TableCell>
-                        <div className="text-sm">
+                      <div>
+                        <p className="font-medium text-sm">
+                          {message.recipient_contact}
+                        </p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {message.recipient_type}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        {message.subject && (
+                          <p className="font-medium text-sm mb-1">
+                            {message.subject}
+                          </p>
+                        )}
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {message.content}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
                           {message.sent_at ? (
-                            <span>{formatDate(message.sent_at)}</span>
+                            formatDate(message.sent_at)
                           ) : message.scheduled_for ? (
-                            <span className="text-orange-600">
-                              Agendado para {formatDate(message.scheduled_for)}
-                            </span>
+                            `Agendado para ${formatDate(message.scheduled_for)}`
                           ) : (
-                            <span className="text-muted-foreground">
-                              {formatDate(message.created_at)}
-                            </span>
+                            formatDate(message.created_at)
                           )}
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver Detalhes
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                        </span>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
