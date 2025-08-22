@@ -48,28 +48,22 @@ export class MessageService {
         }
       }
 
-      // Criar registro na base de dados
-      const { data: message, error } = await supabase
-        .from('messages')
-        .insert({
-          channel: data.channel,
-          recipient_type: data.recipient_type,
-          recipient_id: data.recipient_id,
-          recipient_contact: data.recipient_contact,
-          subject: processedSubject,
-          content: processedContent,
-          template_id: data.template_id,
-          variables: data.variables || {},
-          context: data.context || {},
-          scheduled_for: data.scheduled_for,
-          status: data.scheduled_for ? 'pending' : 'pending'
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('❌ [MessageService] Erro ao criar mensagem:', error)
-        throw error
+      // Por enquanto, simular criação até tabela messages ser criada
+      console.log('⚠️ [MessageService] Simulando criação de mensagem (tabela não existe)')
+      const message = {
+        id: `msg_${Date.now()}`,
+        channel: data.channel,
+        recipient_type: data.recipient_type,
+        recipient_id: data.recipient_id,
+        recipient_contact: data.recipient_contact,
+        subject: processedSubject,
+        content: processedContent,
+        template_id: data.template_id,
+        variables: data.variables || {},
+        context: data.context || {},
+        scheduled_for: data.scheduled_for,
+        status: data.scheduled_for ? 'pending' : 'pending',
+        created_at: new Date().toISOString()
       }
 
       // Se não é agendada, enviar imediatamente

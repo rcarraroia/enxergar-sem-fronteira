@@ -62,9 +62,9 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
           .from('registrations')
           .select(`
             *,
-            patients!inner(nome, telefone, email),
-            events!inner(title, location),
-            event_dates!inner(date, start_time, end_time)
+            patients(nome, telefone, email),
+            events(title, location),
+            event_dates(date, start_time, end_time)
           `)
 
         // Aplicar filtros

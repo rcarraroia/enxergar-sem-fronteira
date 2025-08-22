@@ -46,8 +46,8 @@ export const useRecentActivityV2 = () => {
           .select(`
             id, 
             created_at,
-            patients!inner(nome),
-            events!inner(title)
+            patients(nome),
+            events(title)
           `)
           .order('created_at', { ascending: false })
           .limit(2)

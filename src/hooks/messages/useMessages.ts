@@ -32,24 +32,9 @@ export const useMessages = (filters: MessageFilters = {}) => {
       try {
         console.log('🔍 [useMessages] Buscando mensagens com filtros:', filters)
 
-        // Usar query raw para contornar problema de tipos
-        const { data, error } = await (supabase as any)
-          .from('messages')
-          .select(`
-            *,
-            template:message_templates(name, channel),
-            automation_rule:automation_rules(name)
-          `)
-          .order('created_at', { ascending: false })
-          .limit(100)
-
-        if (error) {
-          console.error('❌ [useMessages] Erro ao buscar mensagens:', error)
-          throw error
-        }
-
-        console.log('✅ [useMessages] Mensagens carregadas:', data?.length || 0)
-        return (data || []) as Message[]
+        // Por enquanto, retornar array vazio até as tabelas serem criadas
+        console.log('⚠️ [useMessages] Tabela messages não existe ainda, retornando dados vazios')
+        return []
 
       } catch (error) {
         console.error('❌ [useMessages] Erro crítico:', error)

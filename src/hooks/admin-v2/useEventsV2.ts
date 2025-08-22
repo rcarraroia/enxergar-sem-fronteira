@@ -101,7 +101,7 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
           query = query.eq('city', filters.city)
         }
 
-        if (filters.status) {
+        if (filters.status && filters.status !== 'all') {
           query = query.eq('status', filters.status)
         }
 
@@ -152,8 +152,9 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
         throw error
       }
     },
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    staleTime: 10000, // 10 segundos
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000 // 30 segundos
   })
 }
 
