@@ -43,38 +43,52 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
 
   const { mutate: sendBulkMessage, isPending } = useSendBulkMessage()
   const { data: templates = [] } = useMessageTemplates()
-  const { data: registrations = [] } = useRegistrationsV2()
+  const { data: registrations = [], error: registrationsError } = useRegistrationsV2()
+  
+  // Log de debug
+  console.log('🔍 [BulkMessageDialog] Registrations:', registrations)
+  console.log('❌ [BulkMessageDialog] Error:', registrationsError)
 
   // Filtrar templates por canal
   const channelTemplates = templates.filter(t => t.channel === channel)
 
   // Filtrar destinatários baseado nos filtros
   useEffect(() => {
+    if (!registrations || !Array.isArray(registrations)) {
+      console.log('⚠️ [BulkMessageDialog] Registrations não é um array válido:', registrations)
+      setPreviewRecipients([])
+      return
+    }
+
     let filtered = registrations
 
     // Filtrar por tipo de contato disponível
     if (channel === 'email') {
-      filtered = filtered.filter(r => r.patient?.email && r.patient.email.trim() !== '')
+      filtered = filtered.filter(r => r?.patient?.email && r.patient.email.trim() !== '')
     } else if (channel === 'sms') {
-      filtered = filtered.filter(r => r.patient?.telefone && r.patient.telefone.trim() !== '')
+      filtered = filtered.filter(r => r?.patient?.telefone && r.patient.telefone.trim() !== '')
     }
 
     // Aplicar filtros adicionais
     if (filters.status && filters.status.length > 0) {
-      filtered = filtered.filter(r => filters.status!.includes(r.status))
+      filtered = filtered.filter(r => r?.status && filters.status!.includes(r.status))
     }
 
     // Para cidade, vamos usar a localização do evento por enquanto
     if (filters.city && filters.city.length > 0) {
-      filtered = filtered.filter(r => r.event?.location && filters.city!.includes(r.event.location))
+      filtered = filtered.filter(r => r?.event?.location && filters.city!.includes(r.event.location))
     }
 
     setPreviewRecipients(filtered)
   }, [registrations, channel, filters])
 
   // Obter listas únicas para filtros
-  const availableStatuses = [...new Set(registrations.map(r => r.status).filter(Boolean))]
-  const availableCities = [...new Set(registrations.map(r => r.event?.location).filter(Boolean))]
+  const availableStatuses = Array.isArray(registrations) 
+    ? [...new Set(registrations.map(r => r?.status).filter(Boolean))]
+    : []
+  const availableCities = Array.isArray(registrations)
+    ? [...new Set(registrations.map(r => r?.event?.location).filter(Boolean))]
+    : []
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
