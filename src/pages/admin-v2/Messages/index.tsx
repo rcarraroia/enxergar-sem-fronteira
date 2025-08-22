@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { useMessages, useMessageStats, useMessageTemplates, useAutomationRules } from '@/hooks/messages/useMessages'
 import { MessagesList } from './components/MessagesList'
 import { SendMessageDialog } from './components/SendMessageDialog'
-import { BulkMessageDialog } from './components/BulkMessageDialog'
+// import { BulkMessageDialog } from './components/BulkMessageDialog' // Temporariamente removido
 import { QuickTestDialog } from './components/QuickTestDialog'
 import { TemplatesManager } from './components/TemplatesManager'
 import { AutomationManager } from './components/AutomationManager'
@@ -66,6 +66,7 @@ export default function MessagesPage() {
                         <span className="hidden sm:inline">Configurar</span>
                         <span className="sm:hidden">Config</span>
                     </Button>
+                    {/* Botão temporariamente removido
                     <Button
                         variant="outline"
                         onClick={() => setBulkDialogOpen(true)}
@@ -76,6 +77,7 @@ export default function MessagesPage() {
                         <span className="hidden sm:inline">Envio em Massa</span>
                         <span className="sm:hidden">Massa</span>
                     </Button>
+                    */}
                     <Button
                         onClick={() => setSendDialogOpen(true)}
                         size="sm"
@@ -285,11 +287,12 @@ export default function MessagesPage() {
                 onOpenChange={setSendDialogOpen}
             />
 
-            {/* Dialog para envio em massa */}
+            {/* Dialog para envio em massa - Temporariamente removido
             <BulkMessageDialog
                 open={bulkDialogOpen}
                 onOpenChange={setBulkDialogOpen}
             />
+            */}
 
             {/* Dialog para teste rápido */}
             <QuickTestDialog
