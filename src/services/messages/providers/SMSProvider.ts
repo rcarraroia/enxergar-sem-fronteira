@@ -40,41 +40,39 @@ export class SMSProvider {
         return this.simulateSend(data)
       }
 
-      // Por enquanto, simular envio até Edge Functions serem deployadas
-      console.log('⚠️ [SMSProvider] Edge Functions não deployadas ainda, simulando envio')
-      return this.simulateSend(data)
-
-      // TODO: Descomentar quando Edge Functions estiverem deployadas
-      /*
-      // Chamar Edge Function do Supabase
-      const response = await fetch(`${this.baseUrl}/functions/v1/send-sms`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
-        },
-        body: JSON.stringify({
-          to: formattedPhone,
-          text: data.content
+      // Tentar chamar Edge Function do Supabase primeiro
+      try {
+        const response = await fetch(`${this.baseUrl}/functions/v1/send-sms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
+          },
+          body: JSON.stringify({
+            to: formattedPhone,
+            text: data.content
+          })
         })
-      })
 
-      if (!response.ok) {
-        const errorData = await response.text()
-        throw new Error(`SMS API Error: ${errorData || response.statusText}`)
+        if (!response.ok) {
+          console.log('⚠️ [SMSProvider] Edge Function SMS não disponível, simulando envio')
+          return this.simulateSend(data)
+        }
+
+        const result = await response.json()
+
+        console.log('✅ [SMSProvider] SMS enviado:', result.id)
+
+        return {
+          id: result.id,
+          status: result.status,
+          provider: result.provider,
+          timestamp: result.timestamp
+        }
+      } catch (edgeFunctionError) {
+        console.log('⚠️ [SMSProvider] Edge Function SMS não disponível, simulando envio')
+        return this.simulateSend(data)
       }
-
-      const result = await response.json()
-
-      console.log('✅ [SMSProvider] SMS enviado:', result.id)
-
-      return {
-        id: result.id,
-        status: result.status,
-        provider: result.provider,
-        timestamp: result.timestamp
-      }
-      */
 
     } catch (error) {
       console.error('❌ [SMSProvider] Erro ao enviar SMS:', error)

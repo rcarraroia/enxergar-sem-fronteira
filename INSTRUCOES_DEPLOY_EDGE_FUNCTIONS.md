@@ -91,5 +91,6 @@ Após o deploy:
 
 ---
 
-**Status Atual: 🟡 SIMULAÇÃO ATIVA**
-**Próximo Passo: 🚀 DEPLOY DAS EDGE FUNCTIONS**
+**Status Atual: 🟢 EMAIL ATIVO / 🟡 SMS SIMULADO**
+**Email:** ✅ Edge Function deployada e funcionando
+**SMS:** ⚠️ Aguardando deploy da Edge Function send-sms
