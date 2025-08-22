@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useSendBulkMessage, useMessageTemplates } from '@/hooks/messages/useMessages'
-import { useRegistrations } from '@/hooks/admin-v2/useRegistrations'
+import { useRegistrationsV2 } from '@/hooks/admin-v2/useRegistrationsV2'
 import type { MessageChannel, RecipientType } from '@/types/messages'
 
 interface BulkMessageDialogProps {
@@ -43,7 +43,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
 
   const { mutate: sendBulkMessage, isPending } = useSendBulkMessage()
   const { data: templates = [] } = useMessageTemplates()
-  const { data: registrations = [] } = useRegistrations()
+  const { data: registrations = [] } = useRegistrationsV2()
 
   // Filtrar templates por canal
   const channelTemplates = templates.filter(t => t.channel === channel)
@@ -54,9 +54,9 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
 
     // Filtrar por tipo de contato disponível
     if (channel === 'email') {
-      filtered = filtered.filter(r => r.email && r.email.trim() !== '')
+      filtered = filtered.filter(r => r.patient?.email && r.patient.email.trim() !== '')
     } else if (channel === 'sms') {
-      filtered = filtered.filter(r => r.phone && r.phone.trim() !== '')
+      filtered = filtered.filter(r => r.patient?.telefone && r.patient.telefone.trim() !== '')
     }
 
     // Aplicar filtros adicionais
@@ -64,8 +64,9 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
       filtered = filtered.filter(r => filters.status!.includes(r.status))
     }
 
+    // Para cidade, vamos usar a localização do evento por enquanto
     if (filters.city && filters.city.length > 0) {
-      filtered = filtered.filter(r => filters.city!.includes(r.city))
+      filtered = filtered.filter(r => r.event?.location && filters.city!.includes(r.event.location))
     }
 
     setPreviewRecipients(filtered)
@@ -73,7 +74,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
 
   // Obter listas únicas para filtros
   const availableStatuses = [...new Set(registrations.map(r => r.status).filter(Boolean))]
-  const availableCities = [...new Set(registrations.map(r => r.city).filter(Boolean))]
+  const availableCities = [...new Set(registrations.map(r => r.event?.location).filter(Boolean))]
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,12 +82,14 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
     if (!content || previewRecipients.length === 0) return
 
     const recipients = previewRecipients.map(r => ({
-      contact: channel === 'email' ? r.email : r.phone,
-      name: r.patient_name,
+      contact: channel === 'email' ? r.patient?.email || '' : r.patient?.telefone || '',
+      name: r.patient?.nome || '',
       variables: {
-        nome: r.patient_name,
-        cidade: r.city,
-        status: r.status
+        nome: r.patient?.nome || '',
+        cidade: r.event?.location || '',
+        status: r.status,
+        evento: r.event?.title || '',
+        data_evento: r.event_date?.date || ''
       }
     }))
 
@@ -216,23 +219,23 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
 
               {/* Filtro por Cidade */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Cidade</Label>
+                <Label className="text-sm font-medium">Local do Evento</Label>
                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {availableCities.slice(0, 10).map(city => (
-                    <div key={city} className="flex items-center space-x-2">
+                  {availableCities.slice(0, 10).map(location => (
+                    <div key={location} className="flex items-center space-x-2">
                       <Checkbox
-                        id={`city-${city}`}
-                        checked={filters.city?.includes(city) || false}
-                        onCheckedChange={(checked) => handleCityFilter(city, checked as boolean)}
+                        id={`location-${location}`}
+                        checked={filters.city?.includes(location) || false}
+                        onCheckedChange={(checked) => handleCityFilter(location, checked as boolean)}
                       />
-                      <Label htmlFor={`city-${city}`} className="text-sm">
-                        {city}
+                      <Label htmlFor={`location-${location}`} className="text-sm">
+                        {location}
                       </Label>
                     </div>
                   ))}
                   {availableCities.length > 10 && (
                     <p className="text-xs text-muted-foreground">
-                      +{availableCities.length - 10} cidades...
+                      +{availableCities.length - 10} locais...
                     </p>
                   )}
                 </div>
@@ -258,9 +261,9 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
                   <div className="mt-2 max-h-32 overflow-y-auto border rounded p-2">
                     {previewRecipients.slice(0, 20).map((recipient, index) => (
                       <div key={index} className="text-xs py-1 flex justify-between">
-                        <span>{recipient.patient_name}</span>
+                        <span>{recipient.patient?.nome}</span>
                         <span className="text-muted-foreground">
-                          {channel === 'email' ? recipient.email : recipient.phone}
+                          {channel === 'email' ? recipient.patient?.email : recipient.patient?.telefone}
                         </span>
                       </div>
                     ))}
@@ -315,14 +318,14 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
             <Label htmlFor="bulk-content">Conteúdo da Mensagem</Label>
             <Textarea
               id="bulk-content"
-              placeholder="Digite sua mensagem aqui... Use {{nome}}, {{cidade}}, {{status}} para personalizar"
+              placeholder="Digite sua mensagem aqui... Use {{nome}}, {{evento}}, {{data_evento}}, {{status}} para personalizar"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={6}
               required
             />
             <p className="text-xs text-muted-foreground">
-              Variáveis disponíveis: {{nome}}, {{cidade}}, {{status}}
+              Variáveis disponíveis: {{nome}}, {{evento}}, {{data_evento}}, {{status}}
             </p>
             {channel === 'sms' && (
               <p className="text-xs text-muted-foreground">
