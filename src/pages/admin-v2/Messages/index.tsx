@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock, Zap } from 'lucide-react'
+import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock, Zap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { useMessages, useMessageStats, useMessageTemplates, useAutomationRules } from '@/hooks/messages/useMessages'
 import { MessagesList } from './components/MessagesList'
 import { SendMessageDialog } from './components/SendMessageDialog'
+import { BulkMessageDialog } from './components/BulkMessageDialog'
 import { QuickTestDialog } from './components/QuickTestDialog'
 import { TemplatesManager } from './components/TemplatesManager'
 import { AutomationManager } from './components/AutomationManager'
@@ -21,6 +22,7 @@ import { MessageStats } from './components/MessageStats'
 export default function MessagesPage() {
     const [activeTab, setActiveTab] = useState('overview')
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
+    const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
     const [quickTestOpen, setQuickTestOpen] = useState(false)
 
     // Hooks para dados
@@ -65,13 +67,23 @@ export default function MessagesPage() {
                         <span className="sm:hidden">Config</span>
                     </Button>
                     <Button
+                        variant="outline"
+                        onClick={() => setBulkDialogOpen(true)}
+                        size="sm"
+                        className="w-full sm:w-auto"
+                    >
+                        <Users className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">Envio em Massa</span>
+                        <span className="sm:hidden">Massa</span>
+                    </Button>
+                    <Button
                         onClick={() => setSendDialogOpen(true)}
                         size="sm"
                         className="w-full sm:w-auto"
                     >
                         <Send className="h-4 w-4 mr-2" />
-                        <span className="hidden sm:inline">Enviar Mensagem</span>
-                        <span className="sm:hidden">Enviar</span>
+                        <span className="hidden sm:inline">Enviar Individual</span>
+                        <span className="sm:hidden">Individual</span>
                     </Button>
                 </div>
             }
@@ -267,10 +279,16 @@ export default function MessagesPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Dialog para enviar mensagem */}
+            {/* Dialog para enviar mensagem individual */}
             <SendMessageDialog
                 open={sendDialogOpen}
                 onOpenChange={setSendDialogOpen}
+            />
+
+            {/* Dialog para envio em massa */}
+            <BulkMessageDialog
+                open={bulkDialogOpen}
+                onOpenChange={setBulkDialogOpen}
             />
 
             {/* Dialog para teste rápido */}

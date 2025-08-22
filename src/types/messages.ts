@@ -123,13 +123,16 @@ export interface SendMessageData {
 
 // Dados para envio em massa
 export interface BulkSendData {
-  template_id: string
+  channel: MessageChannel
+  recipient_type: RecipientType
   recipients: {
-    type: RecipientType
-    id?: string
     contact: string
+    name?: string
     variables?: Record<string, any>
   }[]
+  subject?: string
+  content: string
+  template_id?: string
   scheduled_for?: string
   context?: Record<string, any>
 }

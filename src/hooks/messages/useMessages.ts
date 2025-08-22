@@ -112,6 +112,9 @@ export const useSendBulkMessages = () => {
   })
 }
 
+// Alias para compatibilidade
+export const useSendBulkMessage = useSendBulkMessages
+
 // =====================================================
 // HOOKS PARA TEMPLATES
 // =====================================================

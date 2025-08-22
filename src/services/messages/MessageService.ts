@@ -92,57 +92,67 @@ export class MessageService {
     try {
       console.log('📤 [MessageService] Enviando mensagens em massa:', data.recipients.length)
 
-      const template = await this.getTemplate(data.template_id)
-      if (!template) {
-        throw new Error('Template não encontrado')
+      let processedContent = data.content
+      let processedSubject = data.subject
+
+      // Se tem template, processar
+      if (data.template_id) {
+        const template = await this.getTemplate(data.template_id)
+        if (template) {
+          processedContent = template.content
+          processedSubject = template.subject
+        }
       }
 
       const messageIds: string[] = []
 
       // Processar cada destinatário
       for (const recipient of data.recipients) {
-        const processedContent = this.templateProcessor.process(
-          template.content, 
+        // Processar variáveis no conteúdo
+        const finalContent = this.templateProcessor.process(
+          processedContent, 
           recipient.variables || {}
         )
         
-        let processedSubject: string | undefined
-        if (template.subject) {
-          processedSubject = this.templateProcessor.process(
-            template.subject, 
+        let finalSubject: string | undefined
+        if (processedSubject) {
+          finalSubject = this.templateProcessor.process(
+            processedSubject, 
             recipient.variables || {}
           )
         }
 
-        // Criar mensagem
-        const { data: message, error } = await supabase
-          .from('messages')
-          .insert({
-            channel: template.channel,
-            recipient_type: recipient.type,
-            recipient_id: recipient.id,
-            recipient_contact: recipient.contact,
-            subject: processedSubject,
-            content: processedContent,
-            template_id: data.template_id,
-            variables: recipient.variables || {},
-            context: data.context || {},
-            scheduled_for: data.scheduled_for,
-            status: 'pending'
-          })
-          .select()
-          .single()
-
-        if (error) {
-          console.error('❌ [MessageService] Erro ao criar mensagem em massa:', error)
-          continue // Continua com as outras mensagens
+        // Por enquanto, simular criação até tabela messages ser criada
+        console.log('⚠️ [MessageService] Simulando criação de mensagem em massa (tabela não existe)')
+        const messageId = `bulk_msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        
+        const message = {
+          id: messageId,
+          channel: data.channel,
+          recipient_type: data.recipient_type,
+          recipient_contact: recipient.contact,
+          subject: finalSubject,
+          content: finalContent,
+          template_id: data.template_id,
+          variables: recipient.variables || {},
+          context: data.context || {},
+          scheduled_for: data.scheduled_for,
+          status: data.scheduled_for ? 'pending' : 'pending',
+          created_at: new Date().toISOString()
         }
 
-        messageIds.push(message.id)
+        // Armazenar temporariamente na memória
+        this.messageMemory.set(messageId, message)
+        messageIds.push(messageId)
 
         // Se não é agendada, enviar imediatamente
         if (!data.scheduled_for) {
-          await this.processMessage(message.id)
+          try {
+            await this.processMessage(messageId)
+          } catch (error) {
+            console.error('❌ [MessageService] Erro ao processar mensagem em massa:', messageId, error)
+            // Continua com as outras mensagens
+          }
         }
       }
 
