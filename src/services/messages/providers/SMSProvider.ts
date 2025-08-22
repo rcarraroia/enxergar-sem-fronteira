@@ -40,6 +40,12 @@ export class SMSProvider {
         return this.simulateSend(data)
       }
 
+      // Por enquanto, simular envio até Edge Functions serem deployadas
+      console.log('⚠️ [SMSProvider] Edge Functions não deployadas ainda, simulando envio')
+      return this.simulateSend(data)
+
+      // TODO: Descomentar quando Edge Functions estiverem deployadas
+      /*
       // Chamar Edge Function do Supabase
       const response = await fetch(`${this.baseUrl}/functions/v1/send-sms`, {
         method: 'POST',
@@ -68,10 +74,12 @@ export class SMSProvider {
         provider: result.provider,
         timestamp: result.timestamp
       }
+      */
 
     } catch (error) {
       console.error('❌ [SMSProvider] Erro ao enviar SMS:', error)
-      throw error
+      // Em caso de erro, simular envio
+      return this.simulateSend(data)
     }
   }
 

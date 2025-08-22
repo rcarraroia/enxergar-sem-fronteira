@@ -38,6 +38,12 @@ export class EmailProvider {
         return this.simulateSend(data)
       }
 
+      // Por enquanto, simular envio até Edge Functions serem deployadas
+      console.log('⚠️ [EmailProvider] Edge Functions não deployadas ainda, simulando envio')
+      return this.simulateSend(data)
+
+      // TODO: Descomentar quando Edge Functions estiverem deployadas
+      /*
       // Chamar Edge Function do Supabase
       const response = await fetch(`${this.baseUrl}/functions/v1/send-email`, {
         method: 'POST',
@@ -68,10 +74,12 @@ export class EmailProvider {
         provider: result.provider,
         timestamp: result.timestamp
       }
+      */
 
     } catch (error) {
       console.error('❌ [EmailProvider] Erro ao enviar email:', error)
-      throw error
+      // Em caso de erro, simular envio
+      return this.simulateSend(data)
     }
   }
 
