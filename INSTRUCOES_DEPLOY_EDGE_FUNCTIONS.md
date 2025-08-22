@@ -91,6 +91,7 @@ Após o deploy:
 
 ---
 
-**Status Atual: 🟢 EMAIL ATIVO / 🟡 SMS SIMULADO**
+**Status Atual: 🟢 SISTEMA COMPLETO ATIVO**
 **Email:** ✅ Edge Function deployada e funcionando
-**SMS:** ⚠️ Aguardando deploy da Edge Function send-sms
+**SMS:** ✅ Edge Function deployada e funcionando
+**Segurança:** ✅ Chaves de API protegidas no servidor

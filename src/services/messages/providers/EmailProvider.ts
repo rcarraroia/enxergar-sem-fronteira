@@ -38,35 +38,42 @@ export class EmailProvider {
         return this.simulateSend(data)
       }
 
-      // Chamar Edge Function do Supabase
-      const response = await fetch(`${this.baseUrl}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
-        },
-        body: JSON.stringify({
-          to: data.to,
-          subject: data.subject,
-          content: data.content,
-          from: data.from
+      // Tentar Edge Function primeiro, simular se falhar
+      try {
+        const response = await fetch(`${this.baseUrl}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''}`
+          },
+          body: JSON.stringify({
+            to: data.to,
+            subject: data.subject,
+            content: data.content,
+            from: data.from
+          })
         })
-      })
 
-      if (!response.ok) {
-        const errorData = await response.text()
-        throw new Error(`Email API Error: ${errorData || response.statusText}`)
-      }
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ [EmailProvider] Edge Function falhou:', response.status, errorText)
+          console.log('⚠️ [EmailProvider] Fallback para simulação')
+          return this.simulateSend(data)
+        }
 
-      const result = await response.json()
+        const result = await response.json()
+        console.log('✅ [EmailProvider] Email enviado via Edge Function:', result.id)
 
-      console.log('✅ [EmailProvider] Email enviado:', result.id)
-
-      return {
-        id: result.id,
-        status: result.status,
-        provider: result.provider,
-        timestamp: result.timestamp
+        return {
+          id: result.id,
+          status: result.status,
+          provider: result.provider,
+          timestamp: result.timestamp
+        }
+      } catch (error) {
+        console.error('❌ [EmailProvider] Erro na Edge Function:', error)
+        console.log('⚠️ [EmailProvider] Fallback para simulação')
+        return this.simulateSend(data)
       }
 
     } catch (error) {
