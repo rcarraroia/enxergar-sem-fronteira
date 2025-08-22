@@ -15,14 +15,14 @@
 
 ### Passo 3: Configurar Domínio (Opcional)
 1. Vá em "Domains" no dashboard
-2. Adicione seu domínio (ex: enxergarsemfronteiras.com)
+2. Adicione seu domínio (ex: enxergarsemfronteira.com.br)
 3. Configure os registros DNS conforme instruções
 4. Aguarde verificação
 
 ### Passo 4: Configurar no .env
 ```env
 VITE_RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxx"
-VITE_FROM_EMAIL="noreply@enxergarsemfronteiras.com"
+VITE_FROM_EMAIL="noreply@enxergarsemfronteira.com.br"
 ```
 
 ---
