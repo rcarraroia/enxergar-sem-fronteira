@@ -25,7 +25,7 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
   const [recipientContact, setRecipientContact] = useState('')
   const [subject, setSubject] = useState('')
   const [content, setContent] = useState('')
-  const [templateId, setTemplateId] = useState<string>('')
+  const [templateId, setTemplateId] = useState<string>('none')
 
   const { mutate: sendMessage, isPending } = useSendMessage()
   const { data: templates = [] } = useMessageTemplates()
@@ -44,7 +44,7 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
       recipient_contact: recipientContact,
       subject: channel === 'email' ? subject : undefined,
       content,
-      template_id: templateId || undefined
+      template_id: templateId !== 'none' ? templateId : undefined
     }, {
       onSuccess: () => {
         onOpenChange(false)
@@ -52,14 +52,18 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
         setRecipientContact('')
         setSubject('')
         setContent('')
-        setTemplateId('')
+        setTemplateId('none')
       }
     })
   }
 
   const handleTemplateChange = (value: string) => {
-    setTemplateId(value)
-    if (value) {
+    if (value === 'none') {
+      setTemplateId('')
+      setContent('')
+      setSubject('')
+    } else {
+      setTemplateId(value)
       const template = templates.find(t => t.id === value)
       if (template) {
         setContent(template.content)
@@ -153,7 +157,7 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
                   <SelectValue placeholder="Selecione um template" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum template</SelectItem>
+                  <SelectItem value="none">Nenhum template</SelectItem>
                   {channelTemplates.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
