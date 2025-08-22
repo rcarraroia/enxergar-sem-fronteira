@@ -27,7 +27,7 @@ import CreateEventV2 from "./pages/admin-v2/Events/create";
 import EditEventV2 from "./pages/admin-v2/Events/edit";
 import AdminPatientsV2 from "./pages/admin-v2/Patients";
 import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
-import AdminOrganizersV2 from "./pages/admin-v2/Organizers";
+import AdminOrganizersV2 from "./pages/admin-v2/Organizers/test";
 import AdminCampaignsV2 from "./pages/admin-v2/Campaigns";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
