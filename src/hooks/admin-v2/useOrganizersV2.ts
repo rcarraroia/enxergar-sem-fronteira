@@ -35,24 +35,24 @@ export const useOrganizersV2 = (filters: OrganizerFilters = {}) => {
           .from('organizers')
           .select(`
             id,
-            nome,
+            name,
             email,
-            telefone,
-            cidade,
+            phone,
+            city,
             created_at
           `)
 
         // Aplicar filtros
         if (filters.search) {
-          query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+          query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
         }
 
         if (filters.cidade) {
-          query = query.eq('cidade', filters.cidade)
+          query = query.eq('city', filters.cidade)
         }
 
         // Ordenar por nome
-        query = query.order('nome', { ascending: true })
+        query = query.order('name', { ascending: true })
 
         const { data: organizers, error } = await query
 
@@ -104,10 +104,10 @@ export const useOrganizersV2 = (filters: OrganizerFilters = {}) => {
 
             return {
               id: organizer.id,
-              nome: organizer.nome || 'N/A',
+              nome: organizer.name || 'N/A',
               email: organizer.email || 'N/A',
-              telefone: organizer.telefone || 'N/A',
-              cidade: organizer.cidade,
+              telefone: organizer.phone || 'N/A',
+              cidade: organizer.city,
               status: 'active' as const,
               created_at: organizer.created_at,
               total_events: events?.length || 0
