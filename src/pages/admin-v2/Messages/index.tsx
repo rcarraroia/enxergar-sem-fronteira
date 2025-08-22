@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { useMessages, useMessageStats, useMessageTemplates, useAutomationRules } from '@/hooks/messages/useMessages'
 import { MessagesList } from './components/MessagesList'
 import { SendMessageDialog } from './components/SendMessageDialog'
-// import { BulkMessageDialog } from './components/BulkMessageDialog' // Temporariamente removido
+// BulkMessageDialog temporariamente removido devido a erro de dados
 import { QuickTestDialog } from './components/QuickTestDialog'
 import { TemplatesManager } from './components/TemplatesManager'
 import { AutomationManager } from './components/AutomationManager'
@@ -22,7 +22,7 @@ import { MessageStats } from './components/MessageStats'
 export default function MessagesPage() {
     const [activeTab, setActiveTab] = useState('overview')
     const [sendDialogOpen, setSendDialogOpen] = useState(false)
-    const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
+    // const [bulkDialogOpen, setBulkDialogOpen] = useState(false) // Removido temporariamente
     const [quickTestOpen, setQuickTestOpen] = useState(false)
 
     // Hooks para dados
