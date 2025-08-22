@@ -30,8 +30,8 @@ serve(async (req) => {
 
     // Obter chaves de API das variáveis de ambiente (Supabase Secrets)
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    // Usar email padrão do Resend se não tiver domínio verificado
-    const fromEmail = from || Deno.env.get('FROM_EMAIL') || 'onboarding@resend.dev'
+    // Usar domínio verificado do cliente
+    const fromEmail = from || Deno.env.get('FROM_EMAIL') || 'noreply@enxergarsemfronteira.com.br'
 
     if (!resendApiKey) {
       console.error('RESEND_API_KEY não configurada')
