@@ -20,6 +20,7 @@ export class MessageService {
   private emailProvider: EmailProvider
   private smsProvider: SMSProvider
   private templateProcessor: TemplateProcessor
+  private messageMemory: Map<string, any> = new Map() // Armazenamento temporário
 
   constructor() {
     this.emailProvider = new EmailProvider()
@@ -50,8 +51,9 @@ export class MessageService {
 
       // Por enquanto, simular criação até tabela messages ser criada
       console.log('⚠️ [MessageService] Simulando criação de mensagem (tabela não existe)')
+      const messageId = `msg_${Date.now()}`
       const message = {
-        id: `msg_${Date.now()}`,
+        id: messageId,
         channel: data.channel,
         recipient_type: data.recipient_type,
         recipient_id: data.recipient_id,
@@ -65,6 +67,9 @@ export class MessageService {
         status: data.scheduled_for ? 'pending' : 'pending',
         created_at: new Date().toISOString()
       }
+
+      // Armazenar temporariamente na memória
+      this.messageMemory.set(messageId, message)
 
       // Se não é agendada, enviar imediatamente
       if (!data.scheduled_for) {
@@ -160,13 +165,16 @@ export class MessageService {
       // Por enquanto, simular processamento (tabela messages não existe)
       console.log('⚠️ [MessageService] Simulando processamento de mensagem (tabela não existe)')
       
-      // Simular dados da mensagem
+      // Extrair dados reais da mensagem do messageId (que contém informações)
+      // Buscar na memória temporária ou usar dados do contexto
+      const messageData = this.getMessageFromMemory(messageId)
+      
       const message = {
         id: messageId,
-        channel: 'email',
-        recipient_contact: 'test@example.com',
-        subject: 'Teste',
-        content: 'Mensagem de teste',
+        channel: messageData?.channel || 'email',
+        recipient_contact: messageData?.recipient_contact || 'test@example.com',
+        subject: messageData?.subject || 'Teste',
+        content: messageData?.content || 'Mensagem de teste',
         status: 'pending'
       }
 
@@ -377,6 +385,10 @@ export class MessageService {
       }
     }
     return true
+  }
+
+  private getMessageFromMemory(messageId: string): any {
+    return this.messageMemory.get(messageId)
   }
 
   private extractRecipientFromContext(context: Record<string, any>): {
