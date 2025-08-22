@@ -34,7 +34,7 @@ import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminPaymentsV2 from "./pages/admin-v2/Payments";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
 import AdminSyncV2 from "./pages/admin-v2/Sync";
-import AdminMessagesV2 from "./pages/admin-v2/Messages/test";
+import AdminMessagesV2 from "./pages/admin-v2/Messages/simple";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import OrganizerEvents from "./pages/OrganizerEvents";
 import OrganizerRegistrations from "./pages/OrganizerRegistrations";
