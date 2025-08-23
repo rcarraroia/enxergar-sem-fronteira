@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Calendar,
   FileText,
+  MessageSquare,
   Settings,
   UserPlus,
   Users
