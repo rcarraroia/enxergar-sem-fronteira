@@ -74,14 +74,9 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <QuickActions />
 
-        {/* Bulk Messaging */}
-        <SimpleBulkMessagingCard />
-
         {/* Activity Feed */}
         <ActivityFeed />
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         {/* Stats Chart */}
         <StatsChart />
       </div>

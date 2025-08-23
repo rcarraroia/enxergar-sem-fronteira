@@ -2,18 +2,17 @@
  * QUICK ACTIONS V2 - Ações rápidas do dashboard
  */
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useNavigate } from 'react-router-dom'
-import { 
-  Plus, 
-  Users, 
-  FileText, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
   Calendar,
+  FileText,
+  Settings,
   UserPlus,
-  Settings
+  Users
 } from 'lucide-react'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export const QuickActions: React.FC = () => {
   const navigate = useNavigate()
@@ -40,6 +39,11 @@ export const QuickActions: React.FC = () => {
     alert('Funcionalidade de exportação será implementada na próxima fase')
   }
 
+  const handleBulkMessaging = () => {
+    console.log('🎯 [V2] Navegando para mensagens em massa')
+    navigate('/admin/bulk-messaging')
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -50,7 +54,7 @@ export const QuickActions: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <Button 
+          <Button
             onClick={handleCreateEvent}
             className="w-full justify-start"
             variant="default"
@@ -58,8 +62,8 @@ export const QuickActions: React.FC = () => {
             <Calendar className="h-4 w-4 mr-2" />
             Criar Novo Evento
           </Button>
-          
-          <Button 
+
+          <Button
             onClick={handleCreateOrganizer}
             className="w-full justify-start"
             variant="outline"
@@ -68,7 +72,7 @@ export const QuickActions: React.FC = () => {
             Criar Organizador Local
           </Button>
 
-          <Button 
+          <Button
             onClick={handleViewTodayRegistrations}
             className="w-full justify-start"
             variant="outline"
@@ -77,7 +81,16 @@ export const QuickActions: React.FC = () => {
             Inscrições de Hoje
           </Button>
 
-          <Button 
+          <Button
+            onClick={handleBulkMessaging}
+            className="w-full justify-start"
+            variant="outline"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Mensagens em Massa
+          </Button>
+
+          <Button
             onClick={handleExportReports}
             className="w-full justify-start"
             variant="outline"
