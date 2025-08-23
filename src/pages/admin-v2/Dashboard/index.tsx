@@ -9,6 +9,7 @@ import { StatsChart } from '@/components/admin-v2/Dashboard/StatsChart'
 import { SystemAlerts } from '@/components/admin-v2/Dashboard/SystemAlerts'
 import { AdminLayout } from '@/components/admin-v2/shared/Layout'
 import { MetricCard } from '@/components/admin-v2/shared/MetricCard'
+import { BulkMessagingCard } from '@/components/admin/BulkMessagingCard'
 import { useAdminMetricsV2 } from '@/hooks/admin-v2/useAdminMetrics'
 import { Activity, Calendar, UserCheck, Users } from 'lucide-react'
 
