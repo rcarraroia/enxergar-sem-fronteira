@@ -3,15 +3,14 @@
  * Versão reconstruída sem React Error #310
  */
 
-import React from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { MetricCard } from '@/components/admin-v2/shared/MetricCard'
 import { ActivityFeed } from '@/components/admin-v2/Dashboard/ActivityFeed'
 import { QuickActions } from '@/components/admin-v2/Dashboard/QuickActions'
 import { StatsChart } from '@/components/admin-v2/Dashboard/StatsChart'
 import { SystemAlerts } from '@/components/admin-v2/Dashboard/SystemAlerts'
+import { AdminLayout } from '@/components/admin-v2/shared/Layout'
+import { MetricCard } from '@/components/admin-v2/shared/MetricCard'
 import { useAdminMetricsV2 } from '@/hooks/admin-v2/useAdminMetrics'
-import { Calendar, Users, UserCheck, Activity } from 'lucide-react'
+import { Activity, Calendar, UserCheck, Users } from 'lucide-react'
 
 const AdminDashboard = () => {
   const { data: metrics, isLoading } = useAdminMetricsV2()
@@ -30,8 +29,8 @@ const AdminDashboard = () => {
   }
 
   return (
-    <AdminLayout 
-      title="Dashboard Administrativo" 
+    <AdminLayout
+      title="Dashboard Administrativo"
       breadcrumbs={[{ label: 'Dashboard', path: '/admin-v2' }]}
     >
       {/* System Alerts */}
@@ -75,9 +74,14 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <QuickActions />
 
+        {/* Bulk Messaging */}
+        <BulkMessagingCard />
+
         {/* Activity Feed */}
         <ActivityFeed />
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         {/* Stats Chart */}
         <StatsChart />
       </div>
