@@ -35,6 +35,7 @@ import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminSyncV2 from "./pages/admin-v2/Sync";
+import BulkMessagingPage from "./pages/BulkMessagingPage";
 import Cookies from "./pages/Cookies";
 import LGPD from "./pages/LGPD";
 import NotFound from "./pages/NotFound";
