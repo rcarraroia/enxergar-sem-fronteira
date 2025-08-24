@@ -1,64 +1,91 @@
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Calendar, FileDown, Search } from 'lucide-react'
-import { useRegistrationsFiltered, useAvailableCities } from '@/hooks/useRegistrationsFiltered'
-import { toast } from 'sonner'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import type { Registration } from '@/hooks/useRegistrations'
-import { formatDate } from '@/utils/dateUtils'
+} from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
+import type { Registration } from "@/hooks/useRegistrations";
+import { useAvailableCities, useRegistrationsFiltered } from "@/hooks/useRegistrationsFiltered";
+import { formatDate } from "@/utils/dateUtils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { AlertTriangle, Calendar, FileDown, RefreshCw, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const ReportsTemp = () => {
-  const [selectedCity, setSelectedCity] = useState<string>('all')
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+
+  const { user, userRole, isAdmin } = useAuth();
 
   // Buscar cidades disponíveis
-  const { data: availableCities = [] } = useAvailableCities()
+  const { data: availableCities = [], isLoading: citiesLoading, error: citiesError } = useAvailableCities();
 
   // Buscar dados com filtros
-  const { data: registrations = [], isLoading } = useRegistrationsFiltered({
-    city: selectedCity !== 'all' ? selectedCity : undefined,
+  const {
+    data: registrations = [],
+    isLoading,
+    error: registrationsError,
+    refetch
+  } = useRegistrationsFiltered({
+    city: selectedCity !== "all" ? selectedCity : undefined,
     date: selectedDate ? new Date(selectedDate) : undefined
-  })
+  });
+
+  // Debug info
+  useEffect(() => {
+    if (debugMode) {
+      console.log("🔍 ReportsTemp Debug Info:", {
+        user: user?.email,
+        userRole,
+        isAdmin,
+        selectedCity,
+        selectedDate,
+        availableCities,
+        registrationsCount: registrations.length,
+        citiesError,
+        registrationsError
+      });
+    }
+  }, [debugMode, user, userRole, isAdmin, selectedCity, selectedDate, availableCities, registrations, citiesError, registrationsError]);
 
   const generatePDF = () => {
     if (registrations.length === 0) {
-      toast.error('Nenhum agendamento encontrado para os filtros selecionados')
-      return
+      toast.error("Nenhum agendamento encontrado para os filtros selecionados");
+      return;
     }
 
-    setIsGenerating(true)
-    
+    setIsGenerating(true);
+
     try {
-      const doc = new jsPDF('landscape') // Modo paisagem para mais espaço
-      
+      const doc = new jsPDF("landscape"); // Modo paisagem para mais espaço
+
       // Título do relatório
-      const title = 'RELATÓRIO DE AGENDAMENTOS'
-      
+      const title = "RELATÓRIO DE AGENDAMENTOS";
+
       // Usar a função formatDate corrigida
-      const dateDisplayText = selectedDate ? formatDate(selectedDate) : 'Todas as Datas'
-      
-      const subtitle = `${selectedCity !== 'all' ? selectedCity : 'Todas as Cidades'} - ${dateDisplayText}`
-      
-      doc.setFontSize(16)
-      doc.text(title, 14, 20)
-      
-      doc.setFontSize(12)
-      doc.text(subtitle, 14, 30)
-      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 40)
-      doc.text(`Total de registros: ${registrations.length}`, 14, 50)
+      const dateDisplayText = selectedDate ? formatDate(selectedDate) : "Todas as Datas";
+
+      const subtitle = `${selectedCity !== "all" ? selectedCity : "Todas as Cidades"} - ${dateDisplayText}`;
+
+      doc.setFontSize(16);
+      doc.text(title, 14, 20);
+
+      doc.setFontSize(12);
+      doc.text(subtitle, 14, 30);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 40);
+      doc.text(`Total de registros: ${registrations.length}`, 14, 50);
 
       // Preparar dados para a tabela (sem CPF, ordenado alfabeticamente)
       const tableData = registrations.map((reg: Registration) => [
@@ -68,23 +95,23 @@ const ReportsTemp = () => {
         reg.event_date.event.city,
         formatDate(reg.event_date.date),
         reg.event_date.start_time,
-        reg.status === 'confirmed' ? 'Confirmado' :
-        reg.status === 'pending' ? 'Pendente' :
-        reg.status === 'attended' ? 'Compareceu' : 'Cancelado',
-        new Date(reg.created_at).toLocaleDateString('pt-BR')
-      ])
+        reg.status === "confirmed" ? "Confirmado" :
+          reg.status === "pending" ? "Pendente" :
+            reg.status === "attended" ? "Compareceu" : "Cancelado",
+        new Date(reg.created_at).toLocaleDateString("pt-BR")
+      ]);
 
       // Cabeçalhos da tabela (sem CPF)
       const headers = [
-        'Nome',
-        'Telefone', 
-        'Email',
-        'Cidade',
-        'Data Evento',
-        'Horário',
-        'Status',
-        'Agendado em'
-      ]
+        "Nome",
+        "Telefone",
+        "Email",
+        "Cidade",
+        "Data Evento",
+        "Horário",
+        "Status",
+        "Agendado em"
+      ];
 
       // Gerar tabela com larguras otimizadas para paisagem
       autoTable(doc, {
@@ -94,15 +121,15 @@ const ReportsTemp = () => {
         styles: {
           fontSize: 9,
           cellPadding: 3,
-          valign: 'middle',
-          halign: 'left'
+          valign: "middle",
+          halign: "left"
         },
         headStyles: {
           fillColor: [41, 128, 185],
           textColor: 255,
           fontSize: 10,
-          fontStyle: 'bold',
-          halign: 'center'
+          fontStyle: "bold",
+          halign: "center"
         },
         columnStyles: {
           0: { cellWidth: 40 }, // Nome - mais espaço
@@ -117,26 +144,26 @@ const ReportsTemp = () => {
         alternateRowStyles: {
           fillColor: [245, 245, 245]
         },
-        tableWidth: 'auto',
+        tableWidth: "auto",
         margin: { left: 14, right: 14 }
-      })
+      });
 
       // Nome do arquivo
-      const cityName = selectedCity !== 'all' ? selectedCity.replace(/\s+/g, '_') : 'todas_cidades'
-      const dateStr = selectedDate ? selectedDate.replace(/-/g, '_') : new Date().toISOString().split('T')[0].replace(/-/g, '_')
-      const filename = `relatorio_agendamentos_${cityName}_${dateStr}.pdf`
+      const cityName = selectedCity !== "all" ? selectedCity.replace(/\s+/g, "_") : "todas_cidades";
+      const dateStr = selectedDate ? selectedDate.replace(/-/g, "_") : new Date().toISOString().split("T")[0].replace(/-/g, "_");
+      const filename = `relatorio_agendamentos_${cityName}_${dateStr}.pdf`;
 
       // Salvar PDF
-      doc.save(filename)
-      
-      toast.success(`Relatório gerado: ${filename}`)
+      doc.save(filename);
+
+      toast.success(`Relatório gerado: ${filename}`);
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      toast.error('Erro ao gerar relatório PDF')
+      console.error("Erro ao gerar PDF:", error);
+      toast.error("Erro ao gerar relatório PDF");
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
@@ -149,6 +176,60 @@ const ReportsTemp = () => {
           <p className="text-gray-600">
             Solução provisória para exportar relatórios em PDF
           </p>
+
+          {/* Debug Info */}
+          {(citiesError || registrationsError) && (
+            <Alert className="mt-4 max-w-2xl mx-auto">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Erro detectado:</strong>
+                {citiesError && <div>Cidades: {citiesError.message}</div>}
+                {registrationsError && <div>Registros: {registrationsError.message}</div>}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Auth Debug */}
+          <div className="mt-4 text-sm text-gray-500">
+            Usuário: {user?.email} | Role: {userRole} | Admin: {isAdmin ? "Sim" : "Não"}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDebugMode(!debugMode)}
+              className="ml-2"
+            >
+              {debugMode ? "Ocultar" : "Mostrar"} Debug
+            </Button>
+          </div>
+
+          {debugMode && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left text-sm">
+              <h4 className="font-bold mb-2">Informações de Debug:</h4>
+              <pre className="whitespace-pre-wrap">
+                {JSON.stringify({
+                  user: user?.email,
+                  userRole,
+                  isAdmin,
+                  citiesCount: availableCities.length,
+                  registrationsCount: registrations.length,
+                  isLoading,
+                  citiesLoading,
+                  errors: {
+                    cities: citiesError?.message,
+                    registrations: registrationsError?.message
+                  }
+                }, null, 2)}
+              </pre>
+              <Button
+                onClick={() => refetch()}
+                size="sm"
+                className="mt-2"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Recarregar Dados
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Filtros */}
@@ -198,9 +279,19 @@ const ReportsTemp = () => {
         {/* Resultados e Geração */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileDown className="h-5 w-5" />
-              Gerar Relatório PDF
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileDown className="h-5 w-5" />
+                Gerar Relatórios
+              </div>
+              <div className="flex items-center gap-2">
+                <ExcelExportButton
+                  data={registrations}
+                  selectedCity={selectedCity}
+                  selectedDate={selectedDate}
+                  isLoading={isLoading}
+                />
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -210,21 +301,21 @@ const ReportsTemp = () => {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="text-sm font-medium text-blue-600">Total de Registros</div>
                   <div className="text-2xl font-bold text-blue-900">
-                    {isLoading ? '...' : registrations.length}
+                    {isLoading ? "..." : registrations.length}
                   </div>
                 </div>
-                
+
                 <div className="bg-green-50 p-4 rounded-lg">
                   <div className="text-sm font-medium text-green-600">Confirmados</div>
                   <div className="text-2xl font-bold text-green-900">
-                    {isLoading ? '...' : registrations.filter((r: Registration) => r.status === 'confirmed').length}
+                    {isLoading ? "..." : registrations.filter((r: Registration) => r.status === "confirmed").length}
                   </div>
                 </div>
 
                 <div className="bg-yellow-50 p-4 rounded-lg">
                   <div className="text-sm font-medium text-yellow-600">Pendentes</div>
                   <div className="text-2xl font-bold text-yellow-900">
-                    {isLoading ? '...' : registrations.filter((r: Registration) => r.status === 'pending').length}
+                    {isLoading ? "..." : registrations.filter((r: Registration) => r.status === "pending").length}
                   </div>
                 </div>
               </div>
@@ -258,14 +349,13 @@ const ReportsTemp = () => {
                             </td>
                             <td className="border border-gray-300 px-4 py-3">{reg.event_date.start_time}</td>
                             <td className="border border-gray-300 px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                reg.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                                reg.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                reg.status === 'attended' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                              }`}>
-                                {reg.status === 'confirmed' ? 'Confirmado' : 
-                                 reg.status === 'pending' ? 'Pendente' : 
-                                 reg.status === 'attended' ? 'Compareceu' : 'Cancelado'}
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${reg.status === "confirmed" ? "bg-green-100 text-green-800" :
+                                reg.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                                  reg.status === "attended" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"
+                                }`}>
+                                {reg.status === "confirmed" ? "Confirmado" :
+                                  reg.status === "pending" ? "Pendente" :
+                                    reg.status === "attended" ? "Compareceu" : "Cancelado"}
                               </span>
                             </td>
                           </tr>
@@ -281,16 +371,28 @@ const ReportsTemp = () => {
                 </div>
               )}
 
-              {/* Botão de gerar */}
-              <Button
-                onClick={generatePDF}
-                disabled={isGenerating || isLoading || registrations.length === 0}
-                className="w-full md:w-auto"
-                size="lg"
-              >
-                <FileDown className="h-4 w-4 mr-2" />
-                {isGenerating ? 'Gerando PDF...' : 'Gerar Relatório PDF'}
-              </Button>
+              {/* Botões de gerar */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={generatePDF}
+                  disabled={isGenerating || isLoading || registrations.length === 0}
+                  className="flex-1 sm:flex-none"
+                  size="lg"
+                  variant="outline"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  {isGenerating ? "Gerando PDF..." : "Gerar PDF"}
+                </Button>
+
+                <div className="flex-1 sm:flex-none">
+                  <ExcelExportButton
+                    data={registrations}
+                    selectedCity={selectedCity}
+                    selectedDate={selectedDate}
+                    isLoading={isLoading}
+                  />
+                </div>
+              </div>
 
               {registrations.length === 0 && !isLoading && (
                 <p className="text-gray-600 text-center py-4">
@@ -308,17 +410,17 @@ const ReportsTemp = () => {
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Selecione os filtros desejados (cidade e/ou data)</li>
               <li>• Visualize o preview dos dados que serão incluídos no relatório</li>
-              <li>• Clique em "Gerar Relatório PDF" para fazer o download</li>
-              <li>• O arquivo será baixado automaticamente com nome descritivo</li>
-              <li>• Por questões de privacidade, o CPF não é exibido no relatório</li>
+              <li>• <strong>Excel:</strong> Formato profissional seguindo gabarito WaSeller com estilos e formatação</li>
+              <li>• <strong>PDF:</strong> Formato simples para visualização rápida</li>
+              <li>• Escolha entre exportação completa (com CPF) ou básica (sem dados sensíveis)</li>
+              <li>• Os arquivos são baixados automaticamente com nomes descritivos</li>
               <li>• Os registros estão ordenados alfabeticamente por nome</li>
-              <li>• O PDF é gerado em formato paisagem para melhor visualização</li>
             </ul>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ReportsTemp
+export default ReportsTemp;
