@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# Backup do pre-commit hook original
+# Este arquivo serve como referência caso seja necessário restaurar
+
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Executando verificações de qualidade antes do commit..."
+
+# Executar lint-staged para arquivos modificados
+npx lint-staged
+
+# Verificar se há arquivos não commitados após as correções automáticas
+if ! git diff --cached --quiet; then
+  echo "✅ Arquivos foram formatados automaticamente"
+else
+  echo "✅ Nenhuma correção automática necessária"
+fi
+
+echo "✅ Verificações de qualidade concluídas com sucesso!"
