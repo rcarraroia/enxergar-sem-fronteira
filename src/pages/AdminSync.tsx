@@ -1,23 +1,23 @@
 
-import React from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { LogOut, Settings, RefreshCw, ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, LogOut, RefreshCw, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AdminSync = () => {
-  const { user, signOut, isAdmin } = useAuth()
-  const navigate = useNavigate()
+  const { user, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+      console.error("Erro ao fazer logout:", error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,7 +28,7 @@ const AdminSync = () => {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate("/admin")}
                 className="p-2"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -96,7 +96,7 @@ const AdminSync = () => {
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default AdminSync
+export default AdminSync;

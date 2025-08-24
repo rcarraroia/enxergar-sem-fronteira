@@ -1,19 +1,19 @@
 
-import React, { useState } from 'react'
-import { usePatients } from '@/hooks/usePatients'
-import { useRegistrations } from '@/hooks/useRegistrations'
-import { useEvents } from '@/hooks/useEvents'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React, { useState } from "react";
+import { usePatients } from "@/hooks/usePatients";
+import { useRegistrations } from "@/hooks/useRegistrations";
+import { useEvents } from "@/hooks/useEvents";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import { 
   Table, 
   TableBody, 
@@ -21,7 +21,7 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,64 +32,64 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 import { 
-  Users, 
-  Search, 
+  Calendar, 
+  Clock, 
   Download, 
+  FileDown,
+  FileText,
+  Filter,
   Loader2,
   Mail,
-  Phone,
-  FileText,
-  Calendar,
-  Trash2,
   MapPin,
-  Clock,
-  Filter,
-  FileDown
-} from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
-import { formatDate, formatTimeRange, formatDateTimeRange } from '@/utils/dateUtils'
+  Phone,
+  Search,
+  Trash2,
+  Users
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { formatDate, formatDateTimeRange, formatTimeRange } from "@/utils/dateUtils";
 
 export const PatientsList: React.FC = () => {
-  const { data: patients, isLoading, refetch } = usePatients()
-  const { data: registrations, isLoading: registrationsLoading } = useRegistrations()
-  const { data: events, isLoading: eventsLoading } = useEvents()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCity, setSelectedCity] = useState<string>('all')
-  const [selectedEvent, setSelectedEvent] = useState<string>('all')
-  const [selectedDate, setSelectedDate] = useState<string>('all')
-  const [deletingPatient, setDeletingPatient] = useState<string | null>(null)
+  const { data: patients, isLoading, refetch } = usePatients();
+  const { data: registrations, isLoading: registrationsLoading } = useRegistrations();
+  const { data: events, isLoading: eventsLoading } = useEvents();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedEvent, setSelectedEvent] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<string>("all");
+  const [deletingPatient, setDeletingPatient] = useState<string | null>(null);
 
   // Debug logs
   React.useEffect(() => {
-    console.log('🔍 Dados carregados - Patients:', patients?.length || 0, 'Registrations:', registrations?.length || 0, 'Events:', events?.length || 0)
-  }, [patients, registrations, events])
+    console.log("🔍 Dados carregados - Patients:", patients?.length || 0, "Registrations:", registrations?.length || 0, "Events:", events?.length || 0);
+  }, [patients, registrations, events]);
 
   // Extrair cidades únicas dos eventos
   const cities = React.useMemo(() => {
-    if (!events) return []
-    const uniqueCities = [...new Set(events.map(event => event.city).filter(Boolean))]
-    console.log('🏙️ Cidades encontradas:', uniqueCities)
-    return uniqueCities.sort()
-  }, [events])
+    if (!events) {return [];}
+    const uniqueCities = [...new Set(events.map(event => event.city).filter(Boolean))];
+    console.log("🏙️ Cidades encontradas:", uniqueCities);
+    return uniqueCities.sort();
+  }, [events]);
 
   // Extrair eventos únicos
   const eventOptions = React.useMemo(() => {
-    if (!events) return []
+    if (!events) {return [];}
     const options = events.map(event => ({
       id: event.id,
       title: event.title,
       city: event.city
-    }))
-    console.log('📅 Eventos encontrados:', options)
-    return options
-  }, [events])
+    }));
+    console.log("📅 Eventos encontrados:", options);
+    return options;
+  }, [events]);
 
   // Extrair datas únicas baseadas no evento selecionado
   const eventDates = React.useMemo(() => {
-    if (!registrations || selectedEvent === 'all') return []
+    if (!registrations || selectedEvent === "all") {return [];}
     
     const datesForEvent = registrations
       .filter(reg => reg.event_date?.event?.id === selectedEvent)
@@ -98,155 +98,155 @@ export const PatientsList: React.FC = () => {
         date: reg.event_date.date,
         start_time: reg.event_date.start_time,
         end_time: reg.event_date.end_time
-      }))
+      }));
     
     // Remover duplicatas
     const uniqueDates = datesForEvent.filter((date, index, self) => 
       index === self.findIndex(d => d.id === date.id)
-    )
+    );
     
-    return uniqueDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  }, [registrations, selectedEvent])
+    return uniqueDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [registrations, selectedEvent]);
 
   // Criar mapa de pacientes com suas inscrições
   const patientsWithRegistrations = React.useMemo(() => {
-    if (!patients || !registrations) return []
+    if (!patients || !registrations) {return [];}
     
     const result = patients.map(patient => {
-      const patientRegistrations = registrations.filter(reg => reg.patient?.id === patient.id)
+      const patientRegistrations = registrations.filter(reg => reg.patient?.id === patient.id);
       return {
         ...patient,
         registrations: patientRegistrations
-      }
-    })
+      };
+    });
     
-    console.log('👥 Pacientes com inscrições:', result.length)
-    console.log('🔍 Exemplo de registração completa:', registrations[0])
+    console.log("👥 Pacientes com inscrições:", result.length);
+    console.log("🔍 Exemplo de registração completa:", registrations[0]);
     
     // Log detalhado da estrutura
     if (registrations[0]) {
-      console.log('📋 Estrutura da registração:')
-      console.log('- patient:', registrations[0].patient)
-      console.log('- event_date:', registrations[0].event_date)
-      console.log('- event_date.event:', registrations[0].event_date?.event)
-      console.log('- event_date.event.city:', registrations[0].event_date?.event?.city)
+      console.log("📋 Estrutura da registração:");
+      console.log("- patient:", registrations[0].patient);
+      console.log("- event_date:", registrations[0].event_date);
+      console.log("- event_date.event:", registrations[0].event_date?.event);
+      console.log("- event_date.event.city:", registrations[0].event_date?.event?.city);
     }
     
     // Log de paciente com registrações
-    const patientWithRegs = result.find(p => p.registrations.length > 0)
+    const patientWithRegs = result.find(p => p.registrations.length > 0);
     if (patientWithRegs) {
-      console.log('👤 Paciente com registrações:', patientWithRegs.nome)
-      console.log('📝 Suas registrações:', patientWithRegs.registrations.length)
-      console.log('🏙️ Cidade da primeira registração:', patientWithRegs.registrations[0]?.event_date?.event?.city)
+      console.log("👤 Paciente com registrações:", patientWithRegs.nome);
+      console.log("📝 Suas registrações:", patientWithRegs.registrations.length);
+      console.log("🏙️ Cidade da primeira registração:", patientWithRegs.registrations[0]?.event_date?.event?.city);
     }
     
-    return result
-  }, [patients, registrations])
+    return result;
+  }, [patients, registrations]);
 
   // Filtrar pacientes baseado nos critérios selecionados
   const filteredPatients = React.useMemo(() => {
-    let filtered = patientsWithRegistrations
+    let filtered = patientsWithRegistrations;
 
-    console.log('🔍 Iniciando filtros com', filtered.length, 'pacientes')
-    console.log('Filtros ativos:', { searchTerm, selectedCity, selectedEvent, selectedDate })
+    console.log("🔍 Iniciando filtros com", filtered.length, "pacientes");
+    console.log("Filtros ativos:", { searchTerm, selectedCity, selectedEvent, selectedDate });
 
     // Filtro por texto
     if (searchTerm) {
-      const beforeCount = filtered.length
+      const beforeCount = filtered.length;
       filtered = filtered.filter(patient => 
         patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.cpf.includes(searchTerm.replace(/\D/g, ''))
-      )
-      console.log(`📝 Filtro por texto: ${beforeCount} → ${filtered.length}`)
+        patient.cpf.includes(searchTerm.replace(/\D/g, ""))
+      );
+      console.log(`📝 Filtro por texto: ${beforeCount} → ${filtered.length}`);
     }
 
     // Filtro por cidade
-    if (selectedCity !== 'all') {
-      const beforeCount = filtered.length
+    if (selectedCity !== "all") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(patient => {
         const hasCity = patient.registrations.some(reg => {
-          const eventCity = reg.event_date?.event?.city
-          console.log(`Comparando cidade: "${eventCity}" === "${selectedCity}"`)
-          return eventCity === selectedCity
-        })
-        return hasCity
-      })
-      console.log(`🏙️ Filtro por cidade "${selectedCity}": ${beforeCount} → ${filtered.length}`)
+          const eventCity = reg.event_date?.event?.city;
+          console.log(`Comparando cidade: "${eventCity}" === "${selectedCity}"`);
+          return eventCity === selectedCity;
+        });
+        return hasCity;
+      });
+      console.log(`🏙️ Filtro por cidade "${selectedCity}": ${beforeCount} → ${filtered.length}`);
     }
 
     // Filtro por evento
-    if (selectedEvent !== 'all') {
-      const beforeCount = filtered.length
+    if (selectedEvent !== "all") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(patient => {
         const hasEvent = patient.registrations.some(reg => {
-          const eventId = reg.event_date?.event?.id
-          return eventId === selectedEvent
-        })
-        return hasEvent
-      })
-      console.log(`📅 Filtro por evento "${selectedEvent}": ${beforeCount} → ${filtered.length}`)
+          const eventId = reg.event_date?.event?.id;
+          return eventId === selectedEvent;
+        });
+        return hasEvent;
+      });
+      console.log(`📅 Filtro por evento "${selectedEvent}": ${beforeCount} → ${filtered.length}`);
     }
 
     // Filtro por data específica
-    if (selectedDate !== 'all') {
-      const beforeCount = filtered.length
+    if (selectedDate !== "all") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(patient => {
         const hasDate = patient.registrations.some(reg => {
-          const dateId = reg.event_date?.id
-          return dateId === selectedDate
-        })
-        return hasDate
-      })
-      console.log(`📆 Filtro por data "${selectedDate}": ${beforeCount} → ${filtered.length}`)
+          const dateId = reg.event_date?.id;
+          return dateId === selectedDate;
+        });
+        return hasDate;
+      });
+      console.log(`📆 Filtro por data "${selectedDate}": ${beforeCount} → ${filtered.length}`);
     }
 
-    console.log('✅ Resultado final dos filtros:', filtered.length, 'pacientes')
-    return filtered
-  }, [patientsWithRegistrations, searchTerm, selectedCity, selectedEvent, selectedDate])
+    console.log("✅ Resultado final dos filtros:", filtered.length, "pacientes");
+    return filtered;
+  }, [patientsWithRegistrations, searchTerm, selectedCity, selectedEvent, selectedDate]);
 
   const handleDeletePatient = async (patientId: string, patientName: string) => {
     try {
-      setDeletingPatient(patientId)
-      console.log('🗑️ Excluindo paciente:', patientId, patientName)
+      setDeletingPatient(patientId);
+      console.log("🗑️ Excluindo paciente:", patientId, patientName);
 
       // Primeiro, deletar todas as inscrições do paciente
       const { error: registrationsError } = await supabase
-        .from('registrations')
+        .from("registrations")
         .delete()
-        .eq('patient_id', patientId)
+        .eq("patient_id", patientId);
 
       if (registrationsError) {
-        console.error('❌ Erro ao excluir inscrições:', registrationsError)
-        throw registrationsError
+        console.error("❌ Erro ao excluir inscrições:", registrationsError);
+        throw registrationsError;
       }
 
       // Depois, deletar o paciente
       const { error: patientError } = await supabase
-        .from('patients')
+        .from("patients")
         .delete()
-        .eq('id', patientId)
+        .eq("id", patientId);
 
       if (patientError) {
-        console.error('❌ Erro ao excluir paciente:', patientError)
-        throw patientError
+        console.error("❌ Erro ao excluir paciente:", patientError);
+        throw patientError;
       }
 
-      console.log('✅ Paciente e inscrições excluídos com sucesso')
-      toast.success(`Paciente ${patientName} e suas inscrições foram excluídos com sucesso`)
+      console.log("✅ Paciente e inscrições excluídos com sucesso");
+      toast.success(`Paciente ${patientName} e suas inscrições foram excluídos com sucesso`);
       
       // Atualizar a lista
-      refetch()
+      refetch();
     } catch (error: unknown) {
-      console.error('❌ Erro ao excluir paciente:', error)
-      toast.error('Erro ao excluir paciente: ' + (error instanceof Error ? error.message : 'Erro desconhecido'))
+      console.error("❌ Erro ao excluir paciente:", error);
+      toast.error(`Erro ao excluir paciente: ${  error instanceof Error ? error.message : "Erro desconhecido"}`);
     } finally {
-      setDeletingPatient(null)
+      setDeletingPatient(null);
     }
-  }
+  };
 
   const handleExportPDF = () => {
-    if (!filteredPatients.length) return
+    if (!filteredPatients.length) {return;}
 
     // Criar conteúdo HTML para o PDF
     const htmlContent = `
@@ -273,15 +273,15 @@ export const PatientsList: React.FC = () => {
       <body>
         <div class="header">
           <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
-          <p>Gerado em: ${formatDate(new Date().toISOString().split('T')[0])} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+          <p>Gerado em: ${formatDate(new Date().toISOString().split("T")[0])} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
         </div>
         
         <div class="filters">
           <strong>Filtros aplicados:</strong>
-          ${selectedCity !== 'all' ? `Cidade: ${selectedCity} | ` : ''}
-          ${selectedEvent !== 'all' ? `Evento específico | ` : ''}
-          ${selectedDate !== 'all' ? `Data específica | ` : ''}
-          ${searchTerm ? `Busca: "${searchTerm}" | ` : ''}
+          ${selectedCity !== "all" ? `Cidade: ${selectedCity} | ` : ""}
+          ${selectedEvent !== "all" ? "Evento específico | " : ""}
+          ${selectedDate !== "all" ? "Data específica | " : ""}
+          ${searchTerm ? `Busca: "${searchTerm}" | ` : ""}
           <strong>Total: ${filteredPatients.length} paciente(s)</strong>
         </div>
 
@@ -308,32 +308,32 @@ export const PatientsList: React.FC = () => {
                   <div>📞 ${patient.telefone}</div>
                 </td>
                 <td>
-                  ${patient.data_nascimento ? formatDate(patient.data_nascimento) : '-'}
-                  ${patient.diagnostico ? `<br><small>${patient.diagnostico.slice(0, 50)}${patient.diagnostico.length > 50 ? '...' : ''}</small>` : ''}
+                  ${patient.data_nascimento ? formatDate(patient.data_nascimento) : "-"}
+                  ${patient.diagnostico ? `<br><small>${patient.diagnostico.slice(0, 50)}${patient.diagnostico.length > 50 ? "..." : ""}</small>` : ""}
                 </td>
                 <td>
-                  ${patient.registrations.length === 0 ? 'Nenhuma inscrição' : 
+                  ${patient.registrations.length === 0 ? "Nenhuma inscrição" : 
                     patient.registrations.map(reg => `
                       <div class="registration">
-                        <strong>${reg.event_date?.event?.title || 'N/A'}</strong><br>
-                        📍 ${reg.event_date?.event?.city?.trim() || 'N/A'}<br>
-                        📅 ${reg.event_date?.date ? formatDate(reg.event_date.date) : 'N/A'} 
-                        ⏰ ${formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}<br>
-                        <span class="badge ${reg.status === 'confirmed' ? 'badge-confirmed' : 'badge-pending'}">
-                          ${reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                        <strong>${reg.event_date?.event?.title || "N/A"}</strong><br>
+                        📍 ${reg.event_date?.event?.city?.trim() || "N/A"}<br>
+                        📅 ${reg.event_date?.date ? formatDate(reg.event_date.date) : "N/A"} 
+                        ⏰ ${formatTimeRange(reg.event_date?.start_time || "", reg.event_date?.end_time || "")}<br>
+                        <span class="badge ${reg.status === "confirmed" ? "badge-confirmed" : "badge-pending"}">
+                          ${reg.status === "confirmed" ? "Confirmado" : "Pendente"}
                         </span>
                       </div>
-                    `).join('')
+                    `).join("")
                   }
                 </td>
                 <td>
-                  <span class="badge ${patient.consentimento_lgpd ? 'badge-confirmed' : 'badge-pending'}">
-                    ${patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
+                  <span class="badge ${patient.consentimento_lgpd ? "badge-confirmed" : "badge-pending"}">
+                    ${patient.consentimento_lgpd ? "Aceito" : "Pendente"}
                   </span>
                 </td>
-                <td>${formatDate(patient.created_at.split('T')[0])}</td>
+                <td>${formatDate(patient.created_at.split("T")[0])}</td>
               </tr>
-            `).join('')}
+            `).join("")}
           </tbody>
         </table>
 
@@ -343,43 +343,43 @@ export const PatientsList: React.FC = () => {
         </div>
       </body>
       </html>
-    `
+    `;
 
     // Criar e baixar o PDF
-    const printWindow = window.open('', '_blank')
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
-      printWindow.document.write(htmlContent)
-      printWindow.document.close()
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
       
       // Aguardar o carregamento e imprimir
       printWindow.onload = () => {
-        printWindow.print()
-        printWindow.close()
-      }
+        printWindow.print();
+        printWindow.close();
+      };
     }
-  }
+  };
 
   const handleExportCSV = () => {
-    if (!filteredPatients.length) return
+    if (!filteredPatients.length) {return;}
 
     const headers = [
-      'Nome',
-      'CPF', 
-      'Email',
-      'Telefone',
-      'Data Nascimento',
-      'Diagnóstico',
-      'LGPD',
-      'Data Cadastro',
-      'Inscrições'
-    ]
+      "Nome",
+      "CPF", 
+      "Email",
+      "Telefone",
+      "Data Nascimento",
+      "Diagnóstico",
+      "LGPD",
+      "Data Cadastro",
+      "Inscrições"
+    ];
 
     const csvContent = [
-      headers.join(','),
+      headers.join(","),
       ...filteredPatients.map(patient => {
         const inscricoes = patient.registrations.map(reg => 
-          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${formatDateTimeRange(reg.event_date?.date || '', reg.event_date?.start_time || '', reg.event_date?.end_time || '')}`
-        ).join('; ')
+          `${reg.event_date?.event?.title} - ${reg.event_date?.event?.city?.trim()} - ${formatDateTimeRange(reg.event_date?.date || "", reg.event_date?.start_time || "", reg.event_date?.end_time || "")}`
+        ).join("; ");
         
         return [
           `"${patient.nome}"`,
@@ -387,32 +387,32 @@ export const PatientsList: React.FC = () => {
           `"${patient.email}"`,
           `"${patient.telefone}"`,
           patient.data_nascimento ? `"${formatDate(patient.data_nascimento)}"` : '""',
-          `"${patient.diagnostico || ''}"`,
-          `"${patient.consentimento_lgpd ? 'Sim' : 'Não'}"`,
-          `"${formatDate(patient.created_at.split('T')[0])}"`,
+          `"${patient.diagnostico || ""}"`,
+          `"${patient.consentimento_lgpd ? "Sim" : "Não"}"`,
+          `"${formatDate(patient.created_at.split("T")[0])}"`,
           `"${inscricoes}"`
-        ].join(',')
+        ].join(",");
       })
-    ].join('\n')
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
     
     // Nome do arquivo mais descritivo baseado nos filtros
-    let fileName = 'pacientes'
-    if (selectedCity !== 'all') fileName += `_${selectedCity}`
-    if (selectedEvent !== 'all') fileName += '_evento'
-    if (selectedDate !== 'all') fileName += '_data'
-    fileName += `_${formatDate(new Date().toISOString().split('T')[0]).replace(/\//g, '-')}.csv`
+    let fileName = "pacientes";
+    if (selectedCity !== "all") {fileName += `_${selectedCity}`;}
+    if (selectedEvent !== "all") {fileName += "_evento";}
+    if (selectedDate !== "all") {fileName += "_data";}
+    fileName += `_${formatDate(new Date().toISOString().split("T")[0]).replace(/\//g, "-")}.csv`;
     
-    link.setAttribute('download', fileName)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (isLoading || registrationsLoading || eventsLoading) {
     return (
@@ -424,7 +424,7 @@ export const PatientsList: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -475,8 +475,8 @@ export const PatientsList: React.FC = () => {
             </Select>
 
             <Select value={selectedEvent} onValueChange={(value) => {
-              setSelectedEvent(value)
-              setSelectedDate('all') // Reset date when event changes
+              setSelectedEvent(value);
+              setSelectedDate("all"); // Reset date when event changes
             }}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por evento" />
@@ -497,7 +497,7 @@ export const PatientsList: React.FC = () => {
             <Select 
               value={selectedDate} 
               onValueChange={setSelectedDate}
-              disabled={selectedEvent === 'all'}
+              disabled={selectedEvent === "all"}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por data" />
@@ -524,15 +524,15 @@ export const PatientsList: React.FC = () => {
           <div className="flex justify-between items-center">
             <div className="text-sm text-muted-foreground">
               {filteredPatients.length} paciente(s) encontrado(s)
-              {(selectedCity !== 'all' || selectedEvent !== 'all' || selectedDate !== 'all') && (
+              {(selectedCity !== "all" || selectedEvent !== "all" || selectedDate !== "all") && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setSelectedCity('all')
-                    setSelectedEvent('all')
-                    setSelectedDate('all')
-                    setSearchTerm('')
+                    setSelectedCity("all");
+                    setSelectedEvent("all");
+                    setSelectedDate("all");
+                    setSearchTerm("");
                   }}
                   className="ml-2 h-6 px-2 text-xs"
                 >
@@ -565,7 +565,7 @@ export const PatientsList: React.FC = () => {
             <div>
               <p>Cidades: {cities.length}</p>
               <p>Pacientes filtrados: {filteredPatients.length}</p>
-              <p>Filtros ativos: {[selectedCity !== 'all', selectedEvent !== 'all', selectedDate !== 'all', searchTerm !== ''].filter(Boolean).length}</p>
+              <p>Filtros ativos: {[selectedCity !== "all", selectedEvent !== "all", selectedDate !== "all", searchTerm !== ""].filter(Boolean).length}</p>
             </div>
           </div>
         </div>
@@ -575,9 +575,9 @@ export const PatientsList: React.FC = () => {
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              {searchTerm || selectedCity !== 'all' || selectedEvent !== 'all' || selectedDate !== 'all'
-                ? 'Nenhum paciente encontrado com estes filtros' 
-                : 'Nenhum paciente cadastrado ainda'}
+              {searchTerm || selectedCity !== "all" || selectedEvent !== "all" || selectedDate !== "all"
+                ? "Nenhum paciente encontrado com estes filtros" 
+                : "Nenhum paciente cadastrado ainda"}
             </p>
             {patients && patients.length > 0 && (
               <p className="text-xs text-muted-foreground mt-2">
@@ -634,7 +634,7 @@ export const PatientsList: React.FC = () => {
                           <div className="flex items-center gap-1">
                             <FileText className="h-3 w-3" />
                             {patient.diagnostico.slice(0, 30)}
-                            {patient.diagnostico.length > 30 && '...'}
+                            {patient.diagnostico.length > 30 && "..."}
                           </div>
                         )}
                       </div>
@@ -653,16 +653,16 @@ export const PatientsList: React.FC = () => {
                               </div>
                               <div className="text-muted-foreground flex items-center gap-1">
                                 <Calendar className="h-2 w-2" />
-                                {formatDate(reg.event_date?.date || '')}
+                                {formatDate(reg.event_date?.date || "")}
                                 <span className="mx-1">•</span>
                                 <Clock className="h-2 w-2" />
-                                {formatTimeRange(reg.event_date?.start_time || '', reg.event_date?.end_time || '')}
+                                {formatTimeRange(reg.event_date?.start_time || "", reg.event_date?.end_time || "")}
                               </div>
                               <Badge 
-                                variant={reg.status === 'confirmed' ? 'default' : 'secondary'}
+                                variant={reg.status === "confirmed" ? "default" : "secondary"}
                                 className="text-xs"
                               >
-                                {reg.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                                {reg.status === "confirmed" ? "Confirmado" : "Pendente"}
                               </Badge>
                             </div>
                           ))
@@ -676,12 +676,12 @@ export const PatientsList: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant={patient.consentimento_lgpd ? "default" : "destructive"}>
-                        {patient.consentimento_lgpd ? 'Aceito' : 'Pendente'}
+                        {patient.consentimento_lgpd ? "Aceito" : "Pendente"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {formatDate(patient.created_at.split('T')[0])}
+                        {formatDate(patient.created_at.split("T")[0])}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -740,5 +740,5 @@ export const PatientsList: React.FC = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

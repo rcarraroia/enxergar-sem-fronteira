@@ -1,7 +1,7 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LucideIcon } from 'lucide-react'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
 
 interface OrganizerStatsCardProps {
   title: string
@@ -21,7 +21,7 @@ export const OrganizerStatsCard = ({
   value,
   description,
   icon: Icon,
-  iconColor = 'text-primary',
+  iconColor = "text-primary",
   trend
 }: OrganizerStatsCardProps) => {
   return (
@@ -33,8 +33,8 @@ export const OrganizerStatsCard = ({
             {title}
           </div>
           {trend && (
-            <span className={`text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
+            <span className={`text-xs ${trend.isPositive ? "text-green-600" : "text-red-600"}`}>
+              {trend.isPositive ? "+" : ""}{trend.value}%
             </span>
           )}
         </CardTitle>
@@ -49,5 +49,5 @@ export const OrganizerStatsCard = ({
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

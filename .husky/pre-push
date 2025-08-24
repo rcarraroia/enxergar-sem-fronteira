@@ -1,0 +1,25 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Executando verificações antes do push..."
+
+# Verificar se há arquivos não commitados
+if ! git diff-index --quiet HEAD --; then
+    echo "❌ Erro: Há arquivos modificados não commitados"
+    echo "Por favor, commit ou stash suas mudanças antes do push"
+    exit 1
+fi
+
+# Executar build para garantir que não há erros
+echo "🔨 Verificando build..."
+npm run build
+
+# Executar testes críticos
+echo "🧪 Executando testes críticos..."
+npm run test:critical
+
+# Verificar qualidade geral
+echo "🔍 Verificando qualidade do código..."
+npm run quality:check
+
+echo "✅ Todas as verificações passaram! Push liberado."

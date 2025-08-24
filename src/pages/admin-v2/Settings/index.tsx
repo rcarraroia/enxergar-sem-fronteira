@@ -3,17 +3,17 @@
  * Página temporária para navegação
  */
 
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Settings, Construction } from 'lucide-react'
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Construction, Settings } from "lucide-react";
 
 const AdminSettingsV2 = () => {
   return (
     <AdminLayout 
       title="Configurações do Sistema" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Configurações', path: '/admin-v2/settings' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Configurações", path: "/admin-v2/settings" }
       ]}
     >
       <Card>
@@ -38,7 +38,7 @@ const AdminSettingsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminSettingsV2
+export default AdminSettingsV2;

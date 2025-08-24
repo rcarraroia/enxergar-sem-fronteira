@@ -4,24 +4,24 @@
  * Interface mais simples e direta para envio de mensagens para eventos específicos.
  */
 
-import { useAuth } from '@/hooks/useAuth'
-import { useBulkMessaging } from '@/hooks/useBulkMessaging'
-import { supabase } from '@/integrations/supabase/client'
-import React, { useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { useAuth } from "@/hooks/useAuth";
+import { useBulkMessaging } from "@/hooks/useBulkMessaging";
+import { supabase } from "@/integrations/supabase/client";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // UI Components
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // Icons
-import { AlertTriangle, CheckCircle, Mail, MessageSquare, Send, Smartphone, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Mail, MessageSquare, Send, Smartphone, Users } from "lucide-react";
 
 // ============================================================================
 // TYPES
@@ -52,20 +52,20 @@ export const QuickBulkSender: React.FC = () => {
   // STATE
   // ============================================================================
 
-  const [events, setEvents] = useState<Event[]>([])
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [selectedEventId, setSelectedEventId] = useState<string>('')
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-  const [customMessage, setCustomMessage] = useState<string>('')
-  const [messageTypes, setMessageTypes] = useState<('email' | 'sms' | 'whatsapp')[]>(['email'])
-  const [loading, setLoading] = useState(true)
+  const [events, setEvents] = useState<Event[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [customMessage, setCustomMessage] = useState<string>("");
+  const [messageTypes, setMessageTypes] = useState<("email" | "sms" | "whatsapp")[]>(["email"]);
+  const [loading, setLoading] = useState(true);
 
   // ============================================================================
   // HOOKS
   // ============================================================================
 
-  const { isAdmin } = useAuth()
-  const { sendBulkMessages, loading: sending, lastResult } = useBulkMessaging()
+  const { isAdmin } = useAuth();
+  const { sendBulkMessages, loading: sending, lastResult } = useBulkMessaging();
 
   // ============================================================================
   // EFFECTS
@@ -73,9 +73,9 @@ export const QuickBulkSender: React.FC = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      loadData()
+      loadData();
     }
-  }, [isAdmin])
+  }, [isAdmin]);
 
   // ============================================================================
   // DATA LOADING
@@ -83,11 +83,11 @@ export const QuickBulkSender: React.FC = () => {
 
   const loadData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Carregar eventos com contagem de inscrições
       const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
+        .from("events")
         .select(`
           id,
           title,
@@ -95,63 +95,63 @@ export const QuickBulkSender: React.FC = () => {
           city,
           registrations:registrations(count)
         `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
 
-      if (eventsError) throw eventsError
+      if (eventsError) {throw eventsError;}
 
       const processedEvents = eventsData?.map(event => ({
         ...event,
         registrations_count: event.registrations?.[0]?.count || 0
-      })) || []
+      })) || [];
 
-      setEvents(processedEvents)
+      setEvents(processedEvents);
 
       // Carregar templates
       const { data: templatesData, error: templatesError } = await supabase
-        .from('notification_templates')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
+        .from("notification_templates")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
 
-      if (templatesError) throw templatesError
+      if (templatesError) {throw templatesError;}
 
-      setTemplates(templatesData || [])
+      setTemplates(templatesData || []);
 
     } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast.error('Erro ao carregar dados')
+      console.error("Erro ao carregar dados:", error);
+      toast.error("Erro ao carregar dados");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // ============================================================================
   // HANDLERS
   // ============================================================================
 
-  const handleMessageTypeToggle = (type: 'email' | 'sms' | 'whatsapp', checked: boolean) => {
+  const handleMessageTypeToggle = (type: "email" | "sms" | "whatsapp", checked: boolean) => {
     setMessageTypes(prev =>
       checked
         ? [...prev, type]
         : prev.filter(t => t !== type)
-    )
-  }
+    );
+  };
 
   const handleSend = async (testMode = false) => {
     if (!selectedEventId) {
-      toast.error('Selecione um evento')
-      return
+      toast.error("Selecione um evento");
+      return;
     }
 
     if (messageTypes.length === 0) {
-      toast.error('Selecione pelo menos um tipo de mensagem')
-      return
+      toast.error("Selecione pelo menos um tipo de mensagem");
+      return;
     }
 
     if (!selectedTemplate && !customMessage.trim()) {
-      toast.error('Selecione um template ou digite uma mensagem')
-      return
+      toast.error("Selecione um template ou digite uma mensagem");
+      return;
     }
 
     const result = await sendBulkMessages({
@@ -161,24 +161,24 @@ export const QuickBulkSender: React.FC = () => {
       customMessage: customMessage.trim() || undefined,
       testMode,
       filters: {
-        registrationStatus: ['confirmed']
+        registrationStatus: ["confirmed"]
       }
-    })
+    });
 
     if (result.success && !testMode) {
       // Limpar formulário após envio bem-sucedido
-      setSelectedEventId('')
-      setSelectedTemplate('')
-      setCustomMessage('')
+      setSelectedEventId("");
+      setSelectedTemplate("");
+      setCustomMessage("");
     }
-  }
+  };
 
   // ============================================================================
   // RENDER HELPERS
   // ============================================================================
 
-  const selectedEvent = events.find(e => e.id === selectedEventId)
-  const selectedTemplateData = templates.find(t => t.name === selectedTemplate)
+  const selectedEvent = events.find(e => e.id === selectedEventId);
+  const selectedTemplateData = templates.find(t => t.name === selectedTemplate);
 
   // ============================================================================
   // MAIN RENDER
@@ -192,7 +192,7 @@ export const QuickBulkSender: React.FC = () => {
           Acesso negado: Apenas administradores podem enviar mensagens em massa
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   if (loading) {
@@ -202,7 +202,7 @@ export const QuickBulkSender: React.FC = () => {
           <div className="text-center">Carregando...</div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -253,8 +253,8 @@ export const QuickBulkSender: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="email"
-                checked={messageTypes.includes('email')}
-                onCheckedChange={(checked) => handleMessageTypeToggle('email', checked as boolean)}
+                checked={messageTypes.includes("email")}
+                onCheckedChange={(checked) => handleMessageTypeToggle("email", checked as boolean)}
               />
               <Mail className="h-4 w-4 text-blue-600" />
               <Label htmlFor="email" className="cursor-pointer">Email</Label>
@@ -263,8 +263,8 @@ export const QuickBulkSender: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="sms"
-                checked={messageTypes.includes('sms')}
-                onCheckedChange={(checked) => handleMessageTypeToggle('sms', checked as boolean)}
+                checked={messageTypes.includes("sms")}
+                onCheckedChange={(checked) => handleMessageTypeToggle("sms", checked as boolean)}
               />
               <Smartphone className="h-4 w-4 text-green-600" />
               <Label htmlFor="sms" className="cursor-pointer">SMS</Label>
@@ -273,8 +273,8 @@ export const QuickBulkSender: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="whatsapp"
-                checked={messageTypes.includes('whatsapp')}
-                onCheckedChange={(checked) => handleMessageTypeToggle('whatsapp', checked as boolean)}
+                checked={messageTypes.includes("whatsapp")}
+                onCheckedChange={(checked) => handleMessageTypeToggle("whatsapp", checked as boolean)}
               />
               <MessageSquare className="h-4 w-4 text-green-500" />
               <Label htmlFor="whatsapp" className="cursor-pointer">WhatsApp</Label>
@@ -316,7 +316,7 @@ export const QuickBulkSender: React.FC = () => {
 
           <div className="space-y-2">
             <Label htmlFor="customMessage">
-              {selectedTemplate ? 'Ou Mensagem Customizada' : 'Mensagem Customizada'}
+              {selectedTemplate ? "Ou Mensagem Customizada" : "Mensagem Customizada"}
             </Label>
             <Textarea
               id="customMessage"
@@ -326,7 +326,7 @@ export const QuickBulkSender: React.FC = () => {
               rows={4}
             />
             <div className="text-xs text-gray-500">
-              Variáveis: {'{patient_name}'}, {'{event_title}'}, {'{event_date}'}, {'{event_location}'}
+              Variáveis: {"{patient_name}"}, {"{event_title}"}, {"{event_date}"}, {"{event_location}"}
             </div>
           </div>
         </div>
@@ -341,7 +341,7 @@ export const QuickBulkSender: React.FC = () => {
             <div className="text-sm text-blue-800">
               <div>📧 Evento: {selectedEvent.title}</div>
               <div>👥 Destinatários: {selectedEvent.registrations_count} pacientes</div>
-              <div>📱 Canais: {messageTypes.join(', ')}</div>
+              <div>📱 Canais: {messageTypes.join(", ")}</div>
             </div>
           </div>
         )}
@@ -379,7 +379,7 @@ export const QuickBulkSender: React.FC = () => {
 
         {/* Resultado do Último Envio */}
         {lastResult && (
-          <Alert className={lastResult.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+          <Alert className={lastResult.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
             {lastResult.success ? (
               <CheckCircle className="h-4 w-4 text-green-600" />
             ) : (
@@ -387,7 +387,7 @@ export const QuickBulkSender: React.FC = () => {
             )}
             <AlertDescription>
               <div className="font-medium mb-2">
-                {lastResult.success ? 'Envio Concluído!' : 'Erro no Envio'}
+                {lastResult.success ? "Envio Concluído!" : "Erro no Envio"}
               </div>
 
               {lastResult.success && (
@@ -417,7 +417,7 @@ export const QuickBulkSender: React.FC = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default QuickBulkSender
+export default QuickBulkSender;

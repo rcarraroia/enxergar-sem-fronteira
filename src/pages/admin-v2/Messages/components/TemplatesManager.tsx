@@ -2,48 +2,48 @@
  * GERENCIADOR DE TEMPLATES
  */
 
-import { useState } from 'react'
-import { Plus, Edit, Trash2, Mail, Smartphone, MessageSquare, Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useMessageTemplates, useCreateTemplate, useDeleteTemplate } from '@/hooks/messages/useMessages'
-import { TemplateProcessor } from '@/services/messages/TemplateProcessor'
-import type { MessageChannel, CreateTemplateData } from '@/types/messages'
+import { useState } from "react";
+import { Edit, Eye, Mail, MessageSquare, Plus, Smartphone, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCreateTemplate, useDeleteTemplate, useMessageTemplates } from "@/hooks/messages/useMessages";
+import { TemplateProcessor } from "@/services/messages/TemplateProcessor";
+import type { CreateTemplateData, MessageChannel } from "@/types/messages";
 
 export function TemplatesManager() {
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   
-  const { data: templates = [], isLoading } = useMessageTemplates()
-  const { mutate: createTemplate, isPending: isCreating } = useCreateTemplate()
-  const { mutate: deleteTemplate } = useDeleteTemplate()
+  const { data: templates = [], isLoading } = useMessageTemplates();
+  const { mutate: createTemplate, isPending: isCreating } = useCreateTemplate();
+  const { mutate: deleteTemplate } = useDeleteTemplate();
 
-  const templateProcessor = new TemplateProcessor()
+  const templateProcessor = new TemplateProcessor();
 
   const getChannelIcon = (channel: MessageChannel) => {
     switch (channel) {
-      case 'email':
-        return <Mail className="h-4 w-4 text-blue-500" />
-      case 'sms':
-        return <Smartphone className="h-4 w-4 text-green-500" />
-      case 'whatsapp':
-        return <MessageSquare className="h-4 w-4 text-green-600" />
+      case "email":
+        return <Mail className="h-4 w-4 text-blue-500" />;
+      case "sms":
+        return <Smartphone className="h-4 w-4 text-green-500" />;
+      case "whatsapp":
+        return <MessageSquare className="h-4 w-4 text-green-600" />;
       default:
-        return <MessageSquare className="h-4 w-4" />
+        return <MessageSquare className="h-4 w-4" />;
     }
-  }
+  };
 
   const handlePreview = (template: any) => {
-    setSelectedTemplate(template)
-    setPreviewDialogOpen(true)
-  }
+    setSelectedTemplate(template);
+    setPreviewDialogOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -168,7 +168,7 @@ export function TemplatesManager() {
         templateProcessor={templateProcessor}
       />
     </div>
-  )
+  );
 }
 
 function CreateTemplateDialog({ 
@@ -183,40 +183,40 @@ function CreateTemplateDialog({
   isLoading: boolean
 }) {
   const [formData, setFormData] = useState<CreateTemplateData>({
-    name: '',
-    description: '',
-    channel: 'email',
-    subject: '',
-    content: '',
+    name: "",
+    description: "",
+    channel: "email",
+    subject: "",
+    content: "",
     variables: []
-  })
+  });
 
-  const templateProcessor = new TemplateProcessor()
+  const templateProcessor = new TemplateProcessor();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     // Extrair variáveis do conteúdo
-    const variables = templateProcessor.extractVariables(formData.content)
+    const variables = templateProcessor.extractVariables(formData.content);
     if (formData.subject) {
-      variables.push(...templateProcessor.extractVariables(formData.subject))
+      variables.push(...templateProcessor.extractVariables(formData.subject));
     }
 
     onSubmit({
       ...formData,
       variables: [...new Set(variables)] // Remove duplicatas
-    })
+    });
 
     // Reset form
     setFormData({
-      name: '',
-      description: '',
-      channel: 'email',
-      subject: '',
-      content: '',
+      name: "",
+      description: "",
+      channel: "email",
+      subject: "",
+      content: "",
       variables: []
-    })
-  }
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -268,7 +268,7 @@ function CreateTemplateDialog({
             />
           </div>
 
-          {formData.channel === 'email' && (
+          {formData.channel === "email" && (
             <div className="space-y-2">
               <Label htmlFor="subject">Assunto</Label>
               <Input
@@ -300,13 +300,13 @@ function CreateTemplateDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Criando...' : 'Criar Template'}
+              {isLoading ? "Criando..." : "Criar Template"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function PreviewTemplateDialog({ 
@@ -320,10 +320,10 @@ function PreviewTemplateDialog({
   template: any
   templateProcessor: TemplateProcessor
 }) {
-  if (!template) return null
+  if (!template) {return null;}
 
-  const preview = templateProcessor.generatePreview(template.content)
-  const subjectPreview = template.subject ? templateProcessor.generatePreview(template.subject) : null
+  const preview = templateProcessor.generatePreview(template.content);
+  const subjectPreview = template.subject ? templateProcessor.generatePreview(template.subject) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -373,5 +373,5 @@ function PreviewTemplateDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,44 +1,44 @@
-import React from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { RegistrationsList } from '@/components/admin/RegistrationsList'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEventsAdmin } from "@/hooks/useEventsAdmin";
+import { RegistrationsList } from "@/components/admin/RegistrationsList";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft,
   Calendar,
-  MapPin,
   Clock,
-  Users,
   Edit,
   Loader2,
-  Mail
-} from 'lucide-react'
-import { useNotifications } from '@/hooks/useNotifications'
+  Mail,
+  MapPin,
+  Users
+} from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const AdminEventDetails = () => {
-  const { eventId } = useParams<{ eventId: string }>()
-  const navigate = useNavigate()
-  const { events, isLoading } = useEventsAdmin()
-  const { sendEventReminder, isLoading: isLoadingEmail } = useNotifications()
+  const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
+  const { events, isLoading } = useEventsAdmin();
+  const { sendEventReminder, isLoading: isLoadingEmail } = useNotifications();
 
-  const event = events?.find(e => e.id === eventId)
+  const event = events?.find(e => e.id === eventId);
 
   const getStatusBadge = (status: string, totalAvailable: number) => {
-    if (status === 'full' || totalAvailable === 0) {
-      return <Badge variant="secondary">Lotado</Badge>
+    if (status === "full" || totalAvailable === 0) {
+      return <Badge variant="secondary">Lotado</Badge>;
     }
-    if (status === 'closed') {
-      return <Badge variant="destructive">Fechado</Badge>
+    if (status === "closed") {
+      return <Badge variant="destructive">Fechado</Badge>;
     }
-    return <Badge variant="default">Aberto</Badge>
-  }
+    return <Badge variant="default">Aberto</Badge>;
+  };
 
   const handleSendReminders = () => {
     // Esta funcionalidade será expandida quando tivermos acesso aos dados de inscrição
-    console.log('Enviando lembretes para participantes do evento:', event?.city)
-  }
+    console.log("Enviando lembretes para participantes do evento:", event?.city);
+  };
 
   if (isLoading) {
     return (
@@ -48,7 +48,7 @@ const AdminEventDetails = () => {
           Carregando evento...
         </div>
       </div>
-    )
+    );
   }
 
   if (!event) {
@@ -56,18 +56,18 @@ const AdminEventDetails = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Evento não encontrado</h2>
-          <Button onClick={() => navigate('/admin/events')}>
+          <Button onClick={() => navigate("/admin/events")}>
             Voltar para Eventos
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   // Calcular totais de todas as datas do evento
-  const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0)
-  const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0)
-  const registeredCount = totalSlots - totalAvailable
+  const totalSlots = event.event_dates.reduce((sum, date) => sum + date.total_slots, 0);
+  const totalAvailable = event.event_dates.reduce((sum, date) => sum + date.available_slots, 0);
+  const registeredCount = totalSlots - totalAvailable;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,7 +78,7 @@ const AdminEventDetails = () => {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => navigate('/admin/events')}
+                onClick={() => navigate("/admin/events")}
                 className="p-2"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -98,7 +98,7 @@ const AdminEventDetails = () => {
                 <Mail className="h-4 w-4 mr-2" />
                 Enviar Lembretes
               </Button>
-              <Button onClick={() => navigate('/admin/events')}>
+              <Button onClick={() => navigate("/admin/events")}>
                 <Edit className="h-4 w-4 mr-2" />
                 Editar Evento
               </Button>
@@ -156,7 +156,7 @@ const AdminEventDetails = () => {
                         <div>
                           <p className="font-medium">Data {index + 1}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(eventDate.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            {new Date(`${eventDate.date  }T00:00:00`).toLocaleDateString("pt-BR")}
                           </p>
                         </div>
                       </div>
@@ -183,7 +183,7 @@ const AdminEventDetails = () => {
 
                       <div className="flex items-center">
                         <Badge variant={eventDate.available_slots > 0 ? "default" : "secondary"}>
-                          {eventDate.available_slots > 0 ? `${eventDate.available_slots} disponíveis` : 'Lotado'}
+                          {eventDate.available_slots > 0 ? `${eventDate.available_slots} disponíveis` : "Lotado"}
                         </Badge>
                       </div>
                     </div>
@@ -203,7 +203,7 @@ const AdminEventDetails = () => {
         <RegistrationsList eventId={eventId} />
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default AdminEventDetails
+export default AdminEventDetails;

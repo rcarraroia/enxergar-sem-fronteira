@@ -4,22 +4,22 @@
  * Versão mais robusta e simples para evitar crashes no dashboard
  */
 
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 // UI Components
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Icons
-import { MessageSquare, Send } from 'lucide-react'
+import { MessageSquare, Send } from "lucide-react";
 
 export const SimpleBulkMessagingCard: React.FC = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/admin/bulk-messaging')
-  }
+    navigate("/admin/bulk-messaging");
+  };
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -53,7 +53,7 @@ export const SimpleBulkMessagingCard: React.FC = () => {
         </Button>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default SimpleBulkMessagingCard
+export default SimpleBulkMessagingCard;

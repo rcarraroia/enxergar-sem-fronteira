@@ -2,25 +2,25 @@
  * DATA TABLE V2 - Tabela reutilizável com filtros e paginação
  */
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Search, 
-  Filter, 
   ChevronLeft, 
-  ChevronRight,
+  ChevronRight, 
+  Filter, 
+  Loader2,
   MoreHorizontal,
-  Loader2
-} from 'lucide-react'
+  Search
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 
 export interface Column<T> {
   key: keyof T | string
@@ -33,7 +33,7 @@ export interface Column<T> {
 export interface Action<T> {
   label: string
   onClick: (item: T) => void
-  variant?: 'default' | 'destructive'
+  variant?: "default" | "destructive"
   icon?: React.ComponentType<{ className?: string }>
 }
 
@@ -62,8 +62,8 @@ export function DataTable<T extends { id: string }>({
   emptyMessage = "Nenhum item encontrado",
   itemsPerPage = 10
 }: DataTableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filtrar dados baseado na busca
   const filteredData = searchTerm
@@ -72,30 +72,30 @@ export function DataTable<T extends { id: string }>({
           String(value).toLowerCase().includes(searchTerm.toLowerCase())
         )
       )
-    : data
+    : data;
 
   // Paginação
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value)
-    setCurrentPage(1) // Reset para primeira página
-    onSearch?.(value)
-  }
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset para primeira página
+    onSearch?.(value);
+  };
 
   const getValue = (item: T, key: string) => {
-    if (key.includes('.')) {
-      const keys = key.split('.')
-      let value: any = item
+    if (key.includes(".")) {
+      const keys = key.split(".");
+      let value: any = item;
       for (const k of keys) {
-        value = value?.[k]
+        value = value?.[k];
       }
-      return value
+      return value;
     }
-    return (item as any)[key]
-  }
+    return (item as any)[key];
+  };
 
   return (
     <Card>
@@ -156,12 +156,12 @@ export function DataTable<T extends { id: string }>({
                   {paginatedData.map((item, rowIndex) => (
                     <tr key={item.id} className="border-b hover:bg-muted/50">
                       {columns.map((column, colIndex) => {
-                        const value = getValue(item, column.key as string)
+                        const value = getValue(item, column.key as string);
                         return (
                           <td key={colIndex} className="py-3 px-4">
-                            {column.render ? column.render(value, item) : String(value || '')}
+                            {column.render ? column.render(value, item) : String(value || "")}
                           </td>
-                        )
+                        );
                       })}
                       {actions.length > 0 && (
                         <td className="py-3 px-4 text-right">
@@ -176,7 +176,7 @@ export function DataTable<T extends { id: string }>({
                                 <DropdownMenuItem
                                   key={actionIndex}
                                   onClick={() => action.onClick(item)}
-                                  className={action.variant === 'destructive' ? 'text-red-600' : ''}
+                                  className={action.variant === "destructive" ? "text-red-600" : ""}
                                 >
                                   {action.icon && <action.icon className="h-4 w-4 mr-2" />}
                                   {action.label}
@@ -227,5 +227,5 @@ export function DataTable<T extends { id: string }>({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

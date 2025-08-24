@@ -1,52 +1,52 @@
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/hooks/useAuth'
-import { Loader2, UserPlus } from 'lucide-react'
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, UserPlus } from "lucide-react";
 
 interface SignUpFormProps {
   onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
-  const { signUp } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
+  const { signUp } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  })
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
-      alert('As senhas não coincidem')
-      return
+      alert("As senhas não coincidem");
+      return;
     }
 
-    if (!formData.name || !formData.email || !formData.password) return
+    if (!formData.name || !formData.email || !formData.password) {return;}
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await signUp(formData.email, formData.password, formData.name)
+      await signUp(formData.email, formData.password, formData.name);
       // Limpar formulário após sucesso
       setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      })
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
     } catch (error) {
-      console.error('Erro no cadastro:', error)
+      console.error("Erro no cadastro:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -112,7 +112,7 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? 'Criando conta...' : 'Criar Conta'}
+            {isLoading ? "Criando conta..." : "Criar Conta"}
           </Button>
 
           <div className="text-center">
@@ -128,5 +128,5 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

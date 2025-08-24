@@ -1,66 +1,66 @@
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { AlertTriangle, Bug, CheckCircle, RefreshCw, Trash2 } from 'lucide-react'
-import { debugUtils } from '@/utils/debugUtils'
-import { useErrorBoundary } from '@/hooks/useErrorBoundary'
-import { toast } from 'sonner'
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertTriangle, Bug, CheckCircle, RefreshCw, Trash2 } from "lucide-react";
+import { debugUtils } from "@/utils/debugUtils";
+import { useErrorBoundary } from "@/hooks/useErrorBoundary";
+import { toast } from "sonner";
 
 export const SystemDebugCard = () => {
-  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState(false)
-  const [diagnosticResults, setDiagnosticResults] = useState<any>(null)
-  const { errors, clearErrors, hasErrors } = useErrorBoundary('SystemDebugCard')
+  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState(false);
+  const [diagnosticResults, setDiagnosticResults] = useState<any>(null);
+  const { errors, clearErrors, hasErrors } = useErrorBoundary("SystemDebugCard");
 
   const runDiagnostic = async () => {
-    setIsRunningDiagnostic(true)
-    toast.info('Executando diagnóstico completo...')
+    setIsRunningDiagnostic(true);
+    toast.info("Executando diagnóstico completo...");
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simular tempo de análise
-      const results = debugUtils.runFullDiagnostic()
-      setDiagnosticResults(results)
-      toast.success('Diagnóstico concluído!')
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular tempo de análise
+      const results = debugUtils.runFullDiagnostic();
+      setDiagnosticResults(results);
+      toast.success("Diagnóstico concluído!");
     } catch (error) {
-      console.error('Erro no diagnóstico:', error)
-      toast.error('Erro ao executar diagnóstico')
+      console.error("Erro no diagnóstico:", error);
+      toast.error("Erro ao executar diagnóstico");
     } finally {
-      setIsRunningDiagnostic(false)
+      setIsRunningDiagnostic(false);
     }
-  }
+  };
 
   const fixCommonIssues = () => {
-    toast.info('Corrigindo problemas comuns...')
+    toast.info("Corrigindo problemas comuns...");
     
     // Limpar dados corrompidos
-    debugUtils.cleanCorruptedData()
+    debugUtils.cleanCorruptedData();
     
     // Limpar cache de consultas
-    if ('caches' in window) {
+    if ("caches" in window) {
       caches.keys().then(names => {
         names.forEach(name => {
-          if (name.includes('supabase') || name.includes('old')) {
-            caches.delete(name)
+          if (name.includes("supabase") || name.includes("old")) {
+            caches.delete(name);
           }
-        })
-      })
+        });
+      });
     }
     
     // Limpar erros
-    clearErrors()
+    clearErrors();
     
-    toast.success('Correções aplicadas! Recarregue a página se necessário.')
-  }
+    toast.success("Correções aplicadas! Recarregue a página se necessário.");
+  };
 
   const getHealthIcon = (isHealthy: boolean) => {
     return isHealthy ? (
       <CheckCircle className="h-4 w-4 text-green-500" />
     ) : (
       <AlertTriangle className="h-4 w-4 text-red-500" />
-    )
-  }
+    );
+  };
 
   return (
     <Card>
@@ -179,5 +179,5 @@ export const SystemDebugCard = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

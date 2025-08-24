@@ -1,6 +1,6 @@
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CacheConfig {
   staleTime?: number
@@ -9,40 +9,40 @@ interface CacheConfig {
 }
 
 export const useOptimizedCache = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   // Cache otimizado para configurações do sistema
   const useSystemSettingsCache = (config?: CacheConfig) => {
     return useQuery({
-      queryKey: ['system-settings-optimized'],
+      queryKey: ["system-settings-optimized"],
       queryFn: async () => {
-        console.log('🔧 Buscando configurações (cache otimizado)...')
+        console.log("🔧 Buscando configurações (cache otimizado)...");
         
         const { data, error } = await supabase
-          .from('system_settings')
-          .select('key, value')
-          .in('key', ['project_name', 'project_description', 'social_links', 'logo_header', 'logo_footer'])
+          .from("system_settings")
+          .select("key, value")
+          .in("key", ["project_name", "project_description", "social_links", "logo_header", "logo_footer"]);
 
-        if (error) throw error
-        return data
+        if (error) {throw error;}
+        return data;
       },
       staleTime: config?.staleTime || 1000 * 60 * 30, // 30 minutos
       gcTime: config?.gcTime || 1000 * 60 * 60, // 1 hora
       refetchOnWindowFocus: config?.refetchOnWindowFocus || false
-    })
-  }
+    });
+  };
 
   // Cache otimizado para eventos próximos
   const useUpcomingEventsCache = (config?: CacheConfig) => {
     return useQuery({
-      queryKey: ['upcoming-events-optimized'],
+      queryKey: ["upcoming-events-optimized"],
       queryFn: async () => {
-        console.log('📅 Buscando próximos eventos (cache otimizado)...')
+        console.log("📅 Buscando próximos eventos (cache otimizado)...");
         
-        const today = new Date().toISOString().split('T')[0]
+        const today = new Date().toISOString().split("T")[0];
         
         const { data, error } = await supabase
-          .from('events')
+          .from("events")
           .select(`
             id,
             title,
@@ -58,42 +58,42 @@ export const useOptimizedCache = () => {
               available_slots
             )
           `)
-          .eq('status', 'open')
-          .gte('event_dates.date', today)
-          .order('date', { ascending: true, foreignTable: 'event_dates' })
-          .limit(5)
+          .eq("status", "open")
+          .gte("event_dates.date", today)
+          .order("date", { ascending: true, foreignTable: "event_dates" })
+          .limit(5);
 
-        if (error) throw error
-        return data
+        if (error) {throw error;}
+        return data;
       },
       staleTime: config?.staleTime || 1000 * 60 * 5, // 5 minutos
       gcTime: config?.gcTime || 1000 * 60 * 15, // 15 minutos
       refetchOnWindowFocus: config?.refetchOnWindowFocus || true
-    })
-  }
+    });
+  };
 
   // Invalidar caches relacionados
   const invalidateRelatedCaches = (keys: string[]) => {
     keys.forEach(key => {
-      queryClient.invalidateQueries({ queryKey: [key] })
-    })
-  }
+      queryClient.invalidateQueries({ queryKey: [key] });
+    });
+  };
 
   // Pré-carregar dados críticos
   const prefetchCriticalData = async () => {
     const systemSettingsQueryFn = async () => {
       const { data, error } = await supabase
-        .from('system_settings')
-        .select('key, value')
-        .in('key', ['project_name', 'project_description', 'social_links', 'logo_header', 'logo_footer'])
-      if (error) throw error
-      return data
-    }
+        .from("system_settings")
+        .select("key, value")
+        .in("key", ["project_name", "project_description", "social_links", "logo_header", "logo_footer"]);
+      if (error) {throw error;}
+      return data;
+    };
 
     const upcomingEventsQueryFn = async () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
-        .from('events')
+        .from("events")
         .select(`
           id,
           title,
@@ -109,30 +109,30 @@ export const useOptimizedCache = () => {
             available_slots
           )
         `)
-        .eq('status', 'open')
-        .gte('event_dates.date', today)
-        .order('date', { ascending: true, foreignTable: 'event_dates' })
-        .limit(5)
-      if (error) throw error
-      return data
-    }
+        .eq("status", "open")
+        .gte("event_dates.date", today)
+        .order("date", { ascending: true, foreignTable: "event_dates" })
+        .limit(5);
+      if (error) {throw error;}
+      return data;
+    };
 
     await Promise.all([
       queryClient.prefetchQuery({
-        queryKey: ['system-settings-optimized'],
+        queryKey: ["system-settings-optimized"],
         queryFn: systemSettingsQueryFn
       }),
       queryClient.prefetchQuery({
-        queryKey: ['upcoming-events-optimized'],
+        queryKey: ["upcoming-events-optimized"],
         queryFn: upcomingEventsQueryFn
       })
-    ])
-  }
+    ]);
+  };
 
   return {
     useSystemSettingsCache,
     useUpcomingEventsCache,
     invalidateRelatedCaches,
     prefetchCriticalData
-  }
-}
+  };
+};

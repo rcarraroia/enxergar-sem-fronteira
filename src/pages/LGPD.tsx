@@ -1,8 +1,8 @@
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Scale, UserCheck, Lock, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Eye, Lock, Scale, UserCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const LGPD = () => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ const LGPD = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

@@ -1,92 +1,92 @@
 
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import Header from '@/components/Header'
-import { Footer } from '@/components/Footer'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { MetricCard } from '@/components/admin/MetricCard'
-import { ActivityFeed } from '@/components/admin/ActivityFeed'
-import { QuickActions } from '@/components/admin/QuickActions'
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MetricCard } from "@/components/admin/MetricCard";
+import { ActivityFeed } from "@/components/admin/ActivityFeed";
+import { QuickActions } from "@/components/admin/QuickActions";
 
-import { useAdminMetrics } from '@/hooks/useAdminMetrics'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
-import { Calendar, Users, UserCheck, Activity } from 'lucide-react'
+import { useAdminMetrics } from "@/hooks/useAdminMetrics";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Activity, Calendar, UserCheck, Users } from "lucide-react";
 
 const Admin = () => {
-  const { data: metrics, isLoading } = useAdminMetrics()
+  const { data: metrics, isLoading } = useAdminMetrics();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleCreateEvent = () => {
-    console.log('🎯 Admin: Navegando para criação de evento')
-    navigate('/admin/events?action=create')
-  }
+    console.log("🎯 Admin: Navegando para criação de evento");
+    navigate("/admin/events?action=create");
+  };
 
   const handleCreateOrganizer = () => {
-    console.log('🎯 Admin: Navegando para criação de organizador')
-    navigate('/admin/organizers?action=create')
-  }
+    console.log("🎯 Admin: Navegando para criação de organizador");
+    navigate("/admin/organizers?action=create");
+  };
 
   const handleViewTodayRegistrations = () => {
-    console.log('🎯 Admin: Navegando para inscrições de hoje')
-    const today = new Date().toISOString().split('T')[0]
-    navigate(`/admin/registrations?date=${today}`)
-  }
+    console.log("🎯 Admin: Navegando para inscrições de hoje");
+    const today = new Date().toISOString().split("T")[0];
+    navigate(`/admin/registrations?date=${today}`);
+  };
 
   const handleExportReports = async () => {
-    console.log('🎯 Admin: Iniciando exportação de relatórios')
+    console.log("🎯 Admin: Iniciando exportação de relatórios");
     try {
       // CORREÇÃO: Chamada para a Edge Function correta
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        throw new Error('Usuário não autenticado')
+        throw new Error("Usuário não autenticado");
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-admin-reports`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          type: 'general',
-          format: 'csv'
+          type: "general",
+          format: "csv"
         })
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao gerar relatório')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao gerar relatório");
       }
 
       // Download do arquivo CSV
-      const csvContent = await response.text()
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.style.display = 'none'
-      a.href = url
-      a.download = `relatorio-geral-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const csvContent = await response.text();
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `relatorio-geral-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
 
-      console.log('✅ Admin: Relatório exportado com sucesso')
-      toast.success('Relatório exportado com sucesso!')
+      console.log("✅ Admin: Relatório exportado com sucesso");
+      toast.success("Relatório exportado com sucesso!");
 
     } catch (error) {
-      console.error('❌ Admin: Erro ao exportar relatório:', error)
-      toast.error('Erro ao exportar relatório: ' + error.message)
+      console.error("❌ Admin: Erro ao exportar relatório:", error);
+      toast.error(`Erro ao exportar relatório: ${  error.message}`);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -156,7 +156,7 @@ const Admin = () => {
                 </p>
                 <Button
                   variant="outline"
-                  onClick={() => navigate('/admin/settings')}
+                  onClick={() => navigate("/admin/settings")}
                 >
                   Gerenciar Configurações
                 </Button>
@@ -180,7 +180,7 @@ const Admin = () => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default Admin
+export default Admin;

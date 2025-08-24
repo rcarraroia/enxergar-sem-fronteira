@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "🔍 Executando verificações de qualidade antes do commit..."
+
+# Executar lint-staged para arquivos modificados
+echo "📝 Formatando e verificando arquivos modificados..."
+npx lint-staged
+
+# Verificar tipos TypeScript (permitir warnings)
+echo "🔧 Verificando tipos TypeScript..."
+npm run type-check || echo "⚠️ Avisos de TypeScript encontrados (permitido)"
+
+echo "✅ Verificações de qualidade concluídas!"

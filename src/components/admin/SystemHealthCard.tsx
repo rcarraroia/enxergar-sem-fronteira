@@ -1,19 +1,19 @@
 
-import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { RefreshCw, Database, Shield, Zap } from 'lucide-react'
-import { useSystemMonitoring } from '@/hooks/useSystemMonitoring'
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Database, RefreshCw, Shield, Zap } from "lucide-react";
+import { useSystemMonitoring } from "@/hooks/useSystemMonitoring";
 
 export const SystemHealthCard = () => {
-  const { systemHealth, checkSystemHealth } = useSystemMonitoring()
+  const { systemHealth, checkSystemHealth } = useSystemMonitoring();
 
   const getStatusBadge = (isHealthy: boolean) => (
     <Badge variant={isHealthy ? "default" : "destructive"}>
       {isHealthy ? "✅ OK" : "❌ Erro"}
     </Badge>
-  )
+  );
 
   return (
     <Card>
@@ -30,7 +30,7 @@ export const SystemHealthCard = () => {
           </Button>
         </CardTitle>
         <CardDescription>
-          Última verificação: {systemHealth.lastChecked.toLocaleString('pt-BR')}
+          Última verificação: {systemHealth.lastChecked.toLocaleString("pt-BR")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -67,5 +67,5 @@ export const SystemHealthCard = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

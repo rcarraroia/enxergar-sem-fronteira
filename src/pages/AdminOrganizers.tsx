@@ -1,132 +1,132 @@
-import React, { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Users, Plus, MoreHorizontal, Mail, UserCheck, UserX, RefreshCw, Key, Edit, Trash2, ExternalLink, Eye, EyeOff, Info } from 'lucide-react'
-import { useOrganizers } from '@/hooks/useOrganizers'
-import { toast } from 'sonner'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Edit, ExternalLink, Eye, EyeOff, Info, Key, Mail, MoreHorizontal, Plus, RefreshCw, Trash2, UserCheck, Users, UserX } from "lucide-react";
+import { useOrganizers } from "@/hooks/useOrganizers";
+import { toast } from "sonner";
 
 const AdminOrganizers = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const { organizers, loading, createOrganizer, editOrganizer, deleteOrganizer, updateOrganizerStatus, updateOrganizerApiKey, resendInvitation } = useOrganizers()
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { organizers, loading, createOrganizer, editOrganizer, deleteOrganizer, updateOrganizerStatus, updateOrganizerApiKey, resendInvitation } = useOrganizers();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Verificar se deve abrir o diálogo de criação automaticamente
   useEffect(() => {
-    const action = searchParams.get('action')
-    if (action === 'create') {
-      console.log('🎯 AdminOrganizers: Abrindo diálogo de criação automaticamente')
-      setShowCreateDialog(true)
+    const action = searchParams.get("action");
+    if (action === "create") {
+      console.log("🎯 AdminOrganizers: Abrindo diálogo de criação automaticamente");
+      setShowCreateDialog(true);
       // Limpar o parâmetro da URL
-      navigate('/admin/organizers', { replace: true })
+      navigate("/admin/organizers", { replace: true });
     }
-  }, [searchParams, navigate])
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false)
-  const [editingOrganizer, setEditingOrganizer] = useState<any>(null)
-  const [selectedOrganizerApiKey, setSelectedOrganizerApiKey] = useState<{id: string, apiKey: string}>({id: '', apiKey: ''})
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' })
-  const [showPassword, setShowPassword] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  }, [searchParams, navigate]);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [editingOrganizer, setEditingOrganizer] = useState<any>(null);
+  const [selectedOrganizerApiKey, setSelectedOrganizerApiKey] = useState<{id: string, apiKey: string}>({id: "", apiKey: ""});
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
-      toast.error('Preencha todos os campos obrigatórios')
-      return
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
     }
 
-    setIsCreating(true)
+    setIsCreating(true);
     try {
       await createOrganizer({
         name: formData.name,
         email: formData.email,
         password: formData.password.trim() || undefined
-      })
-      setFormData({ name: '', email: '', password: '' })
-      setShowCreateDialog(false)
+      });
+      setFormData({ name: "", email: "", password: "" });
+      setShowCreateDialog(false);
     } catch (error) {
       // Erro já tratado no hook
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
-      toast.error('Preencha todos os campos obrigatórios')
-      return
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
     }
 
-    setIsEditing(true)
+    setIsEditing(true);
     try {
       await editOrganizer(editingOrganizer.id, {
         name: formData.name,
         email: formData.email
-      })
-      setFormData({ name: '', email: '', password: '' })
-      setShowEditDialog(false)
-      setEditingOrganizer(null)
+      });
+      setFormData({ name: "", email: "", password: "" });
+      setShowEditDialog(false);
+      setEditingOrganizer(null);
     } catch (error) {
       // Erro já tratado no hook
     } finally {
-      setIsEditing(false)
+      setIsEditing(false);
     }
-  }
+  };
 
   const handleEditOrganizer = (organizer: any) => {
-    setEditingOrganizer(organizer)
-    setFormData({ name: organizer.name, email: organizer.email, password: '' })
-    setShowEditDialog(true)
-  }
+    setEditingOrganizer(organizer);
+    setFormData({ name: organizer.name, email: organizer.email, password: "" });
+    setShowEditDialog(true);
+  };
 
   const handleDeleteOrganizer = async (organizerId: string, organizerName: string, eventsCount?: number) => {
     if (eventsCount && eventsCount > 0) {
-      toast.error(`Não é possível excluir "${organizerName}" pois possui ${eventsCount} evento(s) associado(s). Remova ou transfira os eventos primeiro.`)
-      return
+      toast.error(`Não é possível excluir "${organizerName}" pois possui ${eventsCount} evento(s) associado(s). Remova ou transfira os eventos primeiro.`);
+      return;
     }
 
     try {
-      await deleteOrganizer(organizerId)
+      await deleteOrganizer(organizerId);
     } catch (error) {
       // Erro já tratado no hook
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
-      case 'inactive':
-        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Inativo</Badge>
-      case 'pending':
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">Pendente</Badge>
+      case "active":
+        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>;
+      case "inactive":
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Inativo</Badge>;
+      case "pending":
+        return <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">Pendente</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const getApiKeyBadge = (apiKey?: string | null) => {
     if (apiKey) {
-      return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Configurada</Badge>
+      return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Configurada</Badge>;
     }
-    return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Não configurada</Badge>
-  }
+    return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Não configurada</Badge>;
+  };
 
   const canOrganizerLogin = (organizerEmail: string) => {
     // Organizador pode fazer login se estiver na tabela com status ativo
-    return true // Todos os organizadores na tabela podem fazer login
-  }
+    return true; // Todos os organizadores na tabela podem fazer login
+  };
 
   if (loading) {
     return (
@@ -136,7 +136,7 @@ const AdminOrganizers = () => {
           <span className="text-muted-foreground">Carregando organizadores...</span>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -207,9 +207,9 @@ const AdminOrganizers = () => {
                   type="button" 
                   variant="outline" 
                   onClick={() => {
-                    setShowCreateDialog(false)
-                    setFormData({ name: '', email: '', password: '' })
-                    setShowPassword(false)
+                    setShowCreateDialog(false);
+                    setFormData({ name: "", email: "", password: "" });
+                    setShowPassword(false);
                   }}
                   className="flex-1"
                 >
@@ -274,8 +274,8 @@ const AdminOrganizers = () => {
                 type="button" 
                 variant="outline" 
                 onClick={() => {
-                  setShowEditDialog(false)
-                  setFormData({ name: '', email: '', password: '' })
+                  setShowEditDialog(false);
+                  setFormData({ name: "", email: "", password: "" });
                 }}
                 className="flex-1"
               >
@@ -332,14 +332,14 @@ const AdminOrganizers = () => {
               </Button>
               <Button onClick={async () => {
                 if (!selectedOrganizerApiKey.apiKey.trim()) {
-                  toast.error('Digite uma API Key válida')
-                  return
+                  toast.error("Digite uma API Key válida");
+                  return;
                 }
 
                 try {
-                  await updateOrganizerApiKey(selectedOrganizerApiKey.id, selectedOrganizerApiKey.apiKey)
-                  setShowApiKeyDialog(false)
-                  setSelectedOrganizerApiKey({id: '', apiKey: ''})
+                  await updateOrganizerApiKey(selectedOrganizerApiKey.id, selectedOrganizerApiKey.apiKey);
+                  setShowApiKeyDialog(false);
+                  setSelectedOrganizerApiKey({id: "", apiKey: ""});
                 } catch (error) {
                   // Erro já tratado no hook
                 }
@@ -405,9 +405,9 @@ const AdminOrganizers = () => {
                       <TableCell className="font-medium">{organizer.name}</TableCell>
                       <TableCell>{organizer.email}</TableCell>
                       <TableCell>
-                        {organizer.status === 'active' ? (
+                        {organizer.status === "active" ? (
                           <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
-                        ) : organizer.status === 'inactive' ? (
+                        ) : organizer.status === "inactive" ? (
                           <Badge variant="secondary" className="bg-gray-100 text-gray-800">Inativo</Badge>
                         ) : (
                           <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">Pendente</Badge>
@@ -426,7 +426,7 @@ const AdminOrganizers = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {organizer.status === 'active' ? (
+                        {organizer.status === "active" ? (
                           <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Pode acessar
@@ -438,7 +438,7 @@ const AdminOrganizers = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(organizer.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(organizer.created_at).toLocaleDateString("pt-BR")}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -449,40 +449,40 @@ const AdminOrganizers = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => {
-                              setEditingOrganizer(organizer)
-                              setFormData({ name: organizer.name, email: organizer.email, password: '' })
-                              setShowEditDialog(true)
+                              setEditingOrganizer(organizer);
+                              setFormData({ name: organizer.name, email: organizer.email, password: "" });
+                              setShowEditDialog(true);
                             }}>
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
-                              const org = organizers.find(o => o.id === organizer.id)
+                              const org = organizers.find(o => o.id === organizer.id);
                               setSelectedOrganizerApiKey({
                                 id: organizer.id,
-                                apiKey: org?.asaas_api_key || ''
-                              })
-                              setShowApiKeyDialog(true)
+                                apiKey: org?.asaas_api_key || ""
+                              });
+                              setShowApiKeyDialog(true);
                             }}>
                               <Key className="h-4 w-4 mr-2" />
                               Configurar API Key
                             </DropdownMenuItem>
-                            {organizer.status === 'active' ? (
+                            {organizer.status === "active" ? (
                               <DropdownMenuItem 
-                                onClick={() => updateOrganizerStatus(organizer.id, 'inactive')}
+                                onClick={() => updateOrganizerStatus(organizer.id, "inactive")}
                               >
                                 <UserX className="h-4 w-4 mr-2" />
                                 Desativar
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem 
-                                onClick={() => updateOrganizerStatus(organizer.id, 'active')}
+                                onClick={() => updateOrganizerStatus(organizer.id, "active")}
                               >
                                 <UserCheck className="h-4 w-4 mr-2" />
                                 Ativar
                               </DropdownMenuItem>
                             )}
-                            {organizer.status === 'pending' && (
+                            {organizer.status === "pending" && (
                               <DropdownMenuItem 
                                 onClick={() => resendInvitation(organizer.id)}
                               >
@@ -543,7 +543,7 @@ const AdminOrganizers = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default AdminOrganizers
+export default AdminOrganizers;

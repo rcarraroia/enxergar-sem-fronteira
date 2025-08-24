@@ -1,26 +1,26 @@
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
 
 const PartnersSection = () => {
   const partners = [
     {
-      name: 'ONG Coração Valente',
-      logo: '/lovable-uploads/coracao-valente.png',
-      description: 'Ipatinga - MG'
+      name: "ONG Coração Valente",
+      logo: "/lovable-uploads/coracao-valente.png",
+      description: "Ipatinga - MG"
     },
     {
-      name: 'Paroquia Cristo Libertador',
-      logo: '/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png',
-      description: 'Ipatinga - MG'
+      name: "Paroquia Cristo Libertador",
+      logo: "/lovable-uploads/c75287af-b68b-421f-991e-f0793f759207.png",
+      description: "Ipatinga - MG"
     },
     {
-      name: 'Paroquia São Jose - Timoteo',
-      logo: '/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png',
-      description: 'Timóteo - MG'
+      name: "Paroquia São Jose - Timoteo",
+      logo: "/lovable-uploads/7395f0a2-2919-485c-95e3-5b2a860ccbaf.png",
+      description: "Timóteo - MG"
     },
     {
-      name: 'Wladimir Careca - Timoteo',
-      logo: '/lovable-uploads/logo512x512.png',
-      description: 'Timóteo - MG'
+      name: "Wladimir Careca - Timoteo",
+      logo: "/lovable-uploads/logo512x512.png",
+      description: "Timóteo - MG"
     }
   ];
 
@@ -45,14 +45,14 @@ const PartnersSection = () => {
                   onError={(e) => {
                     // Fallback caso a imagem não carregue
                     const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
+                    target.style.display = "none";
                     const fallback = target.nextElementSibling as HTMLElement;
-                    if (fallback) fallback.style.display = 'flex';
+                    if (fallback) {fallback.style.display = "flex";}
                   }}
                 />
                 <div className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center hidden">
                   <span className="text-primary font-bold text-sm">
-                    {partner.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
+                    {partner.name.split(" ").map(word => word[0]).join("").slice(0, 2)}
                   </span>
                 </div>
               </div>

@@ -1,17 +1,17 @@
 
-import React from 'react'
-import { useSystemSettings } from '@/hooks/useSystemSettings'
+import React from "react";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 export const Footer = () => {
-  const { getSettingJSON } = useSystemSettings()
+  const { getSettingJSON } = useSystemSettings();
   
-  const socialLinks = getSettingJSON('social_links', {
-    facebook: '',
-    instagram: '',
-    linkedin: ''
-  }) as { facebook: string; instagram: string; linkedin: string }
+  const socialLinks = getSettingJSON("social_links", {
+    facebook: "",
+    instagram: "",
+    linkedin: ""
+  }) as { facebook: string; instagram: string; linkedin: string };
 
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-gray-900 text-white py-8">
@@ -99,5 +99,5 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};

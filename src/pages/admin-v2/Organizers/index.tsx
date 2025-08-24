@@ -4,48 +4,48 @@
  * Gestão de promotores/organizadores de eventos
  */
 
-import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { DataTable } from '@/components/admin-v2/shared/DataTable'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState } from "react";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { DataTable } from "@/components/admin-v2/shared/DataTable";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Users, 
-  Plus, 
+  AlertCircle, 
   Edit, 
-  Eye,
+  Eye, 
   Mail,
-  Phone,
   MapPin,
-  AlertCircle
-} from 'lucide-react'
-import { useOrganizersV2, type OrganizerV2, type OrganizerFilters } from '@/hooks/admin-v2/useOrganizersV2'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Phone,
+  Plus,
+  Users
+} from "lucide-react";
+import { type OrganizerFilters, type OrganizerV2, useOrganizersV2 } from "@/hooks/admin-v2/useOrganizersV2";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const AdminOrganizersV2 = () => {
   const [filters, setFilters] = useState<OrganizerFilters>({
-    search: '',
-    status: 'all'
-  })
+    search: "",
+    status: "all"
+  });
 
-  const { data: organizers = [], isLoading, error } = useOrganizersV2(filters)
+  const { data: organizers = [], isLoading, error } = useOrganizersV2(filters);
 
   const handleViewOrganizer = (organizer: OrganizerV2) => {
     // Implementar visualização
-    console.log('Ver organizador:', organizer.id)
-  }
+    console.log("Ver organizador:", organizer.id);
+  };
 
   const handleEditOrganizer = (organizer: OrganizerV2) => {
     // Implementar edição
-    console.log('Editar organizador:', organizer.id)
-  }
+    console.log("Editar organizador:", organizer.id);
+  };
 
   const columns = [
     {
-      key: 'nome',
-      label: 'Nome',
+      key: "nome",
+      label: "Nome",
       render: (value: string, organizer: OrganizerV2) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -57,8 +57,8 @@ const AdminOrganizersV2 = () => {
       )
     },
     {
-      key: 'telefone',
-      label: 'Contato',
+      key: "telefone",
+      label: "Contato",
       render: (value: string, organizer: OrganizerV2) => (
         <div>
           <div className="flex items-center gap-1">
@@ -75,8 +75,8 @@ const AdminOrganizersV2 = () => {
       )
     },
     {
-      key: 'total_events',
-      label: 'Eventos',
+      key: "total_events",
+      label: "Eventos",
       render: (value: number) => (
         <div className="text-center">
           <div className="text-sm font-medium">{value || 0}</div>
@@ -85,45 +85,45 @@ const AdminOrganizersV2 = () => {
       )
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       render: (value: string) => (
-        <Badge variant={value === 'active' ? 'default' : 'secondary'}>
-          {value === 'active' ? 'Ativo' : 'Inativo'}
+        <Badge variant={value === "active" ? "default" : "secondary"}>
+          {value === "active" ? "Ativo" : "Inativo"}
         </Badge>
       )
     },
     {
-      key: 'created_at',
-      label: 'Cadastrado em',
+      key: "created_at",
+      label: "Cadastrado em",
       render: (value: string) => (
         <span className="text-sm text-muted-foreground">
-          {format(new Date(value), 'dd/MM/yyyy', { locale: ptBR })}
+          {format(new Date(value), "dd/MM/yyyy", { locale: ptBR })}
         </span>
       )
     }
-  ]
+  ];
 
   const actions = [
     {
-      label: 'Visualizar',
+      label: "Visualizar",
       onClick: handleViewOrganizer,
       icon: Eye
     },
     {
-      label: 'Editar',
+      label: "Editar",
       onClick: handleEditOrganizer,
       icon: Edit
     }
-  ]
+  ];
 
   if (error) {
     return (
       <AdminLayout 
         title="Gestão de Organizadores" 
         breadcrumbs={[
-          { label: 'Dashboard', path: '/admin-v2' },
-          { label: 'Organizadores', path: '/admin-v2/organizers' }
+          { label: "Dashboard", path: "/admin-v2" },
+          { label: "Organizadores", path: "/admin-v2/organizers" }
         ]}
       >
         <Alert variant="destructive">
@@ -133,15 +133,15 @@ const AdminOrganizersV2 = () => {
           </AlertDescription>
         </Alert>
       </AdminLayout>
-    )
+    );
   }
 
   return (
     <AdminLayout 
       title="Gestão de Organizadores" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin' },
-        { label: 'Organizadores', path: '/admin/organizers' }
+        { label: "Dashboard", path: "/admin" },
+        { label: "Organizadores", path: "/admin/organizers" }
       ]}
       actions={
         <Button>
@@ -161,7 +161,7 @@ const AdminOrganizersV2 = () => {
         emptyMessage="Nenhum organizador encontrado."
       />
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminOrganizersV2
+export default AdminOrganizersV2;

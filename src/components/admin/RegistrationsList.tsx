@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react'
-import { useRegistrations } from '@/hooks/useRegistrations'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React, { useState } from "react";
+import { useRegistrations } from "@/hooks/useRegistrations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Table, 
   TableBody, 
@@ -12,24 +12,24 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import { 
-  Users, 
-  Search, 
+  Calendar, 
   Download, 
-  Calendar,
+  FileText, 
   Loader2,
   Mail,
   Phone,
-  FileText
-} from 'lucide-react'
+  Search,
+  Users
+} from "lucide-react";
 
 interface RegistrationsListProps {
   eventId?: string
@@ -42,36 +42,36 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
   eventDateId, 
   showEventInfo = false 
 }) => {
-  const { data: registrations, isLoading } = useRegistrations(eventId, eventDateId)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const { data: registrations, isLoading } = useRegistrations(eventId, eventDateId);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredRegistrations = registrations?.filter(registration => {
     const matchesSearch = 
       registration.patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       registration.patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.patient.cpf.includes(searchTerm.replace(/\D/g, ''))
+      registration.patient.cpf.includes(searchTerm.replace(/\D/g, ""));
 
-    const matchesStatus = statusFilter === 'all' || registration.status === statusFilter
+    const matchesStatus = statusFilter === "all" || registration.status === statusFilter;
 
-    return matchesSearch && matchesStatus
-  }) || []
+    return matchesSearch && matchesStatus;
+  }) || [];
 
   const handleExportPDF = async () => {
     if (!filteredRegistrations.length) {
-      alert('Nenhuma inscrição para exportar')
-      return
+      alert("Nenhuma inscrição para exportar");
+      return;
     }
 
     try {
       // Preparar dados para PDF
       const pdfData = {
-        titulo: 'Relatório de Inscrições',
-        data: new Date().toLocaleDateString('pt-BR'),
+        titulo: "Relatório de Inscrições",
+        data: new Date().toLocaleDateString("pt-BR"),
         filtros: {
-          evento: eventId || 'Todos os eventos',
-          status: statusFilter === 'all' ? 'Todos os status' : statusFilter,
-          busca: searchTerm || 'Sem filtro'
+          evento: eventId || "Todos os eventos",
+          status: statusFilter === "all" ? "Todos os status" : statusFilter,
+          busca: searchTerm || "Sem filtro"
         },
         total: filteredRegistrations.length,
         pacientes: filteredRegistrations.map(reg => ({
@@ -80,16 +80,16 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
           email: reg.patient.email,
           telefone: reg.patient.telefone,
           nascimento: reg.patient.data_nascimento ? 
-            new Date(reg.patient.data_nascimento).toLocaleDateString('pt-BR') : '',
-          diagnostico: reg.patient.diagnostico || '',
+            new Date(reg.patient.data_nascimento).toLocaleDateString("pt-BR") : "",
+          diagnostico: reg.patient.diagnostico || "",
           status: reg.status,
-          inscricao: new Date(reg.created_at).toLocaleDateString('pt-BR'),
-          evento: showEventInfo ? reg.event_date.event.title : '',
+          inscricao: new Date(reg.created_at).toLocaleDateString("pt-BR"),
+          evento: showEventInfo ? reg.event_date.event.title : "",
           dataEvento: showEventInfo ? 
-            new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR') : '',
-          local: showEventInfo ? reg.event_date.event.location : ''
+            new Date(`${reg.event_date.date  }T00:00:00`).toLocaleDateString("pt-BR") : "",
+          local: showEventInfo ? reg.event_date.event.location : ""
         }))
-      }
+      };
 
       // Criar HTML para PDF
       const htmlContent = `
@@ -130,7 +130,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                 <th>Telefone</th>
                 <th>Status</th>
                 <th>Data Inscrição</th>
-                ${showEventInfo ? '<th>Evento</th><th>Data Evento</th>' : ''}
+                ${showEventInfo ? "<th>Evento</th><th>Data Evento</th>" : ""}
               </tr>
             </thead>
             <tbody>
@@ -142,9 +142,9 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                   <td>${p.telefone}</td>
                   <td>${p.status}</td>
                   <td>${p.inscricao}</td>
-                  ${showEventInfo ? `<td>${p.evento}</td><td>${p.dataEvento}</td>` : ''}
+                  ${showEventInfo ? `<td>${p.evento}</td><td>${p.dataEvento}</td>` : ""}
                 </tr>
-              `).join('')}
+              `).join("")}
             </tbody>
           </table>
 
@@ -153,90 +153,90 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
           </div>
         </body>
         </html>
-      `
+      `;
 
       // Abrir em nova janela para impressão/PDF
-      const printWindow = window.open('', '_blank')
+      const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        printWindow.focus()
-        printWindow.print()
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
       }
 
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      alert('Erro ao gerar PDF. Tente novamente.')
+      console.error("Erro ao gerar PDF:", error);
+      alert("Erro ao gerar PDF. Tente novamente.");
     }
-  }
+  };
 
   const handleExportCSV = () => {
-    if (!filteredRegistrations.length) return
+    if (!filteredRegistrations.length) {return;}
 
     const headers = [
-      'Nome',
-      'CPF', 
-      'Email',
-      'Telefone',
-      'Data Nascimento',
-      'Diagnóstico',
-      'Status',
-      'Data Inscrição'
-    ]
+      "Nome",
+      "CPF", 
+      "Email",
+      "Telefone",
+      "Data Nascimento",
+      "Diagnóstico",
+      "Status",
+      "Data Inscrição"
+    ];
 
     if (showEventInfo) {
-      headers.splice(-2, 0, 'Evento', 'Data Evento', 'Local')
+      headers.splice(-2, 0, "Evento", "Data Evento", "Local");
     }
 
     const csvContent = [
-      headers.join(','),
+      headers.join(","),
       ...filteredRegistrations.map(reg => {
         const baseRow = [
           `"${reg.patient.nome}"`,
           `"${reg.patient.cpf}"`,
           `"${reg.patient.email}"`,
           `"${reg.patient.telefone}"`,
-          reg.patient.data_nascimento ? `"${new Date(reg.patient.data_nascimento).toLocaleDateString('pt-BR')}"` : '""',
-          `"${reg.patient.diagnostico || ''}"`,
+          reg.patient.data_nascimento ? `"${new Date(reg.patient.data_nascimento).toLocaleDateString("pt-BR")}"` : '""',
+          `"${reg.patient.diagnostico || ""}"`,
           `"${reg.status}"`,
-          `"${new Date(reg.created_at).toLocaleDateString('pt-BR')}"`
-        ]
+          `"${new Date(reg.created_at).toLocaleDateString("pt-BR")}"`
+        ];
 
         if (showEventInfo) {
           baseRow.splice(-2, 0, 
             `"${reg.event_date.event.title}"`,
-            `"${new Date(reg.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}"`,
+            `"${new Date(`${reg.event_date.date  }T00:00:00`).toLocaleDateString("pt-BR")}"`,
             `"${reg.event_date.event.location}"`
-          )
+          );
         }
 
-        return baseRow.join(',')
+        return baseRow.join(",");
       })
-    ].join('\n')
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `inscricoes_${eventId || 'todos'}_${new Date().getTime()}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `inscricoes_${eventId || "todos"}_${new Date().getTime()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge variant="default">Confirmado</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>
-      case 'waiting':
-        return <Badge variant="secondary">Lista de Espera</Badge>
+      case "confirmed":
+        return <Badge variant="default">Confirmado</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelado</Badge>;
+      case "waiting":
+        return <Badge variant="secondary">Lista de Espera</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -248,7 +248,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -256,7 +256,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Inscrições {eventId ? 'do Evento' : 'Gerais'}
+          Inscrições {eventId ? "do Evento" : "Gerais"}
         </CardTitle>
         <CardDescription>
           {filteredRegistrations.length} inscrição(ões) encontrada(s)
@@ -302,9 +302,9 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Nenhuma inscrição encontrada com estes filtros' 
-                : 'Nenhuma inscrição encontrada'}
+              {searchTerm || statusFilter !== "all" 
+                ? "Nenhuma inscrição encontrada com estes filtros" 
+                : "Nenhuma inscrição encontrada"}
             </p>
           </div>
         ) : (
@@ -347,14 +347,14 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                       <div className="space-y-1 text-sm">
                         {registration.patient.data_nascimento && (
                           <div>
-                            Nascimento: {new Date(registration.patient.data_nascimento).toLocaleDateString('pt-BR')}
+                            Nascimento: {new Date(registration.patient.data_nascimento).toLocaleDateString("pt-BR")}
                           </div>
                         )}
                         {registration.patient.diagnostico && (
                           <div className="flex items-center gap-1">
                             <FileText className="h-3 w-3" />
                             {registration.patient.diagnostico.slice(0, 30)}
-                            {registration.patient.diagnostico.length > 30 && '...'}
+                            {registration.patient.diagnostico.length > 30 && "..."}
                           </div>
                         )}
                       </div>
@@ -365,7 +365,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                           <div className="font-medium text-sm">{registration.event_date.event.title}</div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="h-3 w-3" />
-                            {new Date(registration.event_date.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            {new Date(`${registration.event_date.date  }T00:00:00`).toLocaleDateString("pt-BR")}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {registration.event_date.event.location}
@@ -378,7 +378,7 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(registration.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(registration.created_at).toLocaleDateString("pt-BR")}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -389,5 +389,5 @@ export const RegistrationsList: React.FC<RegistrationsListProps> = ({
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

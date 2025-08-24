@@ -3,8 +3,8 @@
  * PATIENTS HOOK V2 - Gestão de pacientes (versão corrigida)
  */
 
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PatientV2 {
   id: string
@@ -28,54 +28,54 @@ export interface PatientFilters {
 
 export const usePatientsV2 = (filters: PatientFilters = {}) => {
   return useQuery({
-    queryKey: ['patients-v2', filters],
+    queryKey: ["patients-v2", filters],
     queryFn: async (): Promise<PatientV2[]> => {
       try {
-        console.log('🔍 [V2] Buscando pacientes com filtros:', filters)
+        console.log("🔍 [V2] Buscando pacientes com filtros:", filters);
 
         let query = supabase
-          .from('patients')
-          .select('*')
+          .from("patients")
+          .select("*");
 
         // Aplicar filtros
         if (filters.search) {
-          query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+          query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
         }
 
         // Ordenar por data de criação (mais recente primeiro)
-        query = query.order('created_at', { ascending: false })
+        query = query.order("created_at", { ascending: false });
 
-        const { data: patients, error } = await query
+        const { data: patients, error } = await query;
 
         if (error) {
-          console.error('❌ [V2] Erro ao buscar pacientes:', error)
-          throw error
+          console.error("❌ [V2] Erro ao buscar pacientes:", error);
+          throw error;
         }
 
         // Mapear dados do banco para interface V2
         const processedPatients: PatientV2[] = (patients || []).map(patient => ({
           id: patient.id,
-          name: patient.nome || '',
-          email: patient.email || '',
-          phone: patient.telefone || '',
-          birth_date: patient.data_nascimento || '',
-          city: 'N/A', // Campo não existe na tabela atual
-          state: 'N/A', // Campo não existe na tabela atual
+          name: patient.nome || "",
+          email: patient.email || "",
+          phone: patient.telefone || "",
+          birth_date: patient.data_nascimento || "",
+          city: "N/A", // Campo não existe na tabela atual
+          state: "N/A", // Campo não existe na tabela atual
           created_at: patient.created_at,
           _count: {
             registrations: 0 // TODO: Contar inscrições
           }
-        }))
+        }));
 
-        console.log('📊 [V2] Pacientes carregados:', processedPatients.length)
-        return processedPatients
+        console.log("📊 [V2] Pacientes carregados:", processedPatients.length);
+        return processedPatients;
 
       } catch (error) {
-        console.error('❌ [V2] Erro crítico ao carregar pacientes:', error)
-        throw error
+        console.error("❌ [V2] Erro crítico ao carregar pacientes:", error);
+        throw error;
       }
     },
     staleTime: 30000,
     refetchOnWindowFocus: false
-  })
-}
+  });
+};

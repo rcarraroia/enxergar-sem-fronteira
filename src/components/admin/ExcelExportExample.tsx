@@ -3,12 +3,12 @@
  * Pode ser usado em outras páginas do sistema
  */
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useExcelExport } from '@/hooks/useExcelExport';
-import { Download, FileSpreadsheet } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import { Download, FileSpreadsheet } from "lucide-react";
+import React from "react";
+import { toast } from "sonner";
 
 interface ExcelExportExampleProps {
   data: any[];
@@ -82,7 +82,7 @@ export const ExcelExportExample: React.FC<ExcelExportExampleProps> = ({
               className="w-full"
             >
               <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exportando...' : 'Exportação Completa'}
+              {isExporting ? "Exportando..." : "Exportação Completa"}
             </Button>
 
             <Button
@@ -92,7 +92,7 @@ export const ExcelExportExample: React.FC<ExcelExportExampleProps> = ({
               className="w-full"
             >
               <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exportando...' : 'Exportação Básica'}
+              {isExporting ? "Exportando..." : "Exportação Básica"}
             </Button>
           </div>
 

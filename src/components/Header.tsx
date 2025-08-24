@@ -1,11 +1,11 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Settings, User } from 'lucide-react';
-import { useSystemSettings } from '@/hooks/useSystemSettings';
-import { getRedirectPath } from '@/utils/roleRedirect';
-import { Link, useNavigate } from 'react-router-dom';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { LogOut, Settings, User } from "lucide-react";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { getRedirectPath } from "@/utils/roleRedirect";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const {
@@ -22,7 +22,7 @@ const Header = () => {
     try {
       await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error("Erro ao fazer logout:", error);
     }
   };
 
@@ -32,24 +32,24 @@ const Header = () => {
 
   const getDashboardLabel = () => {
     switch (userRole) {
-      case 'admin':
-        return 'Admin'
-      case 'organizer':
-        return 'Painel'
+      case "admin":
+        return "Admin";
+      case "organizer":
+        return "Painel";
       default:
-        return 'Dashboard'
+        return "Dashboard";
     }
   };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  const logoHeader = getSettingValue('logo_header');
-  const projectName = getSettingValue('project_name', 'Enxergar sem Fronteiras');
+  const logoHeader = getSettingValue("logo_header");
+  const projectName = getSettingValue("project_name", "Enxergar sem Fronteiras");
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -62,7 +62,7 @@ const Header = () => {
                 alt={projectName} 
                 className="h-12 object-contain" 
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.style.display = "none";
                 }} 
               />
             ) : (
@@ -72,25 +72,25 @@ const Header = () => {
           
           <div className="hidden md:flex items-center space-x-6">
             <button 
-              onClick={() => scrollToSection('home')} 
+              onClick={() => scrollToSection("home")} 
               className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Início
             </button>
             <button 
-              onClick={() => scrollToSection('about')} 
+              onClick={() => scrollToSection("about")} 
               className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Sobre
             </button>
             <button 
-              onClick={() => scrollToSection('events')} 
+              onClick={() => scrollToSection("events")} 
               className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Eventos
             </button>
             <button 
-              onClick={() => navigate('/eventos')} 
+              onClick={() => navigate("/eventos")} 
               className="text-gray-600 hover:text-primary transition-colors cursor-pointer"
             >
               Cadastrar-se

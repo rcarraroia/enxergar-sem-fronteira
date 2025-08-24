@@ -1,0 +1,36 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "📝 Validando mensagem de commit..."
+
+# Ler a mensagem de commit
+commit_msg=$(cat "$1")
+
+# Verificar se a mensagem segue o padrão conventional commits
+if ! echo "$commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}"; then
+    echo "❌ Erro: Mensagem de commit deve seguir o padrão Conventional Commits"
+    echo ""
+    echo "Formato: tipo(escopo): descrição"
+    echo ""
+    echo "Tipos válidos:"
+    echo "  feat:     Nova funcionalidade"
+    echo "  fix:      Correção de bug"
+    echo "  docs:     Documentação"
+    echo "  style:    Formatação, ponto e vírgula, etc"
+    echo "  refactor: Refatoração de código"
+    echo "  test:     Adição ou correção de testes"
+    echo "  chore:    Tarefas de manutenção"
+    echo "  perf:     Melhoria de performance"
+    echo "  ci:       Integração contínua"
+    echo "  build:    Sistema de build"
+    echo "  revert:   Reverter commit anterior"
+    echo ""
+    echo "Exemplos:"
+    echo "  feat: adicionar sistema de login"
+    echo "  fix(auth): corrigir validação de senha"
+    echo "  docs: atualizar README"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Mensagem de commit válida!"

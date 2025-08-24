@@ -3,64 +3,64 @@
  * Sistema completo de CRUD de eventos
  */
 
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { DataTable } from '@/components/admin-v2/shared/DataTable'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { DataTable } from "@/components/admin-v2/shared/DataTable";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
+  AlertCircle, 
   Calendar, 
-  Plus, 
+  Clock, 
   Edit, 
-  Trash2, 
   Eye,
   MapPin,
-  Clock,
-  Users,
-  AlertCircle
-} from 'lucide-react'
-import { useEventsV2, useDeleteEventV2, type EventV2, type EventFilters } from '@/hooks/admin-v2/useEventsV2'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Plus,
+  Trash2,
+  Users
+} from "lucide-react";
+import { type EventFilters, type EventV2, useDeleteEventV2, useEventsV2 } from "@/hooks/admin-v2/useEventsV2";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const AdminEventsV2 = () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<EventFilters>({
-    search: searchParams.get('search') || '',
-    status: 'all'
-  })
+    search: searchParams.get("search") || "",
+    status: "all"
+  });
 
-  const { data: events = [], isLoading, error } = useEventsV2(filters)
-  const deleteEventMutation = useDeleteEventV2()
+  const { data: events = [], isLoading, error } = useEventsV2(filters);
+  const deleteEventMutation = useDeleteEventV2();
 
   const handleCreateEvent = () => {
-    navigate('/admin-v2/events/create')
-  }
+    navigate("/admin-v2/events/create");
+  };
 
   const handleEditEvent = (event: EventV2) => {
-    navigate(`/admin-v2/events/edit/${event.id}`)
-  }
+    navigate(`/admin-v2/events/edit/${event.id}`);
+  };
 
   const handleViewEvent = (event: EventV2) => {
-    navigate(`/admin-v2/events/view/${event.id}`)
-  }
+    navigate(`/admin-v2/events/view/${event.id}`);
+  };
 
   const handleDeleteEvent = async (event: EventV2) => {
     const confirmDelete = window.confirm(
       `Tem certeza que deseja excluir o evento "${event.title}"?\n\nEsta ação não pode ser desfeita.`
-    )
+    );
     
     if (confirmDelete) {
       try {
-        await deleteEventMutation.mutateAsync(event.id)
+        await deleteEventMutation.mutateAsync(event.id);
       } catch (error) {
-        console.error('Erro ao deletar evento:', error)
+        console.error("Erro ao deletar evento:", error);
       }
     }
-  }
+  };
 
   const formatEventDates = (upcomingDates: any[]) => {
     if (!upcomingDates || upcomingDates.length === 0) {
@@ -76,20 +76,20 @@ const AdminEventsV2 = () => {
             Datas serão configuradas
           </span>
         </div>
-      )
+      );
     }
 
-    const sortedDates = upcomingDates.sort((a, b) => a.date.localeCompare(b.date))
-    const firstDate = sortedDates[0]
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+    const sortedDates = upcomingDates.sort((a, b) => a.date.localeCompare(b.date));
+    const firstDate = sortedDates[0];
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
     
     // Usar a data diretamente sem conversão de timezone
-    const eventDateString = firstDate.date // YYYY-MM-DD
-    const isUpcoming = eventDateString >= today
+    const eventDateString = firstDate.date; // YYYY-MM-DD
+    const isUpcoming = eventDateString >= today;
 
     // Converter apenas para exibição, mantendo a data local
-    const [year, month, day] = eventDateString.split('-')
-    const displayDate = `${day}/${month}/${year}`
+    const [year, month, day] = eventDateString.split("-");
+    const displayDate = `${day}/${month}/${year}`;
 
     return (
       <div className="space-y-1">
@@ -99,10 +99,10 @@ const AdminEventsV2 = () => {
             {displayDate}
           </span>
           <Badge 
-            variant={isUpcoming ? 'default' : 'secondary'}
-            className={isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}
+            variant={isUpcoming ? "default" : "secondary"}
+            className={isUpcoming ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
           >
-            {isUpcoming ? 'Próximo' : 'Passado'}
+            {isUpcoming ? "Próximo" : "Passado"}
           </Badge>
         </div>
         {upcomingDates.length > 1 && (
@@ -111,13 +111,13 @@ const AdminEventsV2 = () => {
           </span>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const columns = [
     {
-      key: 'title',
-      label: 'Evento',
+      key: "title",
+      label: "Evento",
       render: (value: string, event: EventV2) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -129,24 +129,24 @@ const AdminEventsV2 = () => {
       )
     },
     {
-      key: 'city',
-      label: 'Cidade',
+      key: "city",
+      label: "Cidade",
       render: (value: string) => (
-        <div className="text-sm">{value || 'N/A'}</div>
+        <div className="text-sm">{value || "N/A"}</div>
       )
     },
     {
-      key: 'upcoming_dates',
-      label: 'Datas',
+      key: "upcoming_dates",
+      label: "Datas",
       render: (value: any[], event: EventV2) => formatEventDates(value)
     },
     {
-      key: 'occupied_slots',
-      label: 'Ocupação',
+      key: "occupied_slots",
+      label: "Ocupação",
       render: (value: number, event: EventV2) => {
-        const totalSlots = event.total_slots || 0
-        const occupiedSlots = value || 0
-        const occupancyRate = event.occupancy_rate || 0
+        const totalSlots = event.total_slots || 0;
+        const occupiedSlots = value || 0;
+        const occupancyRate = event.occupancy_rate || 0;
         
         return (
           <div className="text-center">
@@ -155,46 +155,46 @@ const AdminEventsV2 = () => {
               {occupancyRate}% ocupado
             </div>
           </div>
-        )
+        );
       }
     },
     {
-      key: 'created_at',
-      label: 'Criado em',
+      key: "created_at",
+      label: "Criado em",
       render: (value: string) => (
         <span className="text-sm text-muted-foreground">
-          {format(new Date(value), 'dd/MM/yyyy', { locale: ptBR })}
+          {format(new Date(value), "dd/MM/yyyy", { locale: ptBR })}
         </span>
       )
     }
-  ]
+  ];
 
   const actions = [
     {
-      label: 'Visualizar',
+      label: "Visualizar",
       onClick: handleViewEvent,
       icon: Eye
     },
     {
-      label: 'Editar',
+      label: "Editar",
       onClick: handleEditEvent,
       icon: Edit
     },
     {
-      label: 'Excluir',
+      label: "Excluir",
       onClick: handleDeleteEvent,
-      variant: 'destructive' as const,
+      variant: "destructive" as const,
       icon: Trash2
     }
-  ]
+  ];
 
   if (error) {
     return (
       <AdminLayout 
         title="Gestão de Eventos" 
         breadcrumbs={[
-          { label: 'Dashboard', path: '/admin' },
-          { label: 'Eventos', path: '/admin/events' }
+          { label: "Dashboard", path: "/admin" },
+          { label: "Eventos", path: "/admin/events" }
         ]}
       >
         <Alert variant="destructive">
@@ -204,15 +204,15 @@ const AdminEventsV2 = () => {
           </AlertDescription>
         </Alert>
       </AdminLayout>
-    )
+    );
   }
 
   return (
     <AdminLayout 
       title="Gestão de Eventos" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Eventos', path: '/admin-v2/events' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Eventos", path: "/admin-v2/events" }
       ]}
       actions={
         <Button onClick={handleCreateEvent}>
@@ -234,7 +234,7 @@ const AdminEventsV2 = () => {
         emptyMessage="Nenhum evento encontrado. Clique em 'Novo Evento' para começar."
       />
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminEventsV2
+export default AdminEventsV2;

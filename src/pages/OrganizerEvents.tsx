@@ -1,34 +1,34 @@
 
-import React, { useState } from 'react'
-import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import React, { useState } from "react";
+import { OrganizerLayout } from "@/components/organizer/OrganizerLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Calendar,
-  MapPin,
-  Users,
-  Plus,
-  Search,
-  Filter,
-  Edit,
   Copy,
+  Edit,
+  Eye,
+  Filter,
+  MapPin,
   Pause,
   Play,
+  Plus,
+  Search,
   Trash2,
-  Eye
-} from 'lucide-react'
-import { useOrganizerEvents } from '@/hooks/useOrganizerEvents'
-import { Link } from 'react-router-dom'
-import { formatDate, formatTimeRange } from '@/utils/dateUtils'
+  Users
+} from "lucide-react";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
+import { Link } from "react-router-dom";
+import { formatDate, formatTimeRange } from "@/utils/dateUtils";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -39,45 +39,45 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 
 const OrganizerEvents = () => {
-  const { events, loading, deleteEvent, duplicateEvent, toggleEventStatus } = useOrganizerEvents()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const { events, loading, deleteEvent, duplicateEvent, toggleEventStatus } = useOrganizerEvents();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.city.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter
+                         event.city.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || event.status === statusFilter;
     
-    return matchesSearch && matchesStatus
-  })
+    return matchesSearch && matchesStatus;
+  });
 
   const handleDeleteEvent = async (eventId: string) => {
-    await deleteEvent(eventId)
-  }
+    await deleteEvent(eventId);
+  };
 
   const handleDuplicateEvent = async (eventId: string) => {
-    await duplicateEvent(eventId)
-  }
+    await duplicateEvent(eventId);
+  };
 
   const handleToggleStatus = async (eventId: string, currentStatus: string) => {
-    await toggleEventStatus(eventId, currentStatus)
-  }
+    await toggleEventStatus(eventId, currentStatus);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'open':
-        return <Badge variant="default">Ativo</Badge>
-      case 'closed':
-        return <Badge variant="secondary">Pausado</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>
+      case "open":
+        return <Badge variant="default">Ativo</Badge>;
+      case "closed":
+        return <Badge variant="secondary">Pausado</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelado</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -91,7 +91,7 @@ const OrganizerEvents = () => {
           </div>
         </div>
       </OrganizerLayout>
-    )
+    );
   }
 
   return (
@@ -202,7 +202,7 @@ const OrganizerEvents = () => {
                       size="sm" 
                       onClick={() => handleToggleStatus(event.id, event.status)}
                     >
-                      {event.status === 'open' ? (
+                      {event.status === "open" ? (
                         <>
                           <Pause className="h-4 w-4 mr-1" />
                           Pausar
@@ -251,15 +251,15 @@ const OrganizerEvents = () => {
             <CardContent className="text-center py-12">
               <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {searchTerm || statusFilter !== 'all' ? 'Nenhum evento encontrado' : 'Nenhum evento criado'}
+                {searchTerm || statusFilter !== "all" ? "Nenhum evento encontrado" : "Nenhum evento criado"}
               </h3>
               <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'Tente ajustar os filtros para encontrar seus eventos.'
-                  : 'Comece criando seu primeiro evento para gerenciar inscrições.'
+                {searchTerm || statusFilter !== "all" 
+                  ? "Tente ajustar os filtros para encontrar seus eventos."
+                  : "Comece criando seu primeiro evento para gerenciar inscrições."
                 }
               </p>
-              {!searchTerm && statusFilter === 'all' && (
+              {!searchTerm && statusFilter === "all" && (
                 <Button asChild>
                   <Link to="/organizer/events/new">
                     <Plus className="h-4 w-4 mr-2" />
@@ -272,7 +272,7 @@ const OrganizerEvents = () => {
         )}
       </div>
     </OrganizerLayout>
-  )
-}
+  );
+};
 
-export default OrganizerEvents
+export default OrganizerEvents;

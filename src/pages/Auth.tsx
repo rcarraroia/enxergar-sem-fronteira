@@ -1,33 +1,33 @@
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LoginForm } from '@/components/auth/LoginForm'
-import { SignUpForm } from '@/components/auth/SignUpForm'
-import { useAuth } from '@/hooks/useAuth'
-import { getRedirectPath } from '@/utils/roleRedirect'
-import { Loader2 } from 'lucide-react'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import { useAuth } from "@/hooks/useAuth";
+import { getRedirectPath } from "@/utils/roleRedirect";
+import { Loader2 } from "lucide-react";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true)
-  const { user, loading, userRole } = useAuth()
-  const navigate = useNavigate()
+  const [isLogin, setIsLogin] = useState(true);
+  const { user, loading, userRole } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('🔍 Auth page - Estado atual:', { 
-      user: user?.email || 'Nenhum', 
+    console.log("🔍 Auth page - Estado atual:", { 
+      user: user?.email || "Nenhum", 
       loading,
       userRole
-    })
+    });
     
     if (user && !loading && userRole) {
-      const redirectPath = getRedirectPath(userRole)
-      console.log(`✅ Usuário autenticado (${userRole}), redirecionando para ${redirectPath}`)
-      navigate(redirectPath, { replace: true })
+      const redirectPath = getRedirectPath(userRole);
+      console.log(`✅ Usuário autenticado (${userRole}), redirecionando para ${redirectPath}`);
+      navigate(redirectPath, { replace: true });
     }
-  }, [user, loading, userRole, navigate])
+  }, [user, loading, userRole, navigate]);
 
   if (loading) {
-    console.log('⏳ Auth page: Carregando...')
+    console.log("⏳ Auth page: Carregando...");
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ const Auth = () => {
           <span>Carregando...</span>
         </div>
       </div>
-    )
+    );
   }
 
   // Se usuário já está logado, não renderizar o formulário
@@ -47,7 +47,7 @@ const Auth = () => {
           <span>Redirecionando...</span>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -60,7 +60,7 @@ const Auth = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Auth
+export default Auth;

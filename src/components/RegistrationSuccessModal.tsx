@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,10 +8,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Clock, Bell, CheckCircle } from 'lucide-react'
-import { formatTime, formatDate } from '@/utils/timeFormat'
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Bell, Calendar, CheckCircle, Clock, MapPin } from "lucide-react";
+import { formatDate, formatTime } from "@/utils/timeFormat";
 
 interface EventInfo {
   city: string
@@ -36,7 +36,7 @@ export const RegistrationSuccessModal = ({
   eventInfo, 
   patientName 
 }: RegistrationSuccessModalProps) => {
-  if (!eventInfo) return null
+  if (!eventInfo) {return null;}
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -128,5 +128,5 @@ export const RegistrationSuccessModal = ({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
-}
+  );
+};

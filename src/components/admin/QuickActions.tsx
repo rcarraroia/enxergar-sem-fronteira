@@ -1,14 +1,14 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
-  Plus, 
-  Users, 
+  Calendar, 
   FileText, 
-  Calendar,
-  UserPlus
-} from 'lucide-react'
+  Plus, 
+  UserPlus,
+  Users
+} from "lucide-react";
 
 interface QuickActionsProps {
   onCreateEvent: () => void
@@ -61,5 +61,5 @@ export const QuickActions = ({
         Exportar Relatórios
       </Button>
     </div>
-  )
-}
+  );
+};

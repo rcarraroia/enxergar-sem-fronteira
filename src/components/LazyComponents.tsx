@@ -1,12 +1,12 @@
 
-import { lazy, Suspense } from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy loading para componentes pesados - usando named exports
-export const LazyEventForm = lazy(() => import('@/components/admin/EventForm').then(module => ({ default: module.EventForm })))
-export const LazyRegistrationsList = lazy(() => import('@/components/admin/RegistrationsList').then(module => ({ default: module.RegistrationsList })))
-export const LazySystemHealthCard = lazy(() => import('@/components/admin/SystemHealthCard').then(module => ({ default: module.SystemHealthCard })))
-export const LazySystemLogsCard = lazy(() => import('@/components/admin/SystemLogsCard').then(module => ({ default: module.SystemLogsCard })))
+export const LazyEventForm = lazy(() => import("@/components/admin/EventForm").then(module => ({ default: module.EventForm })));
+export const LazyRegistrationsList = lazy(() => import("@/components/admin/RegistrationsList").then(module => ({ default: module.RegistrationsList })));
+export const LazySystemHealthCard = lazy(() => import("@/components/admin/SystemHealthCard").then(module => ({ default: module.SystemHealthCard })));
+export const LazySystemLogsCard = lazy(() => import("@/components/admin/SystemLogsCard").then(module => ({ default: module.SystemLogsCard })));
 
 // Wrapper com loading skeleton
 interface LazyWrapperProps {
@@ -22,7 +22,7 @@ export const LazyWrapper = ({ children, height = "h-48" }: LazyWrapperProps) => 
   }>
     {children}
   </Suspense>
-)
+);
 
 // Loading skeletons específicos
 export const EventFormSkeleton = () => (
@@ -39,7 +39,7 @@ export const EventFormSkeleton = () => (
       <Skeleton className="h-10 w-24" />
     </div>
   </div>
-)
+);
 
 export const RegistrationsListSkeleton = () => (
   <div className="space-y-4 p-6">
@@ -56,4 +56,4 @@ export const RegistrationsListSkeleton = () => (
       ))}
     </div>
   </div>
-)
+);

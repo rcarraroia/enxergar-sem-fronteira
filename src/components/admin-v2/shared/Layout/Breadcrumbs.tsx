@@ -2,10 +2,10 @@
  * ADMIN BREADCRUMBS V2 - Navegação estrutural
  */
 
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { ChevronRight, Home } from 'lucide-react'
-import { BreadcrumbItem } from './index'
+import React from "react";
+import { Link } from "react-router-dom";
+import { ChevronRight, Home } from "lucide-react";
+import type { BreadcrumbItem } from "./index";
 
 interface AdminBreadcrumbsProps {
   items: BreadcrumbItem[]
@@ -37,5 +37,5 @@ export const AdminBreadcrumbs: React.FC<AdminBreadcrumbsProps> = ({ items }) => 
         </React.Fragment>
       ))}
     </nav>
-  )
-}
+  );
+};

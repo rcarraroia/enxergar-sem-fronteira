@@ -3,171 +3,171 @@
  * Sistema completo para gerenciar agendamentos e inscrições em eventos
  */
 
-import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState } from "react";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
+  AlertCircle,
   Calendar,
-  Search,
+  CheckCircle,
+  Clock,
   FileDown,
-  Phone,
+  Filter,
   Mail,
   MapPin,
-  Clock,
+  Phone,
+  Search,
+  UserCheck,
   Users,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Filter,
-  UserCheck
-} from 'lucide-react'
+  XCircle
+} from "lucide-react";
 import { 
-  useRegistrationsV2, 
+  type RegistrationFilters, 
+  type RegistrationV2,
   useRegistrationStatsV2,
-  useUpdateRegistrationStatusV2,
-  type RegistrationV2, 
-  type RegistrationFilters 
-} from '@/hooks/admin-v2/useRegistrationsV2'
-import { useEventsV2 } from '@/hooks/admin-v2/useEventsV2'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { toast } from 'sonner'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+  useRegistrationsV2, 
+  useUpdateRegistrationStatusV2 
+} from "@/hooks/admin-v2/useRegistrationsV2";
+import { useEventsV2 } from "@/hooks/admin-v2/useEventsV2";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const AdminRegistrationsV2 = () => {
-  const [filters, setFilters] = useState<RegistrationFilters>({})
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedEvent, setSelectedEvent] = useState<string>('all')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [dateFrom, setDateFrom] = useState<string>('')
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [filters, setFilters] = useState<RegistrationFilters>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Hooks
-  const { data: registrations = [], isLoading, error } = useRegistrationsV2(filters)
-  const { data: events = [] } = useEventsV2({})
-  const { data: stats } = useRegistrationStatsV2()
-  const updateStatusMutation = useUpdateRegistrationStatusV2()
+  const { data: registrations = [], isLoading, error } = useRegistrationsV2(filters);
+  const { data: events = [] } = useEventsV2({});
+  const { data: stats } = useRegistrationStatsV2();
+  const updateStatusMutation = useUpdateRegistrationStatusV2();
 
   const handleSearch = () => {
     // Função mantida para compatibilidade com o botão de busca
     setFilters({
       search: searchTerm || undefined,
-      event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
-      status: selectedStatus !== 'all' ? selectedStatus : undefined,
+      event_id: selectedEvent !== "all" ? selectedEvent : undefined,
+      status: selectedStatus !== "all" ? selectedStatus : undefined,
       date_from: dateFrom || undefined
-    })
-  }
+    });
+  };
 
   const handleStatusChange = async (registrationId: string, newStatus: string) => {
     try {
       await updateStatusMutation.mutateAsync({
         registrationId,
         status: newStatus
-      })
+      });
     } catch (error) {
-      console.error('Erro ao atualizar status:', error)
+      console.error("Erro ao atualizar status:", error);
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Confirmado</Badge>
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pendente</Badge>
-      case 'cancelled':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Cancelado</Badge>
-      case 'attended':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Compareceu</Badge>
+      case "confirmed":
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Confirmado</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pendente</Badge>;
+      case "cancelled":
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Cancelado</Badge>;
+      case "attended":
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Compareceu</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   const generatePDF = () => {
     if (registrations.length === 0) {
-      toast.error('Nenhuma inscrição encontrada para gerar o relatório')
-      return
+      toast.error("Nenhuma inscrição encontrada para gerar o relatório");
+      return;
     }
 
-    setIsGenerating(true)
+    setIsGenerating(true);
     
     try {
-      const doc = new jsPDF()
+      const doc = new jsPDF();
       
       // Título do relatório
-      doc.setFontSize(16)
-      doc.text('RELATÓRIO DE INSCRIÇÕES', 14, 20)
+      doc.setFontSize(16);
+      doc.text("RELATÓRIO DE INSCRIÇÕES", 14, 20);
       
       // Informações do relatório
-      doc.setFontSize(12)
-      const eventName = selectedEvent !== 'all' ? 
-        events.find(e => e.id === selectedEvent)?.title || 'Evento não encontrado' : 
-        'Todos os Eventos'
+      doc.setFontSize(12);
+      const eventName = selectedEvent !== "all" ? 
+        events.find(e => e.id === selectedEvent)?.title || "Evento não encontrado" : 
+        "Todos os Eventos";
       
-      doc.text(`Evento: ${eventName}`, 14, 30)
-      doc.text(`Status: ${selectedStatus !== 'all' ? selectedStatus : 'Todos'}`, 14, 40)
-      doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 14, 50)
-      doc.text(`Total de inscrições: ${registrations.length}`, 14, 60)
+      doc.text(`Evento: ${eventName}`, 14, 30);
+      doc.text(`Status: ${selectedStatus !== "all" ? selectedStatus : "Todos"}`, 14, 40);
+      doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 50);
+      doc.text(`Total de inscrições: ${registrations.length}`, 14, 60);
 
       // Preparar dados para a tabela
       const tableData = registrations.map((registration, index) => [
         index + 1,
-        registration.patient?.nome || 'N/A',
-        registration.patient?.telefone || 'N/A',
-        registration.event?.title || 'N/A',
-        registration.event_date?.date ? format(new Date(registration.event_date.date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A',
-        registration.event_date?.start_time || 'N/A',
-        registration.status === 'confirmed' ? 'Confirmado' :
-        registration.status === 'pending' ? 'Pendente' :
-        registration.status === 'cancelled' ? 'Cancelado' :
-        registration.status === 'attended' ? 'Compareceu' : registration.status,
-        format(new Date(registration.created_at), 'dd/MM/yyyy', { locale: ptBR })
-      ])
+        registration.patient?.nome || "N/A",
+        registration.patient?.telefone || "N/A",
+        registration.event?.title || "N/A",
+        registration.event_date?.date ? format(new Date(registration.event_date.date), "dd/MM/yyyy", { locale: ptBR }) : "N/A",
+        registration.event_date?.start_time || "N/A",
+        registration.status === "confirmed" ? "Confirmado" :
+        registration.status === "pending" ? "Pendente" :
+        registration.status === "cancelled" ? "Cancelado" :
+        registration.status === "attended" ? "Compareceu" : registration.status,
+        format(new Date(registration.created_at), "dd/MM/yyyy", { locale: ptBR })
+      ]);
 
       // Gerar tabela
       autoTable(doc, {
-        head: [['#', 'Paciente', 'Telefone', 'Evento', 'Data', 'Horário', 'Status', 'Inscrito em']],
+        head: [["#", "Paciente", "Telefone", "Evento", "Data", "Horário", "Status", "Inscrito em"]],
         body: tableData,
         startY: 70,
         styles: { fontSize: 8 },
         headStyles: { fillColor: [41, 128, 185] },
         alternateRowStyles: { fillColor: [245, 245, 245] },
         margin: { top: 20, right: 20, bottom: 20, left: 20 },
-      })
+      });
 
       // Salvar PDF
-      const fileName = `inscricoes_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.pdf`
-      doc.save(fileName)
+      const fileName = `inscricoes_${format(new Date(), "yyyy-MM-dd_HH-mm")}.pdf`;
+      doc.save(fileName);
       
-      toast.success(`Relatório gerado com sucesso: ${fileName}`)
+      toast.success(`Relatório gerado com sucesso: ${fileName}`);
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      toast.error('Erro ao gerar relatório PDF')
+      console.error("Erro ao gerar PDF:", error);
+      toast.error("Erro ao gerar relatório PDF");
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <AdminLayout 
       title="Gestão de Inscrições" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin' },
-        { label: 'Inscrições', path: '/admin/registrations' }
+        { label: "Dashboard", path: "/admin" },
+        { label: "Inscrições", path: "/admin/registrations" }
       ]}
     >
       {error && (
@@ -197,14 +197,14 @@ const AdminRegistrationsV2 = () => {
                   placeholder="Nome do paciente ou evento..."
                   value={searchTerm}
                   onChange={(e) => {
-                    setSearchTerm(e.target.value)
+                    setSearchTerm(e.target.value);
                     // Aplicar filtro automaticamente
                     setFilters({
                       search: e.target.value || undefined,
-                      event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
-                      status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                      event_id: selectedEvent !== "all" ? selectedEvent : undefined,
+                      status: selectedStatus !== "all" ? selectedStatus : undefined,
                       date_from: dateFrom || undefined
-                    })
+                    });
                   }}
                 />
                 <Button onClick={handleSearch} variant="outline">
@@ -216,14 +216,14 @@ const AdminRegistrationsV2 = () => {
             <div>
               <Label htmlFor="event">Evento</Label>
               <Select value={selectedEvent} onValueChange={(value) => {
-                setSelectedEvent(value)
+                setSelectedEvent(value);
                 // Aplicar filtro automaticamente
                 setFilters({
                   search: searchTerm || undefined,
-                  event_id: value !== 'all' ? value : undefined,
-                  status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                  event_id: value !== "all" ? value : undefined,
+                  status: selectedStatus !== "all" ? selectedStatus : undefined,
                   date_from: dateFrom || undefined
-                })
+                });
               }}>
                 <SelectTrigger>
                   <SelectValue />
@@ -242,14 +242,14 @@ const AdminRegistrationsV2 = () => {
             <div>
               <Label htmlFor="status">Status</Label>
               <Select value={selectedStatus} onValueChange={(value) => {
-                setSelectedStatus(value)
+                setSelectedStatus(value);
                 // Aplicar filtro automaticamente
                 setFilters({
                   search: searchTerm || undefined,
-                  event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
-                  status: value !== 'all' ? value : undefined,
+                  event_id: selectedEvent !== "all" ? selectedEvent : undefined,
+                  status: value !== "all" ? value : undefined,
                   date_from: dateFrom || undefined
-                })
+                });
               }}>
                 <SelectTrigger>
                   <SelectValue />
@@ -271,14 +271,14 @@ const AdminRegistrationsV2 = () => {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => {
-                  setDateFrom(e.target.value)
+                  setDateFrom(e.target.value);
                   // Aplicar filtro automaticamente
                   setFilters({
                     search: searchTerm || undefined,
-                    event_id: selectedEvent !== 'all' ? selectedEvent : undefined,
-                    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+                    event_id: selectedEvent !== "all" ? selectedEvent : undefined,
+                    status: selectedStatus !== "all" ? selectedStatus : undefined,
                     date_from: e.target.value || undefined
-                  })
+                  });
                 }}
               />
             </div>
@@ -387,21 +387,21 @@ const AdminRegistrationsV2 = () => {
                   {registrations.map((registration) => (
                     <tr key={registration.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4">
-                        <div className="font-medium">{registration.patient?.nome || 'N/A'}</div>
+                        <div className="font-medium">{registration.patient?.nome || "N/A"}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <Phone className="h-3 w-3" />
-                          {registration.patient?.telefone || 'N/A'}
+                          {registration.patient?.telefone || "N/A"}
                         </div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <Mail className="h-3 w-3" />
-                          {registration.patient?.email || 'N/A'}
+                          {registration.patient?.email || "N/A"}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-medium">{registration.event?.title || 'N/A'}</div>
+                        <div className="font-medium">{registration.event?.title || "N/A"}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
-                          {registration.event?.location || 'N/A'}
+                          {registration.event?.location || "N/A"}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -409,14 +409,14 @@ const AdminRegistrationsV2 = () => {
                           <Calendar className="h-3 w-3" />
                           <span className="text-sm">
                             {registration.event_date?.date ? 
-                              format(new Date(registration.event_date.date), 'dd/MM/yyyy', { locale: ptBR }) : 
-                              'N/A'
+                              format(new Date(registration.event_date.date), "dd/MM/yyyy", { locale: ptBR }) : 
+                              "N/A"
                             }
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          <span className="text-sm">{registration.event_date?.start_time || 'N/A'}</span>
+                          <span className="text-sm">{registration.event_date?.start_time || "N/A"}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -424,31 +424,31 @@ const AdminRegistrationsV2 = () => {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-1">
-                          {registration.status !== 'confirmed' && (
+                          {registration.status !== "confirmed" && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleStatusChange(registration.id, 'confirmed')}
+                              onClick={() => handleStatusChange(registration.id, "confirmed")}
                               disabled={updateStatusMutation.isPending}
                             >
                               <CheckCircle className="h-3 w-3" />
                             </Button>
                           )}
-                          {registration.status !== 'cancelled' && (
+                          {registration.status !== "cancelled" && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleStatusChange(registration.id, 'cancelled')}
+                              onClick={() => handleStatusChange(registration.id, "cancelled")}
                               disabled={updateStatusMutation.isPending}
                             >
                               <XCircle className="h-3 w-3" />
                             </Button>
                           )}
-                          {registration.status === 'confirmed' && (
+                          {registration.status === "confirmed" && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleStatusChange(registration.id, 'attended')}
+                              onClick={() => handleStatusChange(registration.id, "attended")}
                               disabled={updateStatusMutation.isPending}
                             >
                               <UserCheck className="h-3 w-3" />
@@ -465,7 +465,7 @@ const AdminRegistrationsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminRegistrationsV2
+export default AdminRegistrationsV2;

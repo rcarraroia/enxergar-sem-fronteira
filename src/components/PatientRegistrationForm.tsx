@@ -1,27 +1,27 @@
 
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
-import { cpfMask, validateCPF } from '@/utils/cpfUtils'
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { cpfMask, validateCPF } from "@/utils/cpfUtils";
 
 const patientSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
-  cpf: z.string().refine(validateCPF, 'CPF inválido'),
-  birthdate: z.string().min(1, 'Data de nascimento é obrigatória'),
-  terms: z.boolean().refine(val => val === true, 'Você deve aceitar os termos'),
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
+  cpf: z.string().refine(validateCPF, "CPF inválido"),
+  birthdate: z.string().min(1, "Data de nascimento é obrigatória"),
+  terms: z.boolean().refine(val => val === true, "Você deve aceitar os termos"),
   comments: z.string().optional()
-})
+});
 
 type PatientFormData = z.infer<typeof patientSchema>
 
@@ -31,75 +31,75 @@ interface PatientRegistrationFormProps {
 }
 
 const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ eventDateId, onSuccess }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema)
-  })
+  });
 
-  const cpfValue = watch('cpf')
+  const cpfValue = watch("cpf");
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const maskedValue = cpfMask(e.target.value)
-    setValue('cpf', maskedValue)
-  }
+    const maskedValue = cpfMask(e.target.value);
+    setValue("cpf", maskedValue);
+  };
 
   const onSubmit = async (data: PatientFormData) => {
-    console.log('🚀 Iniciando processo de cadastro...', data)
-    setIsSubmitting(true)
+    console.log("🚀 Iniciando processo de cadastro...", data);
+    setIsSubmitting(true);
     
     try {
-      console.log('📋 Iniciando cadastro do paciente...', data.name)
+      console.log("📋 Iniciando cadastro do paciente...", data.name);
       
       // 1. Criar o paciente
       const { data: patientData, error: patientError } = await supabase
-        .from('patients')
+        .from("patients")
         .insert({
           nome: data.name,
           email: data.email,
           telefone: data.phone,
-          cpf: data.cpf.replace(/\D/g, ''),
+          cpf: data.cpf.replace(/\D/g, ""),
           data_nascimento: data.birthdate,
           consentimento_lgpd: data.terms
         })
         .select()
-        .single()
+        .single();
 
       if (patientError) {
-        console.error('❌ Erro ao criar paciente:', patientError)
-        throw patientError
+        console.error("❌ Erro ao criar paciente:", patientError);
+        throw patientError;
       }
 
-      console.log('✅ Paciente criado:', patientData.id)
+      console.log("✅ Paciente criado:", patientData.id);
 
       // 2. Criar a inscrição
       const { data: registrationData, error: registrationError } = await supabase
-        .from('registrations')
+        .from("registrations")
         .insert({
           patient_id: patientData.id,
           event_date_id: eventDateId,
-          status: 'confirmed'
+          status: "confirmed"
         })
         .select()
-        .single()
+        .single();
 
       if (registrationError) {
-        console.error('❌ Erro ao criar inscrição:', registrationError)
-        throw registrationError
+        console.error("❌ Erro ao criar inscrição:", registrationError);
+        throw registrationError;
       }
 
-      console.log('✅ Inscrição criada:', registrationData.id)
+      console.log("✅ Inscrição criada:", registrationData.id);
       
-      toast.success('Inscrição realizada com sucesso!')
-      onSuccess(data.name)
+      toast.success("Inscrição realizada com sucesso!");
+      onSuccess(data.name);
       
     } catch (error: any) {
-      console.error('❌ Erro no cadastro:', error)
-      toast.error('Erro ao realizar inscrição: ' + (error.message || 'Erro desconhecido'))
+      console.error("❌ Erro no cadastro:", error);
+      toast.error(`Erro ao realizar inscrição: ${  error.message || "Erro desconhecido"}`);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -113,7 +113,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Label htmlFor="name">Nome Completo *</Label>
               <Input
                 id="name"
-                {...register('name')}
+                {...register("name")}
                 placeholder="Digite o nome completo"
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
@@ -124,7 +124,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Input
                 id="email"
                 type="email"
-                {...register('email')}
+                {...register("email")}
                 placeholder="Digite o email"
               />
               {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
@@ -134,7 +134,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Label htmlFor="phone">Telefone *</Label>
               <Input
                 id="phone"
-                {...register('phone')}
+                {...register("phone")}
                 placeholder="(11) 99999-9999"
               />
               {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
@@ -144,7 +144,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Label htmlFor="cpf">CPF *</Label>
               <Input
                 id="cpf"
-                value={cpfValue || ''}
+                value={cpfValue || ""}
                 onChange={handleCPFChange}
                 placeholder="000.000.000-00"
                 maxLength={14}
@@ -157,7 +157,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Input
                 id="birthdate"
                 type="date"
-                {...register('birthdate')}
+                {...register("birthdate")}
               />
               {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate.message}</p>}
             </div>
@@ -167,7 +167,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
             <Label htmlFor="comments">Observações (opcional)</Label>
             <Textarea
               id="comments"
-              {...register('comments')}
+              {...register("comments")}
               placeholder="Alguma observação adicional..."
               rows={3}
             />
@@ -176,7 +176,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
           <div className="flex items-center space-x-2">
             <Checkbox
               id="terms"
-              onCheckedChange={(checked) => setValue('terms', checked as boolean)}
+              onCheckedChange={(checked) => setValue("terms", checked as boolean)}
             />
             <Label htmlFor="terms" className="text-sm">
               Aceito os termos de uso e política de privacidade *
@@ -189,17 +189,17 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
             className="w-full" 
             disabled={isSubmitting}
             onClick={(e) => {
-              console.log('🖱️ Botão clicado! Submetendo formulário...')
-              e.preventDefault()
-              handleSubmit(onSubmit)(e)
+              console.log("🖱️ Botão clicado! Submetendo formulário...");
+              e.preventDefault();
+              handleSubmit(onSubmit)(e);
             }}
           >
-            {isSubmitting ? 'Processando...' : 'Confirmar Inscrição'}
+            {isSubmitting ? "Processando..." : "Confirmar Inscrição"}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default PatientRegistrationForm
+export default PatientRegistrationForm;

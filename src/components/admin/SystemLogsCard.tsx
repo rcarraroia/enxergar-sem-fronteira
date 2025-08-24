@@ -1,88 +1,88 @@
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { RefreshCw, AlertTriangle, Info, CheckCircle, X } from 'lucide-react'
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertTriangle, CheckCircle, Info, RefreshCw, X } from "lucide-react";
 
 interface LogEntry {
   id: string
   timestamp: Date
-  level: 'info' | 'warning' | 'error' | 'success'
+  level: "info" | "warning" | "error" | "success"
   message: string
   source: string
 }
 
 export const SystemLogsCard = () => {
-  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [logs, setLogs] = useState<LogEntry[]>([]);
 
   // Simulate system logs - in a real system, these would come from your logging service
   const generateMockLogs = () => {
     const mockLogs: LogEntry[] = [
       {
-        id: '1',
+        id: "1",
         timestamp: new Date(),
-        level: 'success',
-        message: 'Sistema de configurações carregado com sucesso',
-        source: 'useSystemSettings'
+        level: "success",
+        message: "Sistema de configurações carregado com sucesso",
+        source: "useSystemSettings"
       },
       {
-        id: '2', 
+        id: "2", 
         timestamp: new Date(Date.now() - 60000),
-        level: 'info',
-        message: 'Verificação de saúde do sistema executada',
-        source: 'useSystemMonitoring'
+        level: "info",
+        message: "Verificação de saúde do sistema executada",
+        source: "useSystemMonitoring"
       },
       {
-        id: '3',
+        id: "3",
         timestamp: new Date(Date.now() - 120000),
-        level: 'warning', 
-        message: 'Valor JSON inválido encontrado, usando fallback',
-        source: 'useSystemSettings'
+        level: "warning", 
+        message: "Valor JSON inválido encontrado, usando fallback",
+        source: "useSystemSettings"
       },
       {
-        id: '4',
+        id: "4",
         timestamp: new Date(Date.now() - 180000),
-        level: 'error',
-        message: 'Erro JSON: Unexpected end of JSON input - CORRIGIDO',
-        source: 'useSystemSettings'
+        level: "error",
+        message: "Erro JSON: Unexpected end of JSON input - CORRIGIDO",
+        source: "useSystemSettings"
       }
-    ]
-    setLogs(mockLogs)
-  }
+    ];
+    setLogs(mockLogs);
+  };
 
   useEffect(() => {
-    generateMockLogs()
-  }, [])
+    generateMockLogs();
+  }, []);
 
-  const getLevelIcon = (level: LogEntry['level']) => {
+  const getLevelIcon = (level: LogEntry["level"]) => {
     switch (level) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'info':
-        return <Info className="h-4 w-4 text-blue-500" />
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'error':
-        return <X className="h-4 w-4 text-red-500" />
+      case "success":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "info":
+        return <Info className="h-4 w-4 text-blue-500" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case "error":
+        return <X className="h-4 w-4 text-red-500" />;
     }
-  }
+  };
 
-  const getLevelBadge = (level: LogEntry['level']) => {
+  const getLevelBadge = (level: LogEntry["level"]) => {
     const variants = {
-      success: 'default',
-      info: 'secondary', 
-      warning: 'destructive',
-      error: 'destructive'
-    } as const
+      success: "default",
+      info: "secondary", 
+      warning: "destructive",
+      error: "destructive"
+    } as const;
 
     return (
       <Badge variant={variants[level]} className="text-xs">
         {level.toUpperCase()}
       </Badge>
-    )
-  }
+    );
+  };
 
   return (
     <Card>
@@ -111,7 +111,7 @@ export const SystemLogsCard = () => {
                       {log.source}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {log.timestamp.toLocaleTimeString('pt-BR')}
+                      {log.timestamp.toLocaleTimeString("pt-BR")}
                     </span>
                   </div>
                   <p className="text-sm text-foreground">{log.message}</p>
@@ -122,5 +122,5 @@ export const SystemLogsCard = () => {
         </ScrollArea>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

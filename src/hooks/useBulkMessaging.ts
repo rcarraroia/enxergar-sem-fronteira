@@ -5,18 +5,22 @@
  * baseado em eventos e filtros específicos.
  */
 
-import { supabase } from '@/integrations/supabase/client'
-import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
+import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
+/**
+ * Opções para configurar o envio de mensagens em massa
+ * @interface BulkMessageOptions
+ */
 export interface BulkMessageOptions {
   eventIds?: string[]
   eventDateIds?: string[]
-  messageTypes: ('email' | 'sms' | 'whatsapp')[]
+  messageTypes: ("email" | "sms" | "whatsapp")[]
   templateName?: string
   customMessage?: string
   testMode?: boolean
@@ -31,6 +35,11 @@ export interface BulkMessageOptions {
   }
 }
 
+/**
+ * Resultado do envio de mensagens em massa
+ * Contém estatísticas e detalhes sobre o envio
+ * @interface BulkMessageResult
+ */
 export interface BulkMessageResult {
   success: boolean
   message: string
@@ -71,9 +80,33 @@ export interface RecipientPreview {
 // HOOK
 // ============================================================================
 
+/**
+ * Hook para gerenciar envio de mensagens em massa
+ *
+ * Fornece funcionalidades para:
+ * - Enviar mensagens via email, SMS e WhatsApp
+ * - Filtrar destinatários por evento, data, status
+ * - Modo de teste para validação
+ * - Estatísticas detalhadas de envio
+ *
+ * @returns Objeto com funções e estado do envio de mensagens
+ *
+ * @example
+ * ```tsx
+ * const { sendBulkMessages, loading, lastResult } = useBulkMessaging();
+ *
+ * const handleSend = async () => {
+ *   await sendBulkMessages({
+ *     eventIds: ['event-1'],
+ *     messageTypes: ['email', 'sms'],
+ *     customMessage: 'Lembrete do seu exame'
+ *   });
+ * };
+ * ```
+ */
 export function useBulkMessaging() {
-  const [loading, setLoading] = useState(false)
-  const [lastResult, setLastResult] = useState<BulkMessageResult | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [lastResult, setLastResult] = useState<BulkMessageResult | null>(null);
 
   /**
    * Envia mensagens em massa
@@ -82,62 +115,62 @@ export function useBulkMessaging() {
     options: BulkMessageOptions
   ): Promise<BulkMessageResult> => {
     try {
-      setLoading(true)
-      setLastResult(null)
+      setLoading(true);
+      setLastResult(null);
 
       // Validações básicas
       if (!options.messageTypes || options.messageTypes.length === 0) {
-        throw new Error('Pelo menos um tipo de mensagem deve ser selecionado')
+        throw new Error("Pelo menos um tipo de mensagem deve ser selecionado");
       }
 
       if (!options.eventIds?.length && !options.eventDateIds?.length) {
-        throw new Error('Pelo menos um evento deve ser selecionado')
+        throw new Error("Pelo menos um evento deve ser selecionado");
       }
 
       if (!options.templateName && !options.customMessage) {
-        throw new Error('Template ou mensagem customizada deve ser fornecida')
+        throw new Error("Template ou mensagem customizada deve ser fornecida");
       }
 
-      console.log('📤 Enviando mensagens em massa:', {
+      console.log("📤 Enviando mensagens em massa:", {
         eventIds: options.eventIds?.length || 0,
         messageTypes: options.messageTypes,
         templateName: options.templateName,
         testMode: options.testMode
-      })
+      });
 
       // Chamar Edge Function
-      const { data, error } = await supabase.functions.invoke('send-bulk-messages', {
+      const { data, error } = await supabase.functions.invoke("send-bulk-messages", {
         body: options
-      })
+      });
 
       if (error) {
-        throw error
+        throw error;
       }
 
-      const result = data as BulkMessageResult
-      setLastResult(result)
+      const result = data as BulkMessageResult;
+      setLastResult(result);
 
       // Mostrar toast baseado no resultado
       if (result.success) {
-        const { emailsSent, smsSent, whatsappSent } = result.data
-        const totalSent = emailsSent + smsSent + whatsappSent
+        const { emailsSent, smsSent, whatsappSent } = result.data;
+        const totalSent = emailsSent + smsSent + whatsappSent;
 
         if (options.testMode) {
-          toast.success(`Teste concluído! ${totalSent} mensagens seriam enviadas`)
+          toast.success(`Teste concluído! ${totalSent} mensagens seriam enviadas`);
         } else {
-          toast.success(`${totalSent} mensagens enviadas com sucesso!`)
+          toast.success(`${totalSent} mensagens enviadas com sucesso!`);
         }
       } else {
-        toast.error(`Erro no envio: ${result.message}`)
+        toast.error(`Erro no envio: ${result.message}`);
       }
 
-      return result
+      return result;
 
     } catch (error) {
-      console.error('Erro no envio de mensagens em massa:', error)
+      console.error("Erro no envio de mensagens em massa:", error);
 
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
-      toast.error(`Erro no envio: ${errorMessage}`)
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error(`Erro no envio: ${errorMessage}`);
 
       const errorResult: BulkMessageResult = {
         success: false,
@@ -150,27 +183,27 @@ export function useBulkMessaging() {
           errors: [errorMessage],
           recipients: []
         }
-      }
+      };
 
-      setLastResult(errorResult)
-      return errorResult
+      setLastResult(errorResult);
+      return errorResult;
 
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   /**
    * Obtém preview dos destinatários sem enviar mensagens
    */
   const getRecipientsPreview = useCallback(async (
     eventIds: string[],
-    filters?: BulkMessageOptions['filters']
+    filters?: BulkMessageOptions["filters"]
   ): Promise<RecipientPreview> => {
     try {
       // Buscar registrações dos eventos selecionados
       let query = supabase
-        .from('registrations')
+        .from("registrations")
         .select(`
           id,
           patient_id,
@@ -189,60 +222,60 @@ export function useBulkMessaging() {
               title
             )
           )
-        `)
+        `);
 
       // Aplicar filtros
       if (filters?.registrationStatus) {
-        query = query.in('status', filters.registrationStatus)
+        query = query.in("status", filters.registrationStatus);
       } else {
-        query = query.eq('status', 'confirmed')
+        query = query.eq("status", "confirmed");
       }
 
       // Filtrar por eventos
       if (eventIds.length > 0) {
-        query = query.in('event_date.event.id', eventIds)
+        query = query.in("event_date.event.id", eventIds);
       }
 
-      const { data: registrations, error } = await query
+      const { data: registrations, error } = await query;
 
       if (error) {
-        throw error
+        throw error;
       }
 
       // Processar dados para preview
-      const uniquePatients = new Map()
-      const eventCounts = new Map()
+      const uniquePatients = new Map();
+      const eventCounts = new Map();
 
       for (const reg of registrations || []) {
-        if (!reg.patient) continue
+        if (!reg.patient) {continue;}
 
         // Contar pacientes únicos
         if (!uniquePatients.has(reg.patient.id)) {
-          uniquePatients.set(reg.patient.id, reg.patient)
+          uniquePatients.set(reg.patient.id, reg.patient);
         }
 
         // Contar por evento
-        const eventId = reg.event_date?.event?.id
-        const eventTitle = reg.event_date?.event?.title
+        const eventId = reg.event_date?.event?.id;
+        const eventTitle = reg.event_date?.event?.title;
 
         if (eventId && eventTitle) {
           if (!eventCounts.has(eventId)) {
-            eventCounts.set(eventId, { eventId, eventTitle, count: 0 })
+            eventCounts.set(eventId, { eventId, eventTitle, count: 0 });
           }
-          eventCounts.get(eventId).count++
+          eventCounts.get(eventId).count++;
         }
       }
 
       // Contar por tipo de contato
-      let emailCount = 0
-      let smsCount = 0
-      let whatsappCount = 0
+      let emailCount = 0;
+      let smsCount = 0;
+      let whatsappCount = 0;
 
       for (const patient of uniquePatients.values()) {
-        if (patient.email) emailCount++
+        if (patient.email) {emailCount++;}
         if (patient.telefone) {
-          smsCount++
-          whatsappCount++
+          smsCount++;
+          whatsappCount++;
         }
       }
 
@@ -258,60 +291,60 @@ export function useBulkMessaging() {
           sms: smsCount,
           whatsapp: whatsappCount
         }
-      }
+      };
 
     } catch (error) {
-      console.error('Erro ao obter preview de destinatários:', error)
-      throw error
+      console.error("Erro ao obter preview de destinatários:", error);
+      throw error;
     }
-  }, [])
+  }, []);
 
   /**
    * Envia mensagem de teste para o próprio usuário
    */
   const sendTestMessage = useCallback(async (
-    messageTypes: ('email' | 'sms' | 'whatsapp')[],
+    messageTypes: ("email" | "sms" | "whatsapp")[],
     templateName?: string,
     customMessage?: string
   ): Promise<boolean> => {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Obter dados do usuário atual
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('Usuário não autenticado')
+        throw new Error("Usuário não autenticado");
       }
 
       // Buscar dados do organizador
       const { data: organizer, error: orgError } = await supabase
-        .from('organizers')
-        .select('name, email, phone')
-        .eq('id', user.id)
-        .single()
+        .from("organizers")
+        .select("name, email, phone")
+        .eq("id", user.id)
+        .single();
 
       if (orgError || !organizer) {
-        throw new Error('Dados do usuário não encontrados')
+        throw new Error("Dados do usuário não encontrados");
       }
 
       // Dados de template de exemplo
       const templateData = {
         patient_name: organizer.name,
         patient_email: organizer.email,
-        event_title: 'Evento de Teste',
-        event_date: new Date().toLocaleDateString('pt-BR'),
-        event_time: '09:00 - 17:00',
-        event_location: 'Local de Teste',
-        event_address: 'Endereço de Teste',
-        event_city: 'Cidade de Teste'
-      }
+        event_title: "Evento de Teste",
+        event_date: new Date().toLocaleDateString("pt-BR"),
+        event_time: "09:00 - 17:00",
+        event_location: "Local de Teste",
+        event_address: "Endereço de Teste",
+        event_city: "Cidade de Teste"
+      };
 
-      let success = false
+      let success = false;
 
       // Enviar email de teste
-      if (messageTypes.includes('email') && organizer.email) {
+      if (messageTypes.includes("email") && organizer.email) {
         try {
-          const { error } = await supabase.functions.invoke('send-email', {
+          const { error } = await supabase.functions.invoke("send-email", {
             body: {
               templateName,
               templateData,
@@ -320,21 +353,21 @@ export function useBulkMessaging() {
               customContent: customMessage,
               testMode: true
             }
-          })
+          });
 
           if (!error) {
-            success = true
-            toast.success('Email de teste enviado!')
+            success = true;
+            toast.success("Email de teste enviado!");
           }
         } catch (error) {
-          console.error('Erro no email de teste:', error)
+          console.error("Erro no email de teste:", error);
         }
       }
 
       // Enviar SMS de teste
-      if (messageTypes.includes('sms') && organizer.phone) {
+      if (messageTypes.includes("sms") && organizer.phone) {
         try {
-          const { error } = await supabase.functions.invoke('send-sms', {
+          const { error } = await supabase.functions.invoke("send-sms", {
             body: {
               templateName,
               templateData,
@@ -343,21 +376,21 @@ export function useBulkMessaging() {
               customContent: customMessage,
               testMode: true
             }
-          })
+          });
 
           if (!error) {
-            success = true
-            toast.success('SMS de teste enviado!')
+            success = true;
+            toast.success("SMS de teste enviado!");
           }
         } catch (error) {
-          console.error('Erro no SMS de teste:', error)
+          console.error("Erro no SMS de teste:", error);
         }
       }
 
       // Enviar WhatsApp de teste
-      if (messageTypes.includes('whatsapp') && organizer.phone) {
+      if (messageTypes.includes("whatsapp") && organizer.phone) {
         try {
-          const { error } = await supabase.functions.invoke('send-whatsapp', {
+          const { error } = await supabase.functions.invoke("send-whatsapp", {
             body: {
               templateName,
               templateData,
@@ -366,38 +399,38 @@ export function useBulkMessaging() {
               customContent: customMessage,
               testMode: true
             }
-          })
+          });
 
           if (!error) {
-            success = true
-            toast.success('WhatsApp de teste enviado!')
+            success = true;
+            toast.success("WhatsApp de teste enviado!");
           }
         } catch (error) {
-          console.error('Erro no WhatsApp de teste:', error)
+          console.error("Erro no WhatsApp de teste:", error);
         }
       }
 
       if (!success) {
-        toast.warning('Nenhuma mensagem de teste foi enviada')
+        toast.warning("Nenhuma mensagem de teste foi enviada");
       }
 
-      return success
+      return success;
 
     } catch (error) {
-      console.error('Erro no envio de teste:', error)
-      toast.error('Erro no envio de teste')
-      return false
+      console.error("Erro no envio de teste:", error);
+      toast.error("Erro no envio de teste");
+      return false;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   /**
    * Limpa o último resultado
    */
   const clearLastResult = useCallback(() => {
-    setLastResult(null)
-  }, [])
+    setLastResult(null);
+  }, []);
 
   return {
     // Estado
@@ -409,7 +442,7 @@ export function useBulkMessaging() {
     getRecipientsPreview,
     sendTestMessage,
     clearLastResult
-  }
+  };
 }
 
-export default useBulkMessaging
+export default useBulkMessaging;

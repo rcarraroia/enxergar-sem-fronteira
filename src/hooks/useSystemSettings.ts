@@ -1,7 +1,7 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface SystemSetting {
   id: string
@@ -19,81 +19,81 @@ interface SettingUpdate {
 }
 
 export const useSystemSettings = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { data: settings, isLoading, error } = useQuery({
-    queryKey: ['system-settings'],
+    queryKey: ["system-settings"],
     queryFn: async (): Promise<SystemSetting[]> => {
       const { data, error } = await supabase
-        .from('system_settings')
-        .select('*')
-        .order('key')
+        .from("system_settings")
+        .select("*")
+        .order("key");
 
       if (error) {
-        console.error('Erro ao buscar configurações:', error)
-        throw error
+        console.error("Erro ao buscar configurações:", error);
+        throw error;
       }
 
-      return data || []
+      return data || [];
     }
-  })
+  });
 
   const updateSettingMutation = useMutation({
     mutationFn: async (setting: SettingUpdate) => {
       const { data, error } = await supabase
-        .from('system_settings')
+        .from("system_settings")
         .upsert({
           key: setting.key,
           value: setting.value,
           description: setting.description || null
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
-        console.error('Erro ao atualizar configuração:', error)
-        throw error
+        console.error("Erro ao atualizar configuração:", error);
+        throw error;
       }
 
-      return data
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['system-settings'] })
-      toast.success('Configuração atualizada com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ["system-settings"] });
+      toast.success("Configuração atualizada com sucesso!");
     },
     onError: (error: Error) => {
-      console.error('Erro ao atualizar configuração:', error)
-      toast.error('Erro ao atualizar configuração: ' + error.message)
+      console.error("Erro ao atualizar configuração:", error);
+      toast.error(`Erro ao atualizar configuração: ${  error.message}`);
     }
-  })
+  });
 
-  const getSettingValue = (key: string, defaultValue: string = ''): string => {
-    const setting = settings?.find(s => s.key === key)
-    if (!setting) return defaultValue
+  const getSettingValue = (key: string, defaultValue = ""): string => {
+    const setting = settings?.find(s => s.key === key);
+    if (!setting) {return defaultValue;}
     
     // Verificar se é um valor JSON válido
     try {
-      const parsed = JSON.parse(setting.value)
-      return typeof parsed === 'string' ? parsed : setting.value
+      const parsed = JSON.parse(setting.value);
+      return typeof parsed === "string" ? parsed : setting.value;
     } catch {
-      return setting.value
+      return setting.value;
     }
-  }
+  };
 
   const getSettingJSON = (key: string, defaultValue: Record<string, unknown> = {}): Record<string, unknown> => {
-    const setting = settings?.find(s => s.key === key)
-    if (!setting) return defaultValue
+    const setting = settings?.find(s => s.key === key);
+    if (!setting) {return defaultValue;}
     
     try {
-      return JSON.parse(setting.value)
+      return JSON.parse(setting.value);
     } catch {
-      return defaultValue
+      return defaultValue;
     }
-  }
+  };
 
   const updateSetting = (key: string, value: string, description?: string) => {
-    updateSettingMutation.mutate({ key, value, description })
-  }
+    updateSettingMutation.mutate({ key, value, description });
+  };
 
   return {
     settings,
@@ -103,5 +103,5 @@ export const useSystemSettings = () => {
     getSettingJSON,
     updateSetting,
     isUpdating: updateSettingMutation.isPending
-  }
-}
+  };
+};

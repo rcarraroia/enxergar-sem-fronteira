@@ -1,9 +1,9 @@
 
-import React from 'react'
-import { useCampaigns } from '@/hooks/useCampaigns'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import React from "react";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   Table,
   TableBody,
@@ -11,72 +11,72 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { Progress } from '@/components/ui/progress'
-import { MoreHorizontal, Copy, Edit, Pause, Play, Trash2, ExternalLink } from 'lucide-react'
-import { toast } from 'sonner'
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
+import { Copy, Edit, ExternalLink, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const CampaignsList = () => {
-  const { campaigns, isLoading, updateCampaign, deleteCampaign } = useCampaigns()
+  const { campaigns, isLoading, updateCampaign, deleteCampaign } = useCampaigns();
 
   const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/campanha/${slug}`
-    navigator.clipboard.writeText(url)
-    toast.success('Link da campanha copiado!')
-  }
+    const url = `${window.location.origin}/campanha/${slug}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link da campanha copiado!");
+  };
 
   const handleToggleStatus = async (campaign: any) => {
-    const newStatus = campaign.status === 'active' ? 'paused' : 'active'
+    const newStatus = campaign.status === "active" ? "paused" : "active";
     await updateCampaign.mutateAsync({ 
       id: campaign.id, 
       status: newStatus,
       slug: campaign.slug,
       title: campaign.title,
       goal_amount: campaign.goal_amount,
-      description: campaign.description || '',
+      description: campaign.description || "",
       event_id: campaign.event_id || null,
       end_date: campaign.end_date || null,
       allow_custom_amount: campaign.allow_custom_amount || false,
       allow_subscriptions: campaign.allow_subscriptions || false
-    })
-  }
+    });
+  };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta campanha?')) {
-      await deleteCampaign.mutateAsync(id)
+    if (confirm("Tem certeza que deseja excluir esta campanha?")) {
+      await deleteCampaign.mutateAsync(id);
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      active: 'default',
-      paused: 'secondary',
-      ended: 'destructive'
-    } as const
+      active: "default",
+      paused: "secondary",
+      ended: "destructive"
+    } as const;
 
     const labels = {
-      active: 'Ativa',
-      paused: 'Pausada',
-      ended: 'Encerrada'
-    }
+      active: "Ativa",
+      paused: "Pausada",
+      ended: "Encerrada"
+    };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+      <Badge variant={variants[status as keyof typeof variants] || "default"}>
         {labels[status as keyof typeof labels] || status}
       </Badge>
-    )
-  }
+    );
+  };
 
   const getProgressPercentage = (current: number, goal: number | null) => {
-    if (!goal || goal === 0) return 0
-    return Math.min((current / goal) * 100, 100)
-  }
+    if (!goal || goal === 0) {return 0;}
+    return Math.min((current / goal) * 100, 100);
+  };
 
   if (isLoading) {
     return (
@@ -87,7 +87,7 @@ export const CampaignsList = () => {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -124,7 +124,7 @@ export const CampaignsList = () => {
                         <p className="font-medium">{campaign.title}</p>
                         <p className="text-sm text-muted-foreground">
                           {campaign.description?.substring(0, 60)}
-                          {campaign.description && campaign.description.length > 60 && '...'}
+                          {campaign.description && campaign.description.length > 60 && "..."}
                         </p>
                       </div>
                     </TableCell>
@@ -162,7 +162,7 @@ export const CampaignsList = () => {
                       {getStatusBadge(campaign.status)}
                     </TableCell>
                     <TableCell>
-                      {new Date(campaign.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(campaign.created_at).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -177,7 +177,7 @@ export const CampaignsList = () => {
                             Copiar Link
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => window.open(`/campanha/${campaign.slug}`, '_blank')}
+                            onClick={() => window.open(`/campanha/${campaign.slug}`, "_blank")}
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Ver Página
@@ -185,7 +185,7 @@ export const CampaignsList = () => {
                           <DropdownMenuItem 
                             onClick={() => handleToggleStatus(campaign)}
                           >
-                            {campaign.status === 'active' ? (
+                            {campaign.status === "active" ? (
                               <>
                                 <Pause className="mr-2 h-4 w-4" />
                                 Pausar
@@ -215,5 +215,5 @@ export const CampaignsList = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

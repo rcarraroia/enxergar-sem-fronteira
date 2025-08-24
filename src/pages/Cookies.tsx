@@ -1,8 +1,8 @@
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Cookie, Settings, BarChart, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, BarChart, Cookie, Settings, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Cookies = () => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ const Cookies = () => {
         <div className="mb-8">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

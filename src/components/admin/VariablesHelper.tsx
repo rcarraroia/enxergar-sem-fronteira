@@ -3,43 +3,43 @@
  * Displays available template variables organized by category
  */
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from "@/components/ui/tooltip";
 import { 
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+} from "@/components/ui/collapsible";
 import { 
-  User, 
   Calendar, 
-  Link, 
   ChevronDown, 
   ChevronRight, 
-  Copy,
-  Info,
-  Sparkles
-} from 'lucide-react'
-import { VariablesHelperProps } from '@/types/notificationTemplates'
-import { getVariablesForType } from '@/constants/templateVariables'
-import { VARIABLE_CATEGORIES } from '@/constants/templateVariables'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+  Copy, 
+  Info, 
+  Link,
+  Sparkles,
+  User
+} from "lucide-react";
+import type { VariablesHelperProps } from "@/types/notificationTemplates";
+import { getVariablesForType } from "@/constants/templateVariables";
+import { VARIABLE_CATEGORIES } from "@/constants/templateVariables";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const categoryIcons = {
   patient: User,
   event: Calendar,
   system: Link
-}
+};
 
 export const VariablesHelper: React.FC<VariablesHelperProps> = ({
   type,
@@ -47,53 +47,53 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
   className
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['patient', 'event']) // Expand patient and event by default
-  )
-  const [copiedVariable, setCopiedVariable] = useState<string | null>(null)
+    new Set(["patient", "event"]) // Expand patient and event by default
+  );
+  const [copiedVariable, setCopiedVariable] = useState<string | null>(null);
 
-  const variables = getVariablesForType(type)
+  const variables = getVariablesForType(type);
   const variablesByCategory = VARIABLE_CATEGORIES.map(category => ({
     ...category,
     variables: variables.filter(v => v.type === category.id)
-  })).filter(category => category.variables.length > 0)
+  })).filter(category => category.variables.length > 0);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(categoryId)) {
-        newSet.delete(categoryId)
+        newSet.delete(categoryId);
       } else {
-        newSet.add(categoryId)
+        newSet.add(categoryId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const handleVariableClick = (variableKey: string) => {
-    onVariableClick(variableKey)
-    toast.success(`Variável ${variableKey} inserida`)
-  }
+    onVariableClick(variableKey);
+    toast.success(`Variável ${variableKey} inserida`);
+  };
 
   const handleCopyVariable = async (variableKey: string, event: React.MouseEvent) => {
-    event.stopPropagation()
+    event.stopPropagation();
     
     try {
-      await navigator.clipboard.writeText(variableKey)
-      setCopiedVariable(variableKey)
-      toast.success('Variável copiada para a área de transferência')
+      await navigator.clipboard.writeText(variableKey);
+      setCopiedVariable(variableKey);
+      toast.success("Variável copiada para a área de transferência");
       
       // Clear copied state after 2 seconds
-      setTimeout(() => setCopiedVariable(null), 2000)
+      setTimeout(() => setCopiedVariable(null), 2000);
     } catch (error) {
-      toast.error('Erro ao copiar variável')
+      toast.error("Erro ao copiar variável");
     }
-  }
+  };
 
-  const requiredVariables = variables.filter(v => v.required)
-  const optionalVariables = variables.filter(v => !v.required)
+  const requiredVariables = variables.filter(v => v.required);
+  const optionalVariables = variables.filter(v => !v.required);
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)}>
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
@@ -102,7 +102,7 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
           </CardTitle>
           <CardDescription className="text-xs">
             Clique em uma variável para inserir no template. 
-            {type === 'email' ? 'Templates de email' : 'Templates de WhatsApp'} suportam estas variáveis.
+            {type === "email" ? "Templates de email" : "Templates de WhatsApp"} suportam estas variáveis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -122,8 +122,8 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
           {/* Variables by Category */}
           <div className="space-y-2">
             {variablesByCategory.map((category) => {
-              const Icon = categoryIcons[category.id as keyof typeof categoryIcons]
-              const isExpanded = expandedCategories.has(category.id)
+              const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
+              const isExpanded = expandedCategories.has(category.id);
               
               return (
                 <Collapsible
@@ -219,7 +219,7 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
                     ))}
                   </CollapsibleContent>
                 </Collapsible>
-              )
+              );
             })}
           </div>
 
@@ -232,7 +232,7 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
               </TabsList>
               
               <TabsContent value="common" className="mt-2 space-y-1">
-                {['{{patient_name}}', '{{event_title}}', '{{event_date}}', '{{event_time}}']
+                {["{{patient_name}}", "{{event_title}}", "{{event_date}}", "{{event_time}}"]
                   .filter(key => variables.some(v => v.key === key))
                   .map((key) => (
                     <Button
@@ -285,5 +285,5 @@ export const VariablesHelper: React.FC<VariablesHelperProps> = ({
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

@@ -1,26 +1,26 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor'
-import { Activity, Clock, HardDrive, Network, AlertTriangle } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { Activity, AlertTriangle, Clock, HardDrive, Network } from "lucide-react";
 
 export const PerformanceMonitor = () => {
-  const { metrics, generateReport } = usePerformanceMonitor()
+  const { metrics, generateReport } = usePerformanceMonitor();
 
   const getPerformanceScore = () => {
-    let score = 100
+    let score = 100;
     
-    if (metrics.loadTime > 3000) score -= 20
-    if (metrics.memoryUsage && metrics.memoryUsage > 50) score -= 15
-    if (metrics.networkRequests > 20) score -= 10
-    if (metrics.errorCount > 0) score -= metrics.errorCount * 5
+    if (metrics.loadTime > 3000) {score -= 20;}
+    if (metrics.memoryUsage && metrics.memoryUsage > 50) {score -= 15;}
+    if (metrics.networkRequests > 20) {score -= 10;}
+    if (metrics.errorCount > 0) {score -= metrics.errorCount * 5;}
     
-    return Math.max(0, score)
-  }
+    return Math.max(0, score);
+  };
 
-  const performanceScore = getPerformanceScore()
-  const report = generateReport()
+  const performanceScore = getPerformanceScore();
+  const report = generateReport();
 
   return (
     <Card>
@@ -106,5 +106,5 @@ export const PerformanceMonitor = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

@@ -1,13 +1,13 @@
 
-import React, { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { EventFormData, EventDate } from '@/hooks/useEventsAdmin'
-import { Loader2, Save, X, Plus, Trash2, Calendar, MapPin } from 'lucide-react'
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { EventDate, EventFormData } from "@/hooks/useEventsAdmin";
+import { Calendar, Loader2, MapPin, Plus, Save, Trash2, X } from "lucide-react";
 
 interface EventFormProps {
   initialData?: EventFormData & { id?: string }
@@ -23,71 +23,71 @@ export const EventForm: React.FC<EventFormProps> = ({
   isLoading
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
-    city: '',
-    description: '',
-    location: '',
-    address: '',
-    status: 'open',
+    city: "",
+    description: "",
+    location: "",
+    address: "",
+    status: "open",
     dates: [{
-      id: '',
-      date: '',
-      start_time: '08:00',
-      end_time: '18:00',
+      id: "",
+      date: "",
+      start_time: "08:00",
+      end_time: "18:00",
       total_slots: 50,
       available_slots: 50
     }]
-  })
+  });
 
   useEffect(() => {
     if (initialData) {
       setFormData({
         city: initialData.city,
-        description: initialData.description || '',
+        description: initialData.description || "",
         location: initialData.location,
         address: initialData.address,
         status: initialData.status,
         dates: initialData.dates || [{
-          id: '',
-          date: '',
-          start_time: '08:00',
-          end_time: '18:00',
+          id: "",
+          date: "",
+          start_time: "08:00",
+          end_time: "18:00",
           total_slots: 50,
           available_slots: 50
         }]
-      })
+      });
     }
-  }, [initialData])
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSubmit({
       ...formData,
       ...(initialData?.id && { id: initialData.id })
-    })
-  }
+    });
+  };
 
   const addDate = () => {
     setFormData(prev => ({
       ...prev,
       dates: [...prev.dates, {
-        id: '',
-        date: '',
-        start_time: '08:00',
-        end_time: '18:00',
+        id: "",
+        date: "",
+        start_time: "08:00",
+        end_time: "18:00",
         total_slots: 50,
         available_slots: 50
       }]
-    }))
-  }
+    }));
+  };
 
   const removeDate = (index: number) => {
     if (formData.dates.length > 1) {
       setFormData(prev => ({
         ...prev,
         dates: prev.dates.filter((_, i) => i !== index)
-      }))
+      }));
     }
-  }
+  };
 
   const updateDate = (index: number, field: keyof EventDate, value: any) => {
     setFormData(prev => ({
@@ -98,18 +98,18 @@ export const EventForm: React.FC<EventFormProps> = ({
               ...date, 
               [field]: value,
               // Se atualizou total_slots e é uma nova data, atualiza available_slots também
-              ...(field === 'total_slots' && !date.id && { available_slots: value })
+              ...(field === "total_slots" && !date.id && { available_slots: value })
             }
           : date
       )
-    }))
-  }
+    }));
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          {initialData ? 'Editar Evento' : 'Criar Novo Evento'}
+          {initialData ? "Editar Evento" : "Criar Novo Evento"}
         </CardTitle>
         <CardDescription>
           Preencha os dados do atendimento oftalmológico gratuito
@@ -173,7 +173,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 <Label htmlFor="status">Status</Label>
                 <Select 
                   value={formData.status} 
-                  onValueChange={(value: 'open' | 'closed' | 'full') => 
+                  onValueChange={(value: "open" | "closed" | "full") => 
                     setFormData(prev => ({ ...prev, status: value }))
                   }
                 >
@@ -226,7 +226,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                       id={`date-${index}`}
                       type="date"
                       value={date.date}
-                      onChange={(e) => updateDate(index, 'date', e.target.value)}
+                      onChange={(e) => updateDate(index, "date", e.target.value)}
                       required
                     />
                   </div>
@@ -237,7 +237,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                       id={`start-time-${index}`}
                       type="time"
                       value={date.start_time}
-                      onChange={(e) => updateDate(index, 'start_time', e.target.value)}
+                      onChange={(e) => updateDate(index, "start_time", e.target.value)}
                       required
                     />
                   </div>
@@ -248,7 +248,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                       id={`end-time-${index}`}
                       type="time"
                       value={date.end_time}
-                      onChange={(e) => updateDate(index, 'end_time', e.target.value)}
+                      onChange={(e) => updateDate(index, "end_time", e.target.value)}
                       required
                     />
                   </div>
@@ -261,7 +261,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                       min="1"
                       max="1000"
                       value={date.total_slots}
-                      onChange={(e) => updateDate(index, 'total_slots', parseInt(e.target.value) || 0)}
+                      onChange={(e) => updateDate(index, "total_slots", parseInt(e.target.value) || 0)}
                       required
                     />
                   </div>
@@ -274,7 +274,7 @@ export const EventForm: React.FC<EventFormProps> = ({
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
-              {initialData ? 'Atualizar' : 'Criar'} Atendimento
+              {initialData ? "Atualizar" : "Criar"} Atendimento
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               <X className="mr-2 h-4 w-4" />
@@ -284,5 +284,5 @@ export const EventForm: React.FC<EventFormProps> = ({
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

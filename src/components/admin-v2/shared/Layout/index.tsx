@@ -3,10 +3,10 @@
  * Arquitetura limpa sem violações de hooks
  */
 
-import React from 'react'
-import { AdminNavigation } from './Navigation'
-import { AdminHeader } from './Header'
-import { AdminBreadcrumbs } from './Breadcrumbs'
+import React from "react";
+import { AdminNavigation } from "./Navigation";
+import { AdminHeader } from "./Header";
+import { AdminBreadcrumbs } from "./Breadcrumbs";
 
 export interface BreadcrumbItem {
   label: string
@@ -65,5 +65,5 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </main>
       </div>
     </div>
-  )
-}
+  );
+};

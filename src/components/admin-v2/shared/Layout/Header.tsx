@@ -3,16 +3,16 @@
  * ADMIN HEADER V2 - Header do painel administrativo
  */
 
-import React from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
-  User, 
+  Bell, 
   LogOut, 
   Settings,
-  Bell
-} from 'lucide-react'
+  User
+} from "lucide-react";
 
 interface AdminHeaderProps {
   title: string
@@ -20,7 +20,7 @@ interface AdminHeaderProps {
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuth();
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
@@ -53,7 +53,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
           <div className="flex items-center gap-2 lg:gap-3">
             <div className="hidden md:block text-right">
               <p className="text-sm font-medium text-gray-900 truncate max-w-32">
-                {user?.email || 'Admin'}
+                {user?.email || "Admin"}
               </p>
               <p className="text-xs text-gray-500">Administrador</p>
             </div>
@@ -69,5 +69,5 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};

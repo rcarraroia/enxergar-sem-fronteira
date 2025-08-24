@@ -3,25 +3,25 @@
  * Portal para o ambiente de visualização da reconstrução
  */
 
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Construction, 
-  Eye, 
-  Shield, 
-  ArrowRight,
-  CheckCircle,
-  AlertTriangle
-} from 'lucide-react'
+  AlertTriangle, 
+  ArrowRight, 
+  CheckCircle, 
+  Construction,
+  Eye,
+  Shield
+} from "lucide-react";
 
 const AdminV2Access = () => {
-  const navigate = useNavigate()
-  const { isAdmin } = useAuth()
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   if (!isAdmin) {
     return (
@@ -37,7 +37,7 @@ const AdminV2Access = () => {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -137,7 +137,7 @@ const AdminV2Access = () => {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
-                onClick={() => navigate('/admin-v2')}
+                onClick={() => navigate("/admin-v2")}
                 className="flex-1"
                 size="lg"
               >
@@ -147,7 +147,7 @@ const AdminV2Access = () => {
               </Button>
               
               <Button 
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate("/admin")}
                 variant="outline"
                 className="flex-1"
                 size="lg"
@@ -168,7 +168,7 @@ const AdminV2Access = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminV2Access
+export default AdminV2Access;

@@ -2,17 +2,17 @@
  * DIALOG PARA ENVIO DE MENSAGENS
  */
 
-import { useState } from 'react'
-import { Send, Mail, Smartphone, MessageSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { useSendMessage, useMessageTemplates } from '@/hooks/messages/useMessages'
-import type { MessageChannel, RecipientType } from '@/types/messages'
+import { useState } from "react";
+import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useMessageTemplates, useSendMessage } from "@/hooks/messages/useMessages";
+import type { MessageChannel, RecipientType } from "@/types/messages";
 
 interface SendMessageDialogProps {
   open: boolean
@@ -20,59 +20,59 @@ interface SendMessageDialogProps {
 }
 
 export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps) {
-  const [channel, setChannel] = useState<MessageChannel>('email')
-  const [recipientType, setRecipientType] = useState<RecipientType>('patient')
-  const [recipientContact, setRecipientContact] = useState('')
-  const [subject, setSubject] = useState('')
-  const [content, setContent] = useState('')
-  const [templateId, setTemplateId] = useState<string>('none')
+  const [channel, setChannel] = useState<MessageChannel>("email");
+  const [recipientType, setRecipientType] = useState<RecipientType>("patient");
+  const [recipientContact, setRecipientContact] = useState("");
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [templateId, setTemplateId] = useState<string>("none");
 
-  const { mutate: sendMessage, isPending } = useSendMessage()
-  const { data: templates = [] } = useMessageTemplates()
+  const { mutate: sendMessage, isPending } = useSendMessage();
+  const { data: templates = [] } = useMessageTemplates();
 
   // Filtrar templates por canal
-  const channelTemplates = templates.filter(t => t.channel === channel)
+  const channelTemplates = templates.filter(t => t.channel === channel);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    if (!recipientContact || !content) return
+    if (!recipientContact || !content) {return;}
 
     sendMessage({
       channel,
       recipient_type: recipientType,
       recipient_contact: recipientContact,
-      subject: channel === 'email' ? subject : undefined,
+      subject: channel === "email" ? subject : undefined,
       content,
-      template_id: templateId !== 'none' ? templateId : undefined
+      template_id: templateId !== "none" ? templateId : undefined
     }, {
       onSuccess: () => {
-        onOpenChange(false)
+        onOpenChange(false);
         // Reset form
-        setRecipientContact('')
-        setSubject('')
-        setContent('')
-        setTemplateId('none')
+        setRecipientContact("");
+        setSubject("");
+        setContent("");
+        setTemplateId("none");
       }
-    })
-  }
+    });
+  };
 
   const handleTemplateChange = (value: string) => {
-    if (value === 'none') {
-      setTemplateId('')
-      setContent('')
-      setSubject('')
+    if (value === "none") {
+      setTemplateId("");
+      setContent("");
+      setSubject("");
     } else {
-      setTemplateId(value)
-      const template = templates.find(t => t.id === value)
+      setTemplateId(value);
+      const template = templates.find(t => t.id === value);
       if (template) {
-        setContent(template.content)
+        setContent(template.content);
         if (template.subject) {
-          setSubject(template.subject)
+          setSubject(template.subject);
         }
       }
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -136,12 +136,12 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
           {/* Contato do destinatário */}
           <div className="space-y-2">
             <Label htmlFor="recipient-contact">
-              {channel === 'email' ? 'Email' : 'Telefone'} do Destinatário
+              {channel === "email" ? "Email" : "Telefone"} do Destinatário
             </Label>
             <Input
               id="recipient-contact"
-              type={channel === 'email' ? 'email' : 'tel'}
-              placeholder={channel === 'email' ? 'exemplo@email.com' : '(11) 99999-9999'}
+              type={channel === "email" ? "email" : "tel"}
+              placeholder={channel === "email" ? "exemplo@email.com" : "(11) 99999-9999"}
               value={recipientContact}
               onChange={(e) => setRecipientContact(e.target.value)}
               required
@@ -169,7 +169,7 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
           )}
 
           {/* Assunto (apenas para email) */}
-          {channel === 'email' && (
+          {channel === "email" && (
             <div className="space-y-2">
               <Label htmlFor="subject">Assunto</Label>
               <Input
@@ -192,7 +192,7 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
               rows={6}
               required
             />
-            {channel === 'sms' && (
+            {channel === "sms" && (
               <p className="text-xs text-muted-foreground">
                 {content.length}/160 caracteres
               </p>
@@ -221,5 +221,5 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

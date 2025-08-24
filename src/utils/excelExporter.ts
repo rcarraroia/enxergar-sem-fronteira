@@ -3,10 +3,25 @@
  * Segue o formato do grito WaSeller
  */
 
-import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
+// Imports dinâmicos para evitar problemas de build
+let XLSX: any;
+let saveAs: any;
 
-// Tipos para os dados de exportação
+// Função para carregar dependências dinamicamente
+const loadDependencies = async () => {
+  if (!XLSX) {
+    XLSX = await import("xlsx");
+  }
+  if (!saveAs) {
+    const fileSaver = await import("file-saver");
+    saveAs = fileSaver.saveAs;
+  }
+};
+
+/**
+ * Interface para dados de exportação Excel
+ * Define a estrutura dos dados que serão exportados para planilha
+ */
 export interface ExportData {
   nome: string;
   telefone: string;
@@ -21,6 +36,10 @@ export interface ExportData {
   observacoes?: string;
 }
 
+/**
+ * Opções de configuração para exportação Excel
+ * Permite personalizar nome do arquivo, planilha e outros parâmetros
+ */
 export interface ExportOptions {
   filename?: string;
   sheetName?: string;
@@ -32,10 +51,10 @@ export interface ExportOptions {
  * Formata telefone para o padrão brasileiro
  */
 const formatPhone = (phone: string): string => {
-  if (!phone) return '';
+  if (!phone) {return "";}
 
   // Remove todos os caracteres não numéricos
-  const numbers = phone.replace(/\D/g, '');
+  const numbers = phone.replace(/\D/g, "");
 
   // Formata conforme o tamanho
   if (numbers.length === 11) {
@@ -53,11 +72,11 @@ const formatPhone = (phone: string): string => {
  * Formata data para o padrão brasileiro
  */
 const formatDate = (dateString: string): string => {
-  if (!dateString) return '';
+  if (!dateString) {return "";}
 
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
+    return date.toLocaleDateString("pt-BR");
   } catch {
     return dateString;
   }
@@ -67,7 +86,7 @@ const formatDate = (dateString: string): string => {
  * Formata horário para o padrão HH:MM
  */
 const formatTime = (timeString: string): string => {
-  if (!timeString) return '';
+  if (!timeString) {return "";}
 
   // Se já está no formato HH:MM, retorna
   if (timeString.match(/^\d{2}:\d{2}$/)) {
@@ -87,11 +106,11 @@ const formatTime = (timeString: string): string => {
  */
 const formatStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
-    'confirmed': 'Confirmado',
-    'pending': 'Pendente',
-    'attended': 'Compareceu',
-    'cancelled': 'Cancelado',
-    'no_show': 'Não Compareceu'
+    "confirmed": "Confirmado",
+    "pending": "Pendente",
+    "attended": "Compareceu",
+    "cancelled": "Cancelado",
+    "no_show": "Não Compareceu"
   };
 
   return statusMap[status] || status;
@@ -100,33 +119,33 @@ const formatStatus = (status: string): string => {
 /**
  * Processa e formata os dados para exportação
  */
-const processExportData = (data: ExportData[], formatData: boolean = true): any[][] => {
+const processExportData = (data: ExportData[], formatData = true): any[][] => {
   const headers = [
-    'Nome Completo',
-    'Telefone',
-    'E-mail',
-    'Cidade',
-    'Data do Evento',
-    'Horário',
-    'Status',
-    'Data de Agendamento',
-    'CPF',
-    'Endereço',
-    'Observações'
+    "Nome Completo",
+    "Telefone",
+    "E-mail",
+    "Cidade",
+    "Data do Evento",
+    "Horário",
+    "Status",
+    "Data de Agendamento",
+    "CPF",
+    "Endereço",
+    "Observações"
   ];
 
   const processedData = data.map(item => [
-    item.nome || '',
+    item.nome || "",
     formatData ? formatPhone(item.telefone) : item.telefone,
-    item.email || '',
-    item.cidade || '',
+    item.email || "",
+    item.cidade || "",
     formatData ? formatDate(item.dataEvento) : item.dataEvento,
     formatData ? formatTime(item.horario) : item.horario,
     formatData ? formatStatus(item.status) : item.status,
     formatData ? formatDate(item.agendadoEm) : item.agendadoEm,
-    item.cpf || '',
-    item.endereco || '',
-    item.observacoes || ''
+    item.cpf || "",
+    item.endereco || "",
+    item.observacoes || ""
   ]);
 
   return [headers, ...processedData];
@@ -136,7 +155,7 @@ const processExportData = (data: ExportData[], formatData: boolean = true): any[
  * Aplica estilos ao worksheet seguindo o padrão do gabarito
  */
 const applyWorksheetStyles = (worksheet: XLSX.WorkSheet, data: any[][]) => {
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1");
 
   // Configurar larguras das colunas
   const columnWidths = [
@@ -153,12 +172,12 @@ const applyWorksheetStyles = (worksheet: XLSX.WorkSheet, data: any[][]) => {
     { wch: 20 }  // Observações
   ];
 
-  worksheet['!cols'] = columnWidths;
+  worksheet["!cols"] = columnWidths;
 
   // Aplicar estilos aos cabeçalhos
   for (let col = 0; col <= range.e.c; col++) {
     const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-    if (!worksheet[cellAddress]) continue;
+    if (!worksheet[cellAddress]) {continue;}
 
     worksheet[cellAddress].s = {
       font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -177,7 +196,7 @@ const applyWorksheetStyles = (worksheet: XLSX.WorkSheet, data: any[][]) => {
   for (let row = 1; row <= range.e.r; row++) {
     for (let col = 0; col <= range.e.c; col++) {
       const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-      if (!worksheet[cellAddress]) continue;
+      if (!worksheet[cellAddress]) {continue;}
 
       worksheet[cellAddress].s = {
         alignment: { horizontal: "left", vertical: "center" },
@@ -208,8 +227,8 @@ export const exportToExcel = async (
 ): Promise<void> => {
   try {
     const {
-      filename = `relatorio_agendamentos_${new Date().toISOString().split('T')[0]}.xlsx`,
-      sheetName = 'Agendamentos',
+      filename = `relatorio_agendamentos_${new Date().toISOString().split("T")[0]}.xlsx`,
+      sheetName = "Agendamentos",
       includeHeaders = true,
       formatData = true
     } = options;
@@ -229,14 +248,14 @@ export const exportToExcel = async (
 
     // Gerar buffer do arquivo
     const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
+      bookType: "xlsx",
+      type: "array",
       cellStyles: true
     });
 
     // Criar blob e fazer download
     const blob = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     });
 
     saveAs(blob, filename);
@@ -244,8 +263,8 @@ export const exportToExcel = async (
     console.log(`✅ Arquivo Excel exportado: ${filename}`);
 
   } catch (error) {
-    console.error('❌ Erro ao exportar Excel:', error);
-    throw new Error('Falha na exportação do arquivo Excel');
+    console.error("❌ Erro ao exportar Excel:", error);
+    throw new Error("Falha na exportação do arquivo Excel");
   }
 };
 
@@ -254,17 +273,17 @@ export const exportToExcel = async (
  */
 export const convertRegistrationsToExportData = (registrations: any[]): ExportData[] => {
   return registrations.map(reg => ({
-    nome: reg.patient?.nome || '',
-    telefone: reg.patient?.telefone || '',
-    email: reg.patient?.email || '',
-    cidade: reg.event_date?.event?.city || '',
-    dataEvento: reg.event_date?.date || '',
-    horario: reg.event_date?.start_time || '',
-    status: reg.status || '',
-    agendadoEm: reg.created_at || '',
-    cpf: reg.patient?.cpf || '',
-    endereco: reg.patient?.endereco || '',
-    observacoes: reg.observacoes || ''
+    nome: reg.patient?.nome || "",
+    telefone: reg.patient?.telefone || "",
+    email: reg.patient?.email || "",
+    cidade: reg.event_date?.event?.city || "",
+    dataEvento: reg.event_date?.date || "",
+    horario: reg.event_date?.start_time || "",
+    status: reg.status || "",
+    agendadoEm: reg.created_at || "",
+    cpf: reg.patient?.cpf || "",
+    endereco: reg.patient?.endereco || "",
+    observacoes: reg.observacoes || ""
   }));
 };
 
@@ -274,10 +293,10 @@ export const convertRegistrationsToExportData = (registrations: any[]): ExportDa
 export const generateDataStats = (data: ExportData[]) => {
   const stats = {
     total: data.length,
-    confirmados: data.filter(d => d.status === 'confirmed' || d.status === 'Confirmado').length,
-    pendentes: data.filter(d => d.status === 'pending' || d.status === 'Pendente').length,
-    compareceram: data.filter(d => d.status === 'attended' || d.status === 'Compareceu').length,
-    cancelados: data.filter(d => d.status === 'cancelled' || d.status === 'Cancelado').length,
+    confirmados: data.filter(d => d.status === "confirmed" || d.status === "Confirmado").length,
+    pendentes: data.filter(d => d.status === "pending" || d.status === "Pendente").length,
+    compareceram: data.filter(d => d.status === "attended" || d.status === "Compareceu").length,
+    cancelados: data.filter(d => d.status === "cancelled" || d.status === "Cancelado").length,
     cidades: [...new Set(data.map(d => d.cidade).filter(Boolean))].length,
     periodoInicio: data.length > 0 ? Math.min(...data.map(d => new Date(d.dataEvento).getTime())) : null,
     periodoFim: data.length > 0 ? Math.max(...data.map(d => new Date(d.dataEvento).getTime())) : null
@@ -285,8 +304,8 @@ export const generateDataStats = (data: ExportData[]) => {
 
   return {
     ...stats,
-    periodoInicioFormatted: stats.periodoInicio ? new Date(stats.periodoInicio).toLocaleDateString('pt-BR') : '',
-    periodoFimFormatted: stats.periodoFim ? new Date(stats.periodoFim).toLocaleDateString('pt-BR') : ''
+    periodoInicioFormatted: stats.periodoInicio ? new Date(stats.periodoInicio).toLocaleDateString("pt-BR") : "",
+    periodoFimFormatted: stats.periodoFim ? new Date(stats.periodoFim).toLocaleDateString("pt-BR") : ""
   };
 };
 

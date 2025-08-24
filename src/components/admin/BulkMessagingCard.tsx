@@ -5,16 +5,16 @@
  * fornecendo acesso rápido às funcionalidades de envio em massa.
  */
 
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
 
 // UI Components
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Icons
-import { ArrowRight, MessageSquare, Send, Users } from 'lucide-react'
+import { ArrowRight, MessageSquare, Send, Users } from "lucide-react";
 
 // ============================================================================
 // COMPONENT
@@ -100,7 +100,7 @@ export const BulkMessagingCard: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default BulkMessagingCard
+export default BulkMessagingCard;

@@ -1,8 +1,8 @@
 
-import React from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Settings } from 'lucide-react'
-import { SystemSettingsForm } from '@/components/admin/SystemSettingsForm'
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings } from "lucide-react";
+import { SystemSettingsForm } from "@/components/admin/SystemSettingsForm";
 
 const AdminSettings = () => {
   return (
@@ -37,7 +37,7 @@ const AdminSettings = () => {
         </TabsContent>
       </Tabs>
     </div>
-  )
-}
+  );
+};
 
-export default AdminSettings
+export default AdminSettings;

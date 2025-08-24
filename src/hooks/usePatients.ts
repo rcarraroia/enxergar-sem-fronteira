@@ -1,6 +1,6 @@
 
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Patient {
   id: string
@@ -18,22 +18,22 @@ export interface Patient {
 
 export const usePatients = () => {
   return useQuery({
-    queryKey: ['patients'],
+    queryKey: ["patients"],
     queryFn: async () => {
-      console.log('🔍 Buscando todos os pacientes...')
+      console.log("🔍 Buscando todos os pacientes...");
       
       const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("patients")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('❌ Erro ao buscar pacientes:', error)
-        throw error
+        console.error("❌ Erro ao buscar pacientes:", error);
+        throw error;
       }
 
-      console.log(`✅ Encontrados ${data?.length || 0} pacientes`)
-      return data as Patient[]
+      console.log(`✅ Encontrados ${data?.length || 0} pacientes`);
+      return data as Patient[];
     }
-  })
-}
+  });
+};

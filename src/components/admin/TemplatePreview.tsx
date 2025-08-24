@@ -3,84 +3,84 @@
  * Shows real-time preview of templates with sample data
  */
 
-import React, { useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import React, { useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Eye, 
-  EyeOff, 
   AlertTriangle, 
   CheckCircle, 
-  Mail, 
+  Copy, 
+  ExternalLink, 
+  Eye, 
+  EyeOff,
+  Mail,
   MessageSquare,
-  RefreshCw,
-  Copy,
-  ExternalLink
-} from 'lucide-react'
-import { TemplatePreviewProps } from '@/types/notificationTemplates'
-import { useAutoTemplatePreview } from '@/hooks/useTemplatePreview'
-import { DEFAULT_SAMPLE_DATA } from '@/types/notificationTemplates'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+  RefreshCw
+} from "lucide-react";
+import type { TemplatePreviewProps } from "@/types/notificationTemplates";
+import { useAutoTemplatePreview } from "@/hooks/useTemplatePreview";
+import { DEFAULT_SAMPLE_DATA } from "@/types/notificationTemplates";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
   template,
   sampleData = DEFAULT_SAMPLE_DATA,
   className
 }) => {
-  const [isVisible, setIsVisible] = React.useState(true)
-  const [highlightVariables, setHighlightVariables] = React.useState(true)
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [highlightVariables, setHighlightVariables] = React.useState(true);
   
   const { preview, loading, error } = useAutoTemplatePreview(
     template, 
     sampleData, 
     300 // 300ms debounce
-  )
+  );
 
   const handleCopyContent = async () => {
-    if (!preview?.processedContent) return
+    if (!preview?.processedContent) {return;}
     
     try {
-      await navigator.clipboard.writeText(preview.processedContent)
-      toast.success('Conteúdo copiado para a área de transferência')
+      await navigator.clipboard.writeText(preview.processedContent);
+      toast.success("Conteúdo copiado para a área de transferência");
     } catch (error) {
-      toast.error('Erro ao copiar conteúdo')
+      toast.error("Erro ao copiar conteúdo");
     }
-  }
+  };
 
   const handleCopySubject = async () => {
-    if (!preview?.processedSubject) return
+    if (!preview?.processedSubject) {return;}
     
     try {
-      await navigator.clipboard.writeText(preview.processedSubject)
-      toast.success('Assunto copiado para a área de transferência')
+      await navigator.clipboard.writeText(preview.processedSubject);
+      toast.success("Assunto copiado para a área de transferência");
     } catch (error) {
-      toast.error('Erro ao copiar assunto')
+      toast.error("Erro ao copiar assunto");
     }
-  }
+  };
 
   // Highlight variables in content
   const highlightContent = (content: string) => {
-    if (!highlightVariables) return content
+    if (!highlightVariables) {return content;}
     
     return content.replace(
       /\{\{([^}]+)\}\}/g, 
       '<span class="bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs font-mono border">{{$1}}</span>'
-    )
-  }
+    );
+  };
 
   const getPreviewIcon = () => {
-    return template.type === 'email' ? Mail : MessageSquare
-  }
+    return template.type === "email" ? Mail : MessageSquare;
+  };
 
-  const PreviewIcon = getPreviewIcon()
+  const PreviewIcon = getPreviewIcon();
 
   if (!isVisible) {
     return (
-      <Card className={cn('border-dashed', className)}>
+      <Card className={cn("border-dashed", className)}>
         <CardContent className="flex items-center justify-center py-8">
           <Button
             variant="ghost"
@@ -92,11 +92,11 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
-    <Card className={cn('', className)}>
+    <Card className={cn("", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-sm">
@@ -135,7 +135,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
         </div>
         <CardDescription className="text-xs">
           Preview com dados de exemplo. 
-          {template.type === 'email' ? 'Visualização de email' : 'Visualização de WhatsApp'}.
+          {template.type === "email" ? "Visualização de email" : "Visualização de WhatsApp"}.
         </CardDescription>
       </CardHeader>
       
@@ -196,7 +196,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
         {preview && (
           <div className="space-y-4">
             {/* Email Subject (if applicable) */}
-            {template.type === 'email' && preview.processedSubject && (
+            {template.type === "email" && preview.processedSubject && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Assunto:</label>
@@ -226,7 +226,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">
-                  {template.type === 'email' ? 'Conteúdo do Email:' : 'Mensagem WhatsApp:'}
+                  {template.type === "email" ? "Conteúdo do Email:" : "Mensagem WhatsApp:"}
                 </label>
                 <Button
                   variant="ghost"
@@ -240,11 +240,11 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
               
               <div className={cn(
                 "p-4 rounded-lg border min-h-[120px]",
-                template.type === 'email' 
+                template.type === "email" 
                   ? "bg-white border-gray-200" 
                   : "bg-green-50 border-green-200"
               )}>
-                {template.type === 'whatsapp' && (
+                {template.type === "whatsapp" && (
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-green-200">
                     <MessageSquare className="h-4 w-4 text-green-600" />
                     <span className="text-sm font-medium text-green-800">WhatsApp</span>
@@ -255,7 +255,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
                 <div 
                   className={cn(
                     "text-sm whitespace-pre-wrap leading-relaxed",
-                    template.type === 'whatsapp' ? "text-gray-800" : "text-gray-900"
+                    template.type === "whatsapp" ? "text-gray-800" : "text-gray-900"
                   )}
                   dangerouslySetInnerHTML={{ 
                     __html: highlightContent(preview.processedContent) 
@@ -304,5 +304,5 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

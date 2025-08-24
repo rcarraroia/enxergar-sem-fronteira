@@ -2,21 +2,21 @@
  * ADMIN NAVIGATION V2 - Navegação lateral do painel
  */
 
-import React from 'react'
-import { useLocation, Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { 
-  LayoutDashboard,
-  Users,
   Calendar,
-  UserCheck,
-  Settings,
-  RefreshCw,
   CreditCard,
   Heart,
+  LayoutDashboard,
+  MessageSquare,
+  RefreshCw,
+  Settings,
+  UserCheck,
   UserCog,
-  MessageSquare
-} from 'lucide-react'
+  Users
+} from "lucide-react";
 
 interface NavigationItem {
   id: string
@@ -28,64 +28,64 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    path: '/admin',
+    id: "dashboard",
+    label: "Dashboard",
+    path: "/admin",
     icon: LayoutDashboard
   },
   {
-    id: 'events',
-    label: 'Eventos',
-    path: '/admin/events',
+    id: "events",
+    label: "Eventos",
+    path: "/admin/events",
     icon: Calendar
   },
   {
-    id: 'patients',
-    label: 'Pacientes',
-    path: '/admin/patients',
+    id: "patients",
+    label: "Pacientes",
+    path: "/admin/patients",
     icon: Users
   },
   {
-    id: 'registrations',
-    label: 'Inscrições',
-    path: '/admin/registrations',
+    id: "registrations",
+    label: "Inscrições",
+    path: "/admin/registrations",
     icon: UserCheck
   },
   {
-    id: 'organizers',
-    label: 'Promotores',
-    path: '/admin/organizers',
+    id: "organizers",
+    label: "Promotores",
+    path: "/admin/organizers",
     icon: UserCog
   },
   {
-    id: 'messages',
-    label: 'Mensagens',
-    path: '/admin/messages',
+    id: "messages",
+    label: "Mensagens",
+    path: "/admin/messages",
     icon: MessageSquare
   },
   {
-    id: 'campaigns',
-    label: 'Campanhas',
-    path: '/admin/campaigns',
+    id: "campaigns",
+    label: "Campanhas",
+    path: "/admin/campaigns",
     icon: Heart
   },
   {
-    id: 'sync',
-    label: 'Sincronização',
-    path: '/admin/sync',
+    id: "sync",
+    label: "Sincronização",
+    path: "/admin/sync",
     icon: RefreshCw
   },
   {
-    id: 'settings',
-    label: 'Configurações',
-    path: '/admin/settings',
+    id: "settings",
+    label: "Configurações",
+    path: "/admin/settings",
     icon: Settings
   }
-]
+];
 
 export const AdminNavigation: React.FC = () => {
-  const location = useLocation()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   return (
     <>
@@ -135,8 +135,8 @@ export const AdminNavigation: React.FC = () => {
         <div className="p-4 overflow-y-auto">
           <div className="space-y-2">
             {navigationItems.map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.path
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
               
               return (
                 <Link
@@ -158,11 +158,11 @@ export const AdminNavigation: React.FC = () => {
                     </span>
                   )}
                 </Link>
-              )
+              );
             })}
           </div>
         </div>
       </nav>
     </>
-  )
-}
+  );
+};

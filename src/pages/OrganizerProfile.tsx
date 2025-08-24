@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react'
-import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
+import React, { useEffect, useState } from "react";
+import { OrganizerLayout } from "@/components/organizer/OrganizerLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { 
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Building,
-  Key,
   Bell,
-  Save,
+  Building,
+  Camera,
   Eye,
   EyeOff,
-  Camera
-} from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
+  Key,
+  Mail,
+  MapPin,
+  Phone,
+  Save,
+  User
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NotificationPreferences {
   email_reminders: boolean
@@ -47,42 +47,42 @@ interface OrganizerProfile {
 }
 
 const OrganizerProfile = () => {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [showAsaasKey, setShowAsaasKey] = useState(false)
-  const [showWhatsAppKey, setShowWhatsAppKey] = useState(false)
-  const [profile, setProfile] = useState<OrganizerProfile | null>(null)
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showAsaasKey, setShowAsaasKey] = useState(false);
+  const [showWhatsAppKey, setShowWhatsAppKey] = useState(false);
+  const [profile, setProfile] = useState<OrganizerProfile | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    organization: '',
-    address: '',
-    asaas_api_key: '',
-    whatsapp_api_key: '',
+    name: "",
+    phone: "",
+    organization: "",
+    address: "",
+    asaas_api_key: "",
+    whatsapp_api_key: "",
     notification_preferences: {
       email_reminders: true,
       sms_reminders: false,
       registration_notifications: true,
       event_updates: true
     } as NotificationPreferences
-  })
+  });
 
   useEffect(() => {
     if (user) {
-      fetchProfile()
+      fetchProfile();
     }
-  }, [user])
+  }, [user]);
 
   const fetchProfile = async () => {
     try {
       const { data, error } = await supabase
-        .from('organizers')
-        .select('*')
-        .eq('id', user?.id)
-        .single()
+        .from("organizers")
+        .select("*")
+        .eq("id", user?.id)
+        .single();
 
-      if (error) throw error
+      if (error) {throw error;}
 
       // Safely parse notification_preferences
       const notificationPrefs = (data.notification_preferences as unknown as NotificationPreferences) || {
@@ -90,47 +90,47 @@ const OrganizerProfile = () => {
         sms_reminders: false,
         registration_notifications: true,
         event_updates: true
-      }
+      };
 
       const profileData: OrganizerProfile = {
         id: data.id,
-        name: data.name || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        organization: data.organization || '',
-        address: data.address || '',
-        profile_image_url: data.profile_image_url || '',
-        asaas_api_key: data.asaas_api_key || '',
-        whatsapp_api_key: data.whatsapp_api_key || '',
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        organization: data.organization || "",
+        address: data.address || "",
+        profile_image_url: data.profile_image_url || "",
+        asaas_api_key: data.asaas_api_key || "",
+        whatsapp_api_key: data.whatsapp_api_key || "",
         notification_preferences: notificationPrefs,
         created_at: data.created_at,
         last_login: data.last_login
-      }
+      };
 
-      setProfile(profileData)
+      setProfile(profileData);
       setFormData({
         name: profileData.name,
-        phone: profileData.phone || '',
-        organization: profileData.organization || '',
-        address: profileData.address || '',
-        asaas_api_key: profileData.asaas_api_key || '',
-        whatsapp_api_key: profileData.whatsapp_api_key || '',
+        phone: profileData.phone || "",
+        organization: profileData.organization || "",
+        address: profileData.address || "",
+        asaas_api_key: profileData.asaas_api_key || "",
+        whatsapp_api_key: profileData.whatsapp_api_key || "",
         notification_preferences: profileData.notification_preferences
-      })
+      });
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error)
-      toast.error('Erro ao carregar perfil')
+      console.error("Erro ao buscar perfil:", error);
+      toast.error("Erro ao carregar perfil");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
-    }))
-  }
+    }));
+  };
 
   const handleNotificationChange = (field: string, value: boolean) => {
     setFormData(prev => ({
@@ -139,15 +139,15 @@ const OrganizerProfile = () => {
         ...prev.notification_preferences,
         [field]: value
       }
-    }))
-  }
+    }));
+  };
 
   const handleSave = async () => {
-    setSaving(true)
+    setSaving(true);
     
     try {
       const { error } = await supabase
-        .from('organizers')
+        .from("organizers")
         .update({
           name: formData.name,
           phone: formData.phone,
@@ -158,19 +158,19 @@ const OrganizerProfile = () => {
           notification_preferences: formData.notification_preferences as unknown as any,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user?.id)
+        .eq("id", user?.id);
 
-      if (error) throw error
+      if (error) {throw error;}
 
-      toast.success('Perfil atualizado com sucesso!')
-      await fetchProfile()
+      toast.success("Perfil atualizado com sucesso!");
+      await fetchProfile();
     } catch (error) {
-      console.error('Erro ao salvar perfil:', error)
-      toast.error('Erro ao salvar perfil')
+      console.error("Erro ao salvar perfil:", error);
+      toast.error("Erro ao salvar perfil");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -184,7 +184,7 @@ const OrganizerProfile = () => {
           </div>
         </div>
       </OrganizerLayout>
-    )
+    );
   }
 
   return (
@@ -211,7 +211,7 @@ const OrganizerProfile = () => {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="Seu nome completo"
                 />
               </div>
@@ -220,7 +220,7 @@ const OrganizerProfile = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  value={user?.email || ''}
+                  value={user?.email || ""}
                   disabled
                   className="bg-gray-50"
                 />
@@ -234,7 +234,7 @@ const OrganizerProfile = () => {
                 <Input
                   id="phone"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
                   placeholder="(11) 99999-9999"
                 />
               </div>
@@ -244,7 +244,7 @@ const OrganizerProfile = () => {
                 <Input
                   id="organization"
                   value={formData.organization}
-                  onChange={(e) => handleInputChange('organization', e.target.value)}
+                  onChange={(e) => handleInputChange("organization", e.target.value)}
                   placeholder="Hospital, Clínica, ONG..."
                 />
               </div>
@@ -254,7 +254,7 @@ const OrganizerProfile = () => {
                 <Textarea
                   id="address"
                   value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
                   placeholder="Endereço completo"
                   rows={3}
                 />
@@ -276,9 +276,9 @@ const OrganizerProfile = () => {
                 <div className="relative">
                   <Input
                     id="asaas_api_key"
-                    type={showAsaasKey ? 'text' : 'password'}
+                    type={showAsaasKey ? "text" : "password"}
                     value={formData.asaas_api_key}
-                    onChange={(e) => handleInputChange('asaas_api_key', e.target.value)}
+                    onChange={(e) => handleInputChange("asaas_api_key", e.target.value)}
                     placeholder="$aact_..."
                   />
                   <Button
@@ -301,9 +301,9 @@ const OrganizerProfile = () => {
                 <div className="relative">
                   <Input
                     id="whatsapp_api_key"
-                    type={showWhatsAppKey ? 'text' : 'password'}
+                    type={showWhatsAppKey ? "text" : "password"}
                     value={formData.whatsapp_api_key}
-                    onChange={(e) => handleInputChange('whatsapp_api_key', e.target.value)}
+                    onChange={(e) => handleInputChange("whatsapp_api_key", e.target.value)}
                     placeholder="Chave da API do WhatsApp"
                   />
                   <Button
@@ -342,7 +342,7 @@ const OrganizerProfile = () => {
                 <Switch
                   id="email_reminders"
                   checked={formData.notification_preferences.email_reminders}
-                  onCheckedChange={(checked) => handleNotificationChange('email_reminders', checked)}
+                  onCheckedChange={(checked) => handleNotificationChange("email_reminders", checked)}
                 />
               </div>
 
@@ -358,7 +358,7 @@ const OrganizerProfile = () => {
                 <Switch
                   id="sms_reminders"
                   checked={formData.notification_preferences.sms_reminders}
-                  onCheckedChange={(checked) => handleNotificationChange('sms_reminders', checked)}
+                  onCheckedChange={(checked) => handleNotificationChange("sms_reminders", checked)}
                 />
               </div>
 
@@ -374,7 +374,7 @@ const OrganizerProfile = () => {
                 <Switch
                   id="registration_notifications"
                   checked={formData.notification_preferences.registration_notifications}
-                  onCheckedChange={(checked) => handleNotificationChange('registration_notifications', checked)}
+                  onCheckedChange={(checked) => handleNotificationChange("registration_notifications", checked)}
                 />
               </div>
 
@@ -390,7 +390,7 @@ const OrganizerProfile = () => {
                 <Switch
                   id="event_updates"
                   checked={formData.notification_preferences.event_updates}
-                  onCheckedChange={(checked) => handleNotificationChange('event_updates', checked)}
+                  onCheckedChange={(checked) => handleNotificationChange("event_updates", checked)}
                 />
               </div>
             </CardContent>
@@ -415,10 +415,10 @@ const OrganizerProfile = () => {
                 <div>
                   <Label>Membro desde</Label>
                   <p className="text-sm text-gray-600 mt-1">
-                    {new Date(profile.created_at).toLocaleDateString('pt-BR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
+                    {new Date(profile.created_at).toLocaleDateString("pt-BR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric"
                     })}
                   </p>
                 </div>
@@ -428,7 +428,7 @@ const OrganizerProfile = () => {
                 <div>
                   <Label>Último acesso</Label>
                   <p className="text-sm text-gray-600 mt-1">
-                    {new Date(profile.last_login).toLocaleString('pt-BR')}
+                    {new Date(profile.last_login).toLocaleString("pt-BR")}
                   </p>
                 </div>
               )}
@@ -440,12 +440,12 @@ const OrganizerProfile = () => {
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Salvando...' : 'Salvar Alterações'}
+            {saving ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </div>
       </div>
     </OrganizerLayout>
-  )
-}
+  );
+};
 
-export default OrganizerProfile
+export default OrganizerProfile;

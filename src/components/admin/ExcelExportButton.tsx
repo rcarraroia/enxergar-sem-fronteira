@@ -3,8 +3,8 @@
  * Segue o formato do gabarito WaSeller
  */
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +12,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   convertRegistrationsToExportData,
   exportToExcel,
   generateDataStats
-} from '@/utils/excelExporter';
+} from "@/utils/excelExporter";
 import {
   Calendar,
   ChevronDown,
@@ -26,9 +26,9 @@ import {
   FileSpreadsheet,
   MapPin,
   Users
-} from 'lucide-react';
-import React, { useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 interface ExcelExportButtonProps {
   data: any[];
@@ -40,8 +40,8 @@ interface ExcelExportButtonProps {
 
 export const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
   data = [],
-  selectedCity = 'all',
-  selectedDate = '',
+  selectedCity = "all",
+  selectedDate = "",
   isLoading = false,
   disabled = false
 }) => {
@@ -51,9 +51,9 @@ export const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
   const exportData = convertRegistrationsToExportData(data);
   const stats = generateDataStats(exportData);
 
-  const handleExport = async (includeAllFields: boolean = true) => {
+  const handleExport = async (includeAllFields = true) => {
     if (data.length === 0) {
-      toast.error('Nenhum dado disponível para exportação');
+      toast.error("Nenhum dado disponível para exportação");
       return;
     }
 
@@ -67,22 +67,22 @@ export const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
       if (!includeAllFields) {
         processedData = exportData.map(item => ({
           ...item,
-          cpf: '', // Remove CPF por privacidade
-          endereco: '', // Remove endereço por privacidade
+          cpf: "", // Remove CPF por privacidade
+          endereco: "", // Remove endereço por privacidade
         }));
       }
 
       // Gerar nome do arquivo baseado nos filtros
-      const cityName = selectedCity !== 'all' ? selectedCity.replace(/\s+/g, '_') : 'todas_cidades';
-      const dateStr = selectedDate ? selectedDate.replace(/-/g, '_') : new Date().toISOString().split('T')[0].replace(/-/g, '_');
-      const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, '');
+      const cityName = selectedCity !== "all" ? selectedCity.replace(/\s+/g, "_") : "todas_cidades";
+      const dateStr = selectedDate ? selectedDate.replace(/-/g, "_") : new Date().toISOString().split("T")[0].replace(/-/g, "_");
+      const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, "");
 
       const filename = `agendamentos_${cityName}_${dateStr}_${timestamp}.xlsx`;
 
       // Exportar para Excel
       await exportToExcel(processedData, {
         filename,
-        sheetName: 'Agendamentos',
+        sheetName: "Agendamentos",
         formatData: true
       });
 
@@ -95,8 +95,8 @@ export const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
       );
 
     } catch (error) {
-      console.error('Erro na exportação Excel:', error);
-      toast.error('Erro ao exportar arquivo Excel');
+      console.error("Erro na exportação Excel:", error);
+      toast.error("Erro ao exportar arquivo Excel");
     } finally {
       setIsExporting(false);
     }
@@ -113,7 +113,7 @@ export const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
           className="gap-2"
         >
           <FileSpreadsheet className="h-4 w-4" />
-          {isExporting ? 'Exportando...' : 'Exportar Excel'}
+          {isExporting ? "Exportando..." : "Exportar Excel"}
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

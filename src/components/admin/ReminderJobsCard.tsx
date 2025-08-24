@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
+  Calendar, 
   Clock, 
-  Play, 
-  Pause, 
-  RefreshCw,
+  MessageSquare, 
+  Pause,
+  Play,
   Plus,
-  Calendar,
-  MessageSquare
-} from 'lucide-react'
-import { useReminderJobs } from '@/hooks/useReminderJobs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+  RefreshCw
+} from "lucide-react";
+import { useReminderJobs } from "@/hooks/useReminderJobs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export const ReminderJobsCard = () => {
   const { 
@@ -24,46 +24,46 @@ export const ReminderJobsCard = () => {
     processReminders, 
     isTriggering, 
     isProcessing 
-  } = useReminderJobs()
+  } = useReminderJobs();
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [reminderType, setReminderType] = useState<'24h' | '48h' | 'confirmation'>('24h')
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [reminderType, setReminderType] = useState<"24h" | "48h" | "confirmation">("24h");
 
   // Estatísticas dos jobs
   const stats = reminderJobs ? {
     total: reminderJobs.length,
-    pending: reminderJobs.filter(job => job.status === 'pending').length,
-    processing: reminderJobs.filter(job => job.status === 'processing').length,
-    sent: reminderJobs.filter(job => job.status === 'sent').length,
-    failed: reminderJobs.filter(job => job.status === 'failed').length
-  } : { total: 0, pending: 0, processing: 0, sent: 0, failed: 0 }
+    pending: reminderJobs.filter(job => job.status === "pending").length,
+    processing: reminderJobs.filter(job => job.status === "processing").length,
+    sent: reminderJobs.filter(job => job.status === "sent").length,
+    failed: reminderJobs.filter(job => job.status === "failed").length
+  } : { total: 0, pending: 0, processing: 0, sent: 0, failed: 0 };
 
   const handleCreateReminders = async () => {
     try {
       await triggerReminders.mutateAsync({
-        type: reminderType === 'confirmation' ? 'confirmation' : 'reminder',
+        type: reminderType === "confirmation" ? "confirmation" : "reminder",
         timestamp: new Date().toISOString(),
-        reminderType: reminderType === 'confirmation' ? '24h' : reminderType
-      })
-      setIsCreateDialogOpen(false)
+        reminderType: reminderType === "confirmation" ? "24h" : reminderType
+      });
+      setIsCreateDialogOpen(false);
     } catch (error) {
-      console.error('Erro ao criar lembretes:', error)
+      console.error("Erro ao criar lembretes:", error);
     }
-  }
+  };
 
   const handleProcessJobs = () => {
-    processReminders.mutate({ batchSize: 10 })
-  }
+    processReminders.mutate({ batchSize: 10 });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'sent': return 'bg-green-100 text-green-800'
-      case 'processing': return 'bg-blue-100 text-blue-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'failed': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "sent": return "bg-green-100 text-green-800";
+      case "processing": return "bg-blue-100 text-blue-800";
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "failed": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <Card>
@@ -93,7 +93,7 @@ export const ReminderJobsCard = () => {
                     <Label htmlFor="reminderType">Tipo de Lembrete</Label>
                     <Select 
                       value={reminderType} 
-                      onValueChange={(value: '24h' | '48h' | 'confirmation') => setReminderType(value)}
+                      onValueChange={(value: "24h" | "48h" | "confirmation") => setReminderType(value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -179,10 +179,10 @@ export const ReminderJobsCard = () => {
                     <MessageSquare className="h-4 w-4 text-gray-500" />
                     <div>
                       <div className="font-medium text-sm">
-                        {job.reminder_type} - {job.patient?.nome || 'Paciente'}
+                        {job.reminder_type} - {job.patient?.nome || "Paciente"}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(job.scheduled_for).toLocaleString('pt-BR')}
+                        {new Date(job.scheduled_for).toLocaleString("pt-BR")}
                       </div>
                     </div>
                   </div>
@@ -205,5 +205,5 @@ export const ReminderJobsCard = () => {
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

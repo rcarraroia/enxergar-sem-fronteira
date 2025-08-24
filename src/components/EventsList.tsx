@@ -1,26 +1,27 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEvents, Event } from '@/hooks/useEvents';
-import { Calendar, MapPin, Clock, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { formatDate, formatTime } from '@/utils/timeFormat';
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Event } from "@/hooks/useEvents";
+import { useEvents } from "@/hooks/useEvents";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { formatDate, formatTime } from "@/utils/timeFormat";
 
 const EventsList = () => {
   const { data: events, isLoading, isError } = useEvents();
   const navigate = useNavigate();
 
   const handleEventRegistration = (eventId: string, eventDateId: string) => {
-    console.log('🎯 Navegando para registro de evento específico:', { eventId, eventDateId })
+    console.log("🎯 Navegando para registro de evento específico:", { eventId, eventDateId });
     // Navegação simples e direta - SEM redirecionamento automático
-    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`)
-  }
+    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`);
+  };
 
   const formatWeekday = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long'
+    const date = new Date(`${dateString  }T00:00:00`);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long"
     });
   };
 

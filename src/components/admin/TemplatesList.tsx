@@ -4,12 +4,12 @@
  * Displays templates in a table with actions
  */
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { 
   Table, 
   TableBody, 
@@ -17,7 +17,7 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,30 +28,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import { 
-  Edit, 
+  Calendar, 
   Copy, 
-  Trash2, 
-  MoreHorizontal,
-  Search,
+  Edit, 
+  Eye,
+  Loader2,
   Mail,
   MessageSquare,
-  Eye,
-  Calendar,
-  User,
-  Loader2
-} from 'lucide-react'
-import { TemplatesListProps } from '@/types/notificationTemplates'
-import { formatDate } from '@/utils/dateUtils'
-import { cn } from '@/lib/utils'
+  MoreHorizontal,
+  Search,
+  Trash2,
+  User
+} from "lucide-react";
+import type { TemplatesListProps } from "@/types/notificationTemplates";
+import { formatDate } from "@/utils/dateUtils";
+import { cn } from "@/lib/utils";
 
 export const TemplatesList: React.FC<TemplatesListProps> = ({
   type,
@@ -62,30 +62,30 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
   onToggle,
   loading = false
 }) => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [deletingTemplate, setDeletingTemplate] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deletingTemplate, setDeletingTemplate] = useState<string | null>(null);
 
   // Filter templates by search term
   const filteredTemplates = templates.filter(template =>
     template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     template.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (template.subject && template.subject.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+    (template.subject?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleDelete = async (template: any) => {
     try {
-      setDeletingTemplate(template.id)
-      await onDelete(template)
+      setDeletingTemplate(template.id);
+      await onDelete(template);
     } finally {
-      setDeletingTemplate(null)
+      setDeletingTemplate(null);
     }
-  }
+  };
 
   const getTypeIcon = () => {
-    return type === 'email' ? Mail : MessageSquare
-  }
+    return type === "email" ? Mail : MessageSquare;
+  };
 
-  const TypeIcon = getTypeIcon()
+  const TypeIcon = getTypeIcon();
 
   if (loading) {
     return (
@@ -95,7 +95,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
           <span className="ml-2">Carregando templates...</span>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -103,7 +103,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TypeIcon className="h-5 w-5" />
-          Templates de {type === 'email' ? 'Email' : 'WhatsApp'}
+          Templates de {type === "email" ? "Email" : "WhatsApp"}
         </CardTitle>
         <CardDescription>
           {filteredTemplates.length} template(s) encontrado(s)
@@ -140,7 +140,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  {type === 'email' && <TableHead>Assunto</TableHead>}
+                  {type === "email" && <TableHead>Assunto</TableHead>}
                   <TableHead>Conteúdo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Atualizado</TableHead>
@@ -155,12 +155,12 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                         <div className="font-medium">{template.name}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          Criado em {formatDate(template.created_at.split('T')[0])}
+                          Criado em {formatDate(template.created_at.split("T")[0])}
                         </div>
                       </div>
                     </TableCell>
                     
-                    {type === 'email' && (
+                    {type === "email" && (
                       <TableCell>
                         <div className="max-w-[200px]">
                           {template.subject ? (
@@ -178,7 +178,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                       <div className="max-w-[300px]">
                         <div className="text-sm text-muted-foreground truncate" title={template.content}>
                           {template.content.substring(0, 100)}
-                          {template.content.length > 100 && '...'}
+                          {template.content.length > 100 && "..."}
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
                           {template.content.length} caracteres
@@ -196,14 +196,14 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                           variant={template.is_active ? "default" : "secondary"}
                           className="text-xs"
                         >
-                          {template.is_active ? 'Ativo' : 'Inativo'}
+                          {template.is_active ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
                     </TableCell>
                     
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
-                        {formatDate(template.updated_at.split('T')[0])}
+                        {formatDate(template.updated_at.split("T")[0])}
                       </div>
                     </TableCell>
                     
@@ -280,5 +280,5 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

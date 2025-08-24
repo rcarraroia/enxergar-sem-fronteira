@@ -4,53 +4,53 @@
  * Gestão de campanhas de arrecadação
  */
 
-import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { DataTable } from '@/components/admin-v2/shared/DataTable'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState } from "react";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { DataTable } from "@/components/admin-v2/shared/DataTable";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Heart, 
-  Plus, 
-  Edit, 
+  AlertCircle, 
+  Calendar, 
+  DollarSign, 
+  Edit,
   Eye,
-  Target,
-  DollarSign,
-  Calendar,
-  AlertCircle
-} from 'lucide-react'
-import { useCampaignsV2, type CampaignV2, type CampaignFilters } from '@/hooks/admin-v2/useCampaignsV2'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Heart,
+  Plus,
+  Target
+} from "lucide-react";
+import { type CampaignFilters, type CampaignV2, useCampaignsV2 } from "@/hooks/admin-v2/useCampaignsV2";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const AdminCampaignsV2 = () => {
   const [filters, setFilters] = useState<CampaignFilters>({
-    search: '',
-    status: 'all'
-  })
+    search: "",
+    status: "all"
+  });
 
-  const { data: campaigns = [], isLoading, error } = useCampaignsV2(filters)
+  const { data: campaigns = [], isLoading, error } = useCampaignsV2(filters);
 
   const handleViewCampaign = (campaign: CampaignV2) => {
-    console.log('Ver campanha:', campaign.id)
-  }
+    console.log("Ver campanha:", campaign.id);
+  };
 
   const handleEditCampaign = (campaign: CampaignV2) => {
-    console.log('Editar campanha:', campaign.id)
-  }
+    console.log("Editar campanha:", campaign.id);
+  };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value)
-  }
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    }).format(value);
+  };
 
   const columns = [
     {
-      key: 'title',
-      label: 'Campanha',
+      key: "title",
+      label: "Campanha",
       render: (value: string, campaign: CampaignV2) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -61,8 +61,8 @@ const AdminCampaignsV2 = () => {
       )
     },
     {
-      key: 'goal_amount',
-      label: 'Meta',
+      key: "goal_amount",
+      label: "Meta",
       render: (value: number, campaign: CampaignV2) => (
         <div>
           <div className="text-sm font-medium">{formatCurrency(value)}</div>
@@ -73,8 +73,8 @@ const AdminCampaignsV2 = () => {
       )
     },
     {
-      key: 'progress',
-      label: 'Progresso',
+      key: "progress",
+      label: "Progresso",
       render: (value: number) => (
         <div className="text-center">
           <div className="text-sm font-medium">{value.toFixed(1)}%</div>
@@ -88,51 +88,51 @@ const AdminCampaignsV2 = () => {
       )
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       render: (value: string) => (
         <Badge variant={
-          value === 'active' ? 'default' :
-          value === 'completed' ? 'secondary' :
-          value === 'paused' ? 'outline' : 'destructive'
+          value === "active" ? "default" :
+          value === "completed" ? "secondary" :
+          value === "paused" ? "outline" : "destructive"
         }>
-          {value === 'active' ? 'Ativa' :
-           value === 'completed' ? 'Concluída' :
-           value === 'paused' ? 'Pausada' : 'Cancelada'}
+          {value === "active" ? "Ativa" :
+           value === "completed" ? "Concluída" :
+           value === "paused" ? "Pausada" : "Cancelada"}
         </Badge>
       )
     },
     {
-      key: 'end_date',
-      label: 'Prazo',
+      key: "end_date",
+      label: "Prazo",
       render: (value: string) => (
         <span className="text-sm text-muted-foreground">
-          {value ? format(new Date(value), 'dd/MM/yyyy', { locale: ptBR }) : 'Sem prazo'}
+          {value ? format(new Date(value), "dd/MM/yyyy", { locale: ptBR }) : "Sem prazo"}
         </span>
       )
     }
-  ]
+  ];
 
   const actions = [
     {
-      label: 'Visualizar',
+      label: "Visualizar",
       onClick: handleViewCampaign,
       icon: Eye
     },
     {
-      label: 'Editar',
+      label: "Editar",
       onClick: handleEditCampaign,
       icon: Edit
     }
-  ]
+  ];
 
   if (error) {
     return (
       <AdminLayout 
         title="Campanhas de Doação" 
         breadcrumbs={[
-          { label: 'Dashboard', path: '/admin-v2' },
-          { label: 'Campanhas', path: '/admin-v2/campaigns' }
+          { label: "Dashboard", path: "/admin-v2" },
+          { label: "Campanhas", path: "/admin-v2/campaigns" }
         ]}
       >
         <Alert variant="destructive">
@@ -142,15 +142,15 @@ const AdminCampaignsV2 = () => {
           </AlertDescription>
         </Alert>
       </AdminLayout>
-    )
+    );
   }
 
   return (
     <AdminLayout 
       title="Campanhas de Doação" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin' },
-        { label: 'Campanhas', path: '/admin/campaigns' }
+        { label: "Dashboard", path: "/admin" },
+        { label: "Campanhas", path: "/admin/campaigns" }
       ]}
       actions={
         <Button>
@@ -170,7 +170,7 @@ const AdminCampaignsV2 = () => {
         emptyMessage="Nenhuma campanha encontrada. Clique em 'Nova Campanha' para começar."
       />
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminCampaignsV2
+export default AdminCampaignsV2;

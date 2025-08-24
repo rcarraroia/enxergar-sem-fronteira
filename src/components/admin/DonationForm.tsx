@@ -1,40 +1,40 @@
-import React, { useState } from 'react'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { useAsaasDonation } from '@/hooks/useAsaasDonation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import React, { useState } from "react";
+import { useEventsAdmin } from "@/hooks/useEventsAdmin";
+import { useAsaasDonation } from "@/hooks/useAsaasDonation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select'
-import { Heart, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+} from "@/components/ui/select";
+import { Heart, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const DonationForm = () => {
-  const { events } = useEventsAdmin()
-  const { createDonation, loading } = useAsaasDonation()
+  const { events } = useEventsAdmin();
+  const { createDonation, loading } = useAsaasDonation();
   
   const [formData, setFormData] = useState({
-    eventId: '',
-    amount: '',
-    donorName: '',
-    donorEmail: '',
-    donorPhone: '',
-    description: ''
-  })
+    eventId: "",
+    amount: "",
+    donorName: "",
+    donorEmail: "",
+    donorPhone: "",
+    description: ""
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     if (!formData.eventId || !formData.amount || !formData.donorName || !formData.donorEmail) {
-      toast.error('Preencha todos os campos obrigatórios')
-      return
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
     }
 
     try {
@@ -45,23 +45,23 @@ export const DonationForm = () => {
         donorEmail: formData.donorEmail,
         donorPhone: formData.donorPhone,
         description: formData.description
-      })
+      });
 
       // Reset form
       setFormData({
-        eventId: '',
-        amount: '',
-        donorName: '',
-        donorEmail: '',
-        donorPhone: '',
-        description: ''
-      })
+        eventId: "",
+        amount: "",
+        donorName: "",
+        donorEmail: "",
+        donorPhone: "",
+        description: ""
+      });
     } catch (error) {
-      console.error('Erro ao criar doação:', error)
+      console.error("Erro ao criar doação:", error);
     }
-  }
+  };
 
-  const selectedEvent = events?.find(e => e.id === formData.eventId)
+  const selectedEvent = events?.find(e => e.id === formData.eventId);
 
   return (
     <Card>
@@ -156,11 +156,11 @@ export const DonationForm = () => {
                 Processando
               </>
             ) : (
-              'Criar Campanha de Doação'
+              "Criar Campanha de Doação"
             )}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

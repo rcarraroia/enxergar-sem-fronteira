@@ -22,7 +22,7 @@ import Registration from "./pages/Registration";
 // ADMIN V2 - Nova versão reconstruída
 import "./App.css";
 import AdminCampaignsV2 from "./pages/admin-v2/Campaigns";
-import AdminDashboardV2 from "./pages/admin-v2/Dashboard";
+import AdminDashboardV2 from "./pages/admin-v2/Dashboard/simple";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
 import AdminEventsV2 from "./pages/admin-v2/Events";
 import CreateEventV2 from "./pages/admin-v2/Events/create";

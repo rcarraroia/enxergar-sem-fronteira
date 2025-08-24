@@ -1,7 +1,7 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface DonationData {
   campaign_id: string
@@ -9,7 +9,7 @@ export interface DonationData {
   donor_email: string
   donor_phone?: string
   amount: number
-  donation_type: 'one_time' | 'subscription'
+  donation_type: "one_time" | "subscription"
 }
 
 export interface Donation {
@@ -32,125 +32,125 @@ export interface Donation {
 }
 
 export const useDonations = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { data: donations = [], isLoading } = useQuery({
-    queryKey: ['donations'],
+    queryKey: ["donations"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('donations')
+        .from("donations")
         .select(`
           *,
           campaigns:campaign_id (
             title
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(50)
+        .order("created_at", { ascending: false })
+        .limit(50);
       
-      if (error) throw error
-      return data as Donation[]
+      if (error) {throw error;}
+      return data as Donation[];
     }
-  })
+  });
 
   const createDonation = useMutation({
     mutationFn: async (donationData: DonationData) => {
       try {
         // Chamar a edge function para criar a cobrança no Asaas
         const { data: paymentData, error: paymentError } = await supabase.functions
-          .invoke('create-donation-payment', {
+          .invoke("create-donation-payment", {
             body: donationData
-          })
+          });
 
-        if (paymentError) throw paymentError
+        if (paymentError) {throw paymentError;}
 
-        return paymentData
+        return paymentData;
       } catch (error) {
-        console.error('Erro ao processar doação:', error)
-        throw error
+        console.error("Erro ao processar doação:", error);
+        throw error;
       }
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['donations'] })
-      queryClient.invalidateQueries({ queryKey: ['campaigns'] })
-      toast.success('Doação processada com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ["donations"] });
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      toast.success("Doação processada com sucesso!");
       
       // Redirecionar para o link de pagamento se disponível
       if (data?.donation?.invoiceUrl) {
-        window.open(data.donation.invoiceUrl, '_blank')
+        window.open(data.donation.invoiceUrl, "_blank");
       }
     },
     onError: (error: any) => {
-      console.error('Erro ao processar doação:', error)
-      toast.error(error.message || 'Erro ao processar doação')
+      console.error("Erro ao processar doação:", error);
+      toast.error(error.message || "Erro ao processar doação");
     }
-  })
+  });
 
   const getDonationsByCampaign = (campaignId: string) => {
     return useQuery({
-      queryKey: ['donations', campaignId],
+      queryKey: ["donations", campaignId],
       queryFn: async () => {
         const { data, error } = await supabase
-          .from('donations')
-          .select('*')
-          .eq('campaign_id', campaignId)
-          .order('created_at', { ascending: false })
+          .from("donations")
+          .select("*")
+          .eq("campaign_id", campaignId)
+          .order("created_at", { ascending: false });
         
-        if (error) throw error
-        return data as Donation[]
+        if (error) {throw error;}
+        return data as Donation[];
       },
       enabled: !!campaignId
-    })
-  }
+    });
+  };
 
   return {
     donations,
     isLoading,
     createDonation,
     getDonationsByCampaign
-  }
-}
+  };
+};
 
 export const useSubscriptions = () => {
   const { data: subscriptions = [], isLoading } = useQuery({
-    queryKey: ['subscriptions'],
+    queryKey: ["subscriptions"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('donation_subscriptions')
+        .from("donation_subscriptions")
         .select(`
           *,
           campaigns:campaign_id (
             title
           )
         `)
-        .order('created_at', { ascending: false })
+        .order("created_at", { ascending: false });
       
-      if (error) throw error
-      return data
+      if (error) {throw error;}
+      return data;
     }
-  })
+  });
 
   const cancelSubscription = useMutation({
     mutationFn: async (subscriptionId: string) => {
       const { error } = await supabase
-        .from('donation_subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('id', subscriptionId)
+        .from("donation_subscriptions")
+        .update({ status: "cancelled" })
+        .eq("id", subscriptionId);
 
-      if (error) throw error
+      if (error) {throw error;}
     },
     onSuccess: () => {
-      toast.success('Assinatura cancelada com sucesso!')
+      toast.success("Assinatura cancelada com sucesso!");
     },
     onError: (error) => {
-      console.error('Erro ao cancelar assinatura:', error)
-      toast.error('Erro ao cancelar assinatura')
+      console.error("Erro ao cancelar assinatura:", error);
+      toast.error("Erro ao cancelar assinatura");
     }
-  })
+  });
 
   return {
     subscriptions,
     isLoading,
     cancelSubscription
-  }
-}
+  };
+};

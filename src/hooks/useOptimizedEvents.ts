@@ -1,7 +1,7 @@
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { useCallback, useMemo } from 'react'
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useMemo } from "react";
 
 export interface OptimizedEvent {
   id: string
@@ -9,7 +9,7 @@ export interface OptimizedEvent {
   location: string
   address: string
   description?: string
-  status: 'open' | 'closed' | 'full'
+  status: "open" | "closed" | "full"
   organizer_id: string
   created_at: string
   updated_at: string
@@ -27,21 +27,21 @@ export interface OptimizedEvent {
 }
 
 export const useOptimizedEvents = (filters?: {
-  status?: 'open' | 'closed' | 'full'
+  status?: "open" | "closed" | "full"
   city?: string
   organizerId?: string
 }) => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
-  const queryKey = ['events', 'optimized', filters]
+  const queryKey = ["events", "optimized", filters];
 
   const { data: events, isLoading, error, refetch } = useQuery({
     queryKey,
     queryFn: async (): Promise<OptimizedEvent[]> => {
-      console.log('🔍 Buscando eventos otimizados com filtros:', filters)
+      console.log("🔍 Buscando eventos otimizados com filtros:", filters);
       
       let query = supabase
-        .from('events')
+        .from("events")
         .select(`
           id,
           city,
@@ -61,96 +61,96 @@ export const useOptimizedEvents = (filters?: {
             available_slots
           )
         `)
-        .order('created_at', { ascending: false })
+        .order("created_at", { ascending: false });
 
       // Aplicar filtros de forma otimizada
       if (filters?.status) {
-        query = query.eq('status', filters.status)
+        query = query.eq("status", filters.status);
       }
       
       if (filters?.city) {
-        query = query.ilike('city', `%${filters.city}%`)
+        query = query.ilike("city", `%${filters.city}%`);
       }
       
       if (filters?.organizerId) {
-        query = query.eq('organizer_id', filters.organizerId)
+        query = query.eq("organizer_id", filters.organizerId);
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
       if (error) {
-        console.error('❌ Erro ao buscar eventos:', error)
-        throw error
+        console.error("❌ Erro ao buscar eventos:", error);
+        throw error;
       }
 
       // Transformar dados para estrutura otimizada com type assertion
       const optimizedEvents: OptimizedEvent[] = data?.map(event => ({
         ...event,
-        status: event.status as 'open' | 'closed' | 'full', // Type assertion para garantir o tipo correto
+        status: event.status as "open" | "closed" | "full", // Type assertion para garantir o tipo correto
         dates: event.event_dates || []
-      })) || []
+      })) || [];
 
-      console.log('✅ Eventos carregados:', optimizedEvents.length)
-      return optimizedEvents
+      console.log("✅ Eventos carregados:", optimizedEvents.length);
+      return optimizedEvents;
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
-  })
+  });
 
   // Função para invalidar cache de eventos específicos
   const invalidateEvent = useCallback((eventId: string) => {
     queryClient.invalidateQueries({ 
-      queryKey: ['events', 'optimized'] 
-    })
+      queryKey: ["events", "optimized"] 
+    });
     queryClient.invalidateQueries({ 
-      queryKey: ['event', eventId] 
-    })
-  }, [queryClient])
+      queryKey: ["event", eventId] 
+    });
+  }, [queryClient]);
 
   // Função para atualizar evento no cache
   const updateEventInCache = useCallback((eventId: string, updatedData: Partial<OptimizedEvent>) => {
     queryClient.setQueryData<OptimizedEvent[]>(queryKey, (oldData) => {
-      if (!oldData) return oldData
+      if (!oldData) {return oldData;}
       
       return oldData.map(event => 
         event.id === eventId 
           ? { ...event, ...updatedData }
           : event
-      )
-    })
-  }, [queryClient, queryKey])
+      );
+    });
+  }, [queryClient, queryKey]);
 
   // Memoizar eventos filtrados para performance
   const filteredEvents = useMemo(() => {
-    if (!events) return []
+    if (!events) {return [];}
     
     return events.filter(event => {
       // Filtros adicionais no frontend se necessário
       if (filters?.status && event.status !== filters.status) {
-        return false
+        return false;
       }
       
-      return true
-    })
-  }, [events, filters])
+      return true;
+    });
+  }, [events, filters]);
 
   // Estatísticas computadas
   const stats = useMemo(() => {
-    if (!events) return null
+    if (!events) {return null;}
     
     return {
       total: events.length,
-      open: events.filter(e => e.status === 'open').length,
-      closed: events.filter(e => e.status === 'closed').length,
-      full: events.filter(e => e.status === 'full').length,
+      open: events.filter(e => e.status === "open").length,
+      closed: events.filter(e => e.status === "closed").length,
+      full: events.filter(e => e.status === "full").length,
       totalSlots: events.reduce((acc, event) => 
         acc + event.dates.reduce((dateAcc, date) => dateAcc + date.total_slots, 0), 0
       ),
       availableSlots: events.reduce((acc, event) => 
         acc + event.dates.reduce((dateAcc, date) => dateAcc + date.available_slots, 0), 0
       )
-    }
-  }, [events])
+    };
+  }, [events]);
 
   return {
     events: filteredEvents,
@@ -160,20 +160,20 @@ export const useOptimizedEvents = (filters?: {
     refetch,
     invalidateEvent,
     updateEventInCache
-  }
-}
+  };
+};
 
 // Hook para evento único otimizado
 export const useOptimizedEvent = (eventId: string) => {
   return useQuery({
-    queryKey: ['event', eventId, 'optimized'],
+    queryKey: ["event", eventId, "optimized"],
     queryFn: async (): Promise<OptimizedEvent | null> => {
-      if (!eventId) return null
+      if (!eventId) {return null;}
       
-      console.log('🔍 Buscando evento específico:', eventId)
+      console.log("🔍 Buscando evento específico:", eventId);
       
       const { data, error } = await supabase
-        .from('events')
+        .from("events")
         .select(`
           id,
           city,
@@ -197,19 +197,19 @@ export const useOptimizedEvent = (eventId: string) => {
             )
           )
         `)
-        .eq('id', eventId)
-        .single()
+        .eq("id", eventId)
+        .single();
 
       if (error) {
-        console.error('❌ Erro ao buscar evento:', error)
-        throw error
+        console.error("❌ Erro ao buscar evento:", error);
+        throw error;
       }
 
-      if (!data) return null
+      if (!data) {return null;}
 
       const optimizedEvent: OptimizedEvent = {
         ...data,
-        status: data.status as 'open' | 'closed' | 'full', // Type assertion
+        status: data.status as "open" | "closed" | "full", // Type assertion
         dates: data.event_dates?.map(date => ({
           id: date.id,
           date: date.date,
@@ -218,13 +218,13 @@ export const useOptimizedEvent = (eventId: string) => {
           total_slots: date.total_slots,
           available_slots: date.available_slots
         })) || []
-      }
+      };
 
-      console.log('✅ Evento carregado:', optimizedEvent.city)
-      return optimizedEvent
+      console.log("✅ Evento carregado:", optimizedEvent.city);
+      return optimizedEvent;
     },
     enabled: !!eventId,
     staleTime: 3 * 60 * 1000, // 3 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
-  })
-}
+  });
+};

@@ -1,85 +1,85 @@
 
-import React, { useEffect, useState } from 'react'
-import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import React, { useEffect, useState } from "react";
+import { OrganizerLayout } from "@/components/organizer/OrganizerLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   Calendar, 
-  Users, 
   CalendarPlus, 
-  TrendingUp,
-  Clock,
-  MapPin,
-  Plus,
+  Clock, 
   Eye,
   FileText,
-  Settings
-} from 'lucide-react'
-import { useOrganizerEvents } from '@/hooks/useOrganizerEvents'
-import { useOrganizerRegistrations } from '@/hooks/useOrganizerRegistrations'
-import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  MapPin,
+  Plus,
+  Settings,
+  TrendingUp,
+  Users
+} from "lucide-react";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
+import { useOrganizerRegistrations } from "@/hooks/useOrganizerRegistrations";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const OrganizerDashboard = () => {
-  const { events, loading: eventsLoading } = useOrganizerEvents()
-  const { stats, loading: statsLoading } = useOrganizerRegistrations()
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
+  const { events, loading: eventsLoading } = useOrganizerEvents();
+  const { stats, loading: statsLoading } = useOrganizerRegistrations();
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
 
   useEffect(() => {
     if (events.length > 0) {
       // Filtrar eventos próximos (próximos 7 dias)
-      const today = new Date()
-      const nextWeek = new Date()
-      nextWeek.setDate(today.getDate() + 7)
+      const today = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(today.getDate() + 7);
 
       const upcoming = events
         .filter(event => 
           event.event_dates?.some(date => {
-            const eventDate = new Date(date.date)
-            return eventDate >= today && eventDate <= nextWeek
+            const eventDate = new Date(date.date);
+            return eventDate >= today && eventDate <= nextWeek;
           })
         )
-        .slice(0, 5)
+        .slice(0, 5);
 
-      setUpcomingEvents(upcoming)
+      setUpcomingEvents(upcoming);
     }
-  }, [events])
+  }, [events]);
 
-  const activeEvents = events.filter(event => event.status === 'open').length
-  const totalRegistrations = stats?.totalRegistrations || 0
-  const thisWeekRegistrations = stats?.thisWeekRegistrations || 0
+  const activeEvents = events.filter(event => event.status === "open").length;
+  const totalRegistrations = stats?.totalRegistrations || 0;
+  const thisWeekRegistrations = stats?.thisWeekRegistrations || 0;
 
   const quickActions = [
     {
-      title: 'Criar Novo Evento',
-      description: 'Organize um novo evento',
+      title: "Criar Novo Evento",
+      description: "Organize um novo evento",
       icon: Plus,
-      href: '/organizer/events/new',
-      color: 'bg-blue-500'
+      href: "/organizer/events/new",
+      color: "bg-blue-500"
     },
     {
-      title: 'Ver Todos os Eventos',
-      description: 'Gerencie seus eventos',
+      title: "Ver Todos os Eventos",
+      description: "Gerencie seus eventos",
       icon: Calendar,
-      href: '/organizer/events',
-      color: 'bg-green-500'
+      href: "/organizer/events",
+      color: "bg-green-500"
     },
     {
-      title: 'Relatório de Inscrições',
-      description: 'Veja estatísticas detalhadas',
+      title: "Relatório de Inscrições",
+      description: "Veja estatísticas detalhadas",
       icon: FileText,
-      href: '/organizer/registrations',
-      color: 'bg-purple-500'
+      href: "/organizer/registrations",
+      color: "bg-purple-500"
     },
     {
-      title: 'Configurar Perfil',
-      description: 'Atualize suas informações',
+      title: "Configurar Perfil",
+      description: "Atualize suas informações",
       icon: Settings,
-      href: '/organizer/profile',
-      color: 'bg-orange-500'
+      href: "/organizer/profile",
+      color: "bg-orange-500"
     }
-  ]
+  ];
 
   if (eventsLoading || statsLoading) {
     return (
@@ -92,7 +92,7 @@ const OrganizerDashboard = () => {
           </div>
         </div>
       </OrganizerLayout>
-    )
+    );
   }
 
   return (
@@ -185,7 +185,7 @@ const OrganizerDashboard = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {quickActions.map((action, index) => {
-                const Icon = action.icon
+                const Icon = action.icon;
                 return (
                   <Link key={index} to={action.href}>
                     <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
@@ -200,7 +200,7 @@ const OrganizerDashboard = () => {
                       </p>
                     </div>
                   </Link>
-                )
+                );
               })}
             </div>
           </CardContent>
@@ -240,24 +240,24 @@ const OrganizerDashboard = () => {
                     </div>
                     <div className="text-right">
                       {event.event_dates?.map((date: any) => {
-                        const eventDate = new Date(date.date)
-                        const today = new Date()
-                        const nextWeek = new Date()
-                        nextWeek.setDate(today.getDate() + 7)
+                        const eventDate = new Date(date.date);
+                        const today = new Date();
+                        const nextWeek = new Date();
+                        nextWeek.setDate(today.getDate() + 7);
                         
                         if (eventDate >= today && eventDate <= nextWeek) {
                           return (
                             <div key={date.id} className="text-sm">
                               <div className="font-medium">
-                                {format(eventDate, 'dd/MM', { locale: ptBR })}
+                                {format(eventDate, "dd/MM", { locale: ptBR })}
                               </div>
                               <div className="text-gray-500">
                                 {date.start_time}
                               </div>
                             </div>
-                          )
+                          );
                         }
-                        return null
+                        return null;
                       })}
                     </div>
                   </div>
@@ -306,11 +306,11 @@ const OrganizerDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        event.status === 'open' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                        event.status === "open" 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
                       }`}>
-                        {event.status === 'open' ? 'Ativo' : 'Inativo'}
+                        {event.status === "open" ? "Ativo" : "Inativo"}
                       </span>
                       <Button variant="outline" size="sm" asChild>
                         <Link to={`/organizer/events/${event.id}/edit`}>
@@ -337,7 +337,7 @@ const OrganizerDashboard = () => {
         </Card>
       </div>
     </OrganizerLayout>
-  )
-}
+  );
+};
 
-export default OrganizerDashboard
+export default OrganizerDashboard;

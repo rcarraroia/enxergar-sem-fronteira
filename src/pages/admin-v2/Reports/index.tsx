@@ -3,17 +3,17 @@
  * Página temporária para navegação
  */
 
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BarChart3, Construction } from 'lucide-react'
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, Construction } from "lucide-react";
 
 const AdminReportsV2 = () => {
   return (
     <AdminLayout 
       title="Relatórios e Análises" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Relatórios', path: '/admin-v2/reports' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Relatórios", path: "/admin-v2/reports" }
       ]}
     >
       <Card>
@@ -38,7 +38,7 @@ const AdminReportsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminReportsV2
+export default AdminReportsV2;

@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NotificationData {
   to: string
   subject: string
-  template: 'registration_confirmation' | 'event_reminder' | 'registration_cancelled'
+  template: "registration_confirmation" | "event_reminder" | "registration_cancelled"
   data: {
     name: string
     eventTitle: string
@@ -19,9 +19,9 @@ interface NotificationData {
 export const useNotifications = () => {
   const sendEmail = useMutation({
     mutationFn: async (notificationData: NotificationData) => {
-      console.log('📧 Enviando email:', notificationData.subject)
+      console.log("📧 Enviando email:", notificationData.subject);
       
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           templateName: notificationData.template,
           templateData: notificationData.data,
@@ -29,24 +29,24 @@ export const useNotifications = () => {
           recipientName: notificationData.data.name,
           testMode: false
         }
-      })
+      });
 
       if (error) {
-        console.error('❌ Erro ao enviar email:', error)
-        throw error
+        console.error("❌ Erro ao enviar email:", error);
+        throw error;
       }
 
-      console.log('✅ Email enviado com sucesso:', data.messageId)
-      return data
+      console.log("✅ Email enviado com sucesso:", data.messageId);
+      return data;
     },
     onSuccess: () => {
-      toast.success('Email enviado com sucesso!')
+      toast.success("Email enviado com sucesso!");
     },
     onError: (error) => {
-      console.error('❌ Erro ao enviar email:', error)
-      toast.error('Erro ao enviar email: ' + error.message)
+      console.error("❌ Erro ao enviar email:", error);
+      toast.error(`Erro ao enviar email: ${  error.message}`);
     }
-  })
+  });
 
   const sendRegistrationConfirmation = (
     email: string,
@@ -60,7 +60,7 @@ export const useNotifications = () => {
     return sendEmail.mutate({
       to: email,
       subject: `Confirmação de Inscrição - ${eventTitle}`,
-      template: 'registration_confirmation',
+      template: "registration_confirmation",
       data: {
         name,
         eventTitle,
@@ -69,8 +69,8 @@ export const useNotifications = () => {
         eventLocation,
         eventAddress
       }
-    })
-  }
+    });
+  };
 
   const sendEventReminder = (
     email: string,
@@ -84,7 +84,7 @@ export const useNotifications = () => {
     return sendEmail.mutate({
       to: email,
       subject: `Lembrete - ${eventTitle} é amanhã!`,
-      template: 'event_reminder',
+      template: "event_reminder",
       data: {
         name,
         eventTitle,
@@ -93,8 +93,8 @@ export const useNotifications = () => {
         eventLocation,
         eventAddress
       }
-    })
-  }
+    });
+  };
 
   const sendCancellationNotification = (
     email: string,
@@ -108,7 +108,7 @@ export const useNotifications = () => {
     return sendEmail.mutate({
       to: email,
       subject: `Cancelamento de Inscrição - ${eventTitle}`,
-      template: 'registration_cancelled',
+      template: "registration_cancelled",
       data: {
         name,
         eventTitle,
@@ -117,8 +117,8 @@ export const useNotifications = () => {
         eventLocation,
         eventAddress
       }
-    })
-  }
+    });
+  };
 
   return {
     sendEmail,
@@ -126,5 +126,5 @@ export const useNotifications = () => {
     sendEventReminder,
     sendCancellationNotification,
     isLoading: sendEmail.isPending
-  }
-}
+  };
+};

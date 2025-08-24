@@ -1,15 +1,15 @@
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Save, ArrowLeft, Calendar, Clock, Users } from 'lucide-react'
-import { useOrganizerEvents } from '@/hooks/useOrganizerEvents'
-import { toast } from 'sonner'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { OrganizerLayout } from "@/components/organizer/OrganizerLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Calendar, Clock, Plus, Save, Trash2, Users } from "lucide-react";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
+import { toast } from "sonner";
 
 interface EventDate {
   date: string
@@ -28,33 +28,33 @@ interface EventFormData {
 }
 
 const OrganizerEventForm = () => {
-  const navigate = useNavigate()
-  const { eventId } = useParams()
-  const { createEvent, updateEvent, events } = useOrganizerEvents()
-  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const { eventId } = useParams();
+  const { createEvent, updateEvent, events } = useOrganizerEvents();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<EventFormData>({
-    title: '',
-    description: '',
-    location: '',
-    address: '',
-    city: '',
+    title: "",
+    description: "",
+    location: "",
+    address: "",
+    city: "",
     event_dates: [{
-      date: '',
-      start_time: '',
-      end_time: '',
+      date: "",
+      start_time: "",
+      end_time: "",
       total_slots: 50
     }]
-  })
+  });
 
-  const isEditing = !!eventId
+  const isEditing = !!eventId;
 
   useEffect(() => {
     if (isEditing && events.length > 0) {
-      const event = events.find(e => e.id === eventId)
+      const event = events.find(e => e.id === eventId);
       if (event) {
         setFormData({
           title: event.title,
-          description: event.description || '',
+          description: event.description || "",
           location: event.location,
           address: event.address,
           city: event.city,
@@ -64,22 +64,22 @@ const OrganizerEventForm = () => {
             end_time: date.end_time,
             total_slots: date.total_slots
           })) || [{
-            date: '',
-            start_time: '',
-            end_time: '',
+            date: "",
+            start_time: "",
+            end_time: "",
             total_slots: 50
           }]
-        })
+        });
       }
     }
-  }, [isEditing, eventId, events])
+  }, [isEditing, eventId, events]);
 
   const handleInputChange = (field: keyof EventFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
-    }))
-  }
+    }));
+  };
 
   const handleDateChange = (index: number, field: keyof EventDate, value: string | number) => {
     setFormData(prev => ({
@@ -87,97 +87,97 @@ const OrganizerEventForm = () => {
       event_dates: prev.event_dates.map((date, i) => 
         i === index ? { ...date, [field]: value } : date
       )
-    }))
-  }
+    }));
+  };
 
   const addEventDate = () => {
     setFormData(prev => ({
       ...prev,
       event_dates: [...prev.event_dates, {
-        date: '',
-        start_time: '',
-        end_time: '',
+        date: "",
+        start_time: "",
+        end_time: "",
         total_slots: 50
       }]
-    }))
-  }
+    }));
+  };
 
   const removeEventDate = (index: number) => {
     if (formData.event_dates.length > 1) {
       setFormData(prev => ({
         ...prev,
         event_dates: prev.event_dates.filter((_, i) => i !== index)
-      }))
+      }));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     // Validações
     if (!formData.title.trim()) {
-      toast.error('Título é obrigatório')
-      return
+      toast.error("Título é obrigatório");
+      return;
     }
     
     if (!formData.location.trim()) {
-      toast.error('Local é obrigatório')
-      return
+      toast.error("Local é obrigatório");
+      return;
     }
     
     if (!formData.city.trim()) {
-      toast.error('Cidade é obrigatória')
-      return
+      toast.error("Cidade é obrigatória");
+      return;
     }
     
     if (!formData.address.trim()) {
-      toast.error('Endereço é obrigatório')
-      return
+      toast.error("Endereço é obrigatório");
+      return;
     }
 
     const hasInvalidDates = formData.event_dates.some(date => 
       !date.date || !date.start_time || !date.end_time || date.total_slots <= 0
-    )
+    );
     
     if (hasInvalidDates) {
-      toast.error('Todas as datas devem estar preenchidas corretamente')
-      return
+      toast.error("Todas as datas devem estar preenchidas corretamente");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     
     try {
       if (isEditing) {
-        await updateEvent(eventId!, formData)
-        toast.success('Evento atualizado com sucesso!')
+        await updateEvent(eventId!, formData);
+        toast.success("Evento atualizado com sucesso!");
       } else {
-        await createEvent(formData)
-        toast.success('Evento criado com sucesso!')
+        await createEvent(formData);
+        toast.success("Evento criado com sucesso!");
       }
-      navigate('/organizer/events')
+      navigate("/organizer/events");
     } catch (error) {
-      console.error('Erro ao salvar evento:', error)
-      toast.error('Erro ao salvar evento')
+      console.error("Erro ao salvar evento:", error);
+      toast.error("Erro ao salvar evento");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <OrganizerLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/organizer/events')}>
+          <Button variant="ghost" onClick={() => navigate("/organizer/events")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {isEditing ? 'Editar Evento' : 'Novo Evento'}
+              {isEditing ? "Editar Evento" : "Novo Evento"}
             </h1>
             <p className="text-gray-600">
-              {isEditing ? 'Atualize as informações do seu evento' : 'Crie um novo evento para receber inscrições'}
+              {isEditing ? "Atualize as informações do seu evento" : "Crie um novo evento para receber inscrições"}
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ const OrganizerEventForm = () => {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                   placeholder="Ex: Consulta Oftalmológica Gratuita"
                   required
                 />
@@ -205,7 +205,7 @@ const OrganizerEventForm = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
                   placeholder="Descreva os detalhes do evento, público-alvo, documentos necessários..."
                   rows={4}
                 />
@@ -224,7 +224,7 @@ const OrganizerEventForm = () => {
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  onChange={(e) => handleInputChange("location", e.target.value)}
                   placeholder="Ex: Hospital Regional, Centro Médico..."
                   required
                 />
@@ -235,7 +235,7 @@ const OrganizerEventForm = () => {
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
                   placeholder="Rua, número, bairro..."
                   required
                 />
@@ -246,7 +246,7 @@ const OrganizerEventForm = () => {
                 <Input
                   id="city"
                   value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  onChange={(e) => handleInputChange("city", e.target.value)}
                   placeholder="Ex: São Paulo, Rio de Janeiro..."
                   required
                 />
@@ -293,7 +293,7 @@ const OrganizerEventForm = () => {
                         id={`date-${index}`}
                         type="date"
                         value={eventDate.date}
-                        onChange={(e) => handleDateChange(index, 'date', e.target.value)}
+                        onChange={(e) => handleDateChange(index, "date", e.target.value)}
                         required
                       />
                     </div>
@@ -307,7 +307,7 @@ const OrganizerEventForm = () => {
                         id={`start-time-${index}`}
                         type="time"
                         value={eventDate.start_time}
-                        onChange={(e) => handleDateChange(index, 'start_time', e.target.value)}
+                        onChange={(e) => handleDateChange(index, "start_time", e.target.value)}
                         required
                       />
                     </div>
@@ -321,7 +321,7 @@ const OrganizerEventForm = () => {
                         id={`end-time-${index}`}
                         type="time"
                         value={eventDate.end_time}
-                        onChange={(e) => handleDateChange(index, 'end_time', e.target.value)}
+                        onChange={(e) => handleDateChange(index, "end_time", e.target.value)}
                         required
                       />
                     </div>
@@ -336,7 +336,7 @@ const OrganizerEventForm = () => {
                         type="number"
                         min="1"
                         value={eventDate.total_slots}
-                        onChange={(e) => handleDateChange(index, 'total_slots', parseInt(e.target.value) || 0)}
+                        onChange={(e) => handleDateChange(index, "total_slots", parseInt(e.target.value) || 0)}
                         required
                       />
                     </div>
@@ -351,19 +351,19 @@ const OrganizerEventForm = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/organizer/events')}
+              onClick={() => navigate("/organizer/events")}
             >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
               <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Salvando...' : (isEditing ? 'Atualizar Evento' : 'Criar Evento')}
+              {loading ? "Salvando..." : (isEditing ? "Atualizar Evento" : "Criar Evento")}
             </Button>
           </div>
         </form>
       </div>
     </OrganizerLayout>
-  )
-}
+  );
+};
 
-export default OrganizerEventForm
+export default OrganizerEventForm;

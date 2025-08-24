@@ -43,7 +43,7 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -54,17 +54,24 @@ serve(async (req) => {
     // Verify admin access
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    
+
     if (authError || !user) {
       throw new Error('Invalid authentication')
     }
 
-    // Check if user is admin
-    if (!user.email?.includes('@admin.enxergar')) {
+    // Check if user has admin role using secure role-based system
+    const { data: organizerData, error: roleError } = await supabase
+      .from('organizers')
+      .select('role, status')
+      .eq('id', user.id)
+      .eq('status', 'active')
+      .single()
+
+    if (roleError || !organizerData || organizerData.role !== 'admin') {
       throw new Error('Insufficient permissions - admin access required')
     }
 
-    console.log('🔐 Admin user authenticated:', user.email)
+    console.log('🔐 Admin user authenticated via role system:', user.email, 'Role:', organizerData.role)
 
     // Parse request body
     const body: TriggerRemindersRequest = await req.json()
@@ -119,7 +126,7 @@ serve(async (req) => {
           try {
             // Determine reminder type based on date
             const reminderType = eventDate.date === tomorrowStr ? '24h' : '48h'
-            
+
             // Get registrations for this event date
             const { data: registrations, error: regError } = await supabase
               .from('registrations')
@@ -208,17 +215,17 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(response),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     )
 
   } catch (error) {
     console.error('❌ Trigger reminders error:', error)
-    
+
     const errorResponse = {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -227,12 +234,12 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(errorResponse),
-      { 
+      {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     )
   }

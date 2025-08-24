@@ -1,9 +1,9 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { LucideIcon } from 'lucide-react'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { LucideIcon } from "lucide-react";
 
 interface MetricCardProps {
   title: string
@@ -40,7 +40,7 @@ export const MetricCard = ({
             {title}
           </div>
           <Badge variant="secondary" className="text-lg font-bold">
-            {typeof value === 'number' ? value.toLocaleString() : value}
+            {typeof value === "number" ? value.toLocaleString() : value}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -52,9 +52,9 @@ export const MetricCard = ({
         {trend && (
           <div className="flex items-center gap-2 mb-3">
             <span className={`text-sm font-medium ${
-              trend.isPositive ? 'text-green-600' : 'text-red-600'
+              trend.isPositive ? "text-green-600" : "text-red-600"
             }`}>
-              {trend.isPositive ? '+' : ''}{trend.value}
+              {trend.isPositive ? "+" : ""}{trend.value}
             </span>
             <span className="text-sm text-muted-foreground">{trend.label}</span>
           </div>
@@ -65,7 +65,7 @@ export const MetricCard = ({
             {actions.map((action, index) => (
               <Button
                 key={index}
-                variant={index === 0 ? 'default' : 'outline'}
+                variant={index === 0 ? "default" : "outline"}
                 size="sm"
                 className="w-full"
                 onClick={action.onClick}
@@ -77,5 +77,5 @@ export const MetricCard = ({
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

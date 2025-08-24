@@ -1,46 +1,46 @@
 
-import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Clock, User, Eye } from 'lucide-react'
-import { usePatientTokens } from '@/hooks/usePatientTokens'
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Clock, Eye, MapPin, User } from "lucide-react";
+import { usePatientTokens } from "@/hooks/usePatientTokens";
 
 const PatientAccess = () => {
-  const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
-  const { getPatientByToken, loading } = usePatientTokens()
-  const [accessData, setAccessData] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+  const { getPatientByToken, loading } = usePatientTokens();
+  const [accessData, setAccessData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPatientData = async () => {
       if (!token) {
-        setError('Token de acesso não fornecido')
-        return
+        setError("Token de acesso não fornecido");
+        return;
       }
 
       try {
-        const data = await getPatientByToken(token)
+        const data = await getPatientByToken(token);
         if (!data) {
-          setError('Link de acesso inválido ou expirado')
-          return
+          setError("Link de acesso inválido ou expirado");
+          return;
         }
-        setAccessData(data)
+        setAccessData(data);
       } catch (error) {
-        setError('Erro ao carregar dados')
+        setError("Erro ao carregar dados");
       }
-    }
+    };
 
-    loadPatientData()
-  }, [token, getPatientByToken])
+    loadPatientData();
+  }, [token, getPatientByToken]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -55,14 +55,14 @@ const PatientAccess = () => {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!accessData) {
-    return null
+    return null;
   }
 
-  const { patient, event } = accessData
+  const { patient, event } = accessData;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -124,11 +124,11 @@ const PatientAccess = () => {
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Data</label>
                 <p className="font-medium">
-                  {new Date(event.date).toLocaleDateString('pt-BR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                  {new Date(event.date).toLocaleDateString("pt-BR", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
                   })}
                 </p>
               </div>
@@ -171,7 +171,7 @@ const PatientAccess = () => {
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PatientAccess
+export default PatientAccess;

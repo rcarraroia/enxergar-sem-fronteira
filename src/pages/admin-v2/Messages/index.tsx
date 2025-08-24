@@ -3,46 +3,46 @@
  * Dashboard principal do módulo de mensagens
  */
 
-import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Send, MessageSquare, Mail, Smartphone, BarChart3, Settings, Clock, Zap, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { useMessages, useMessageStats, useMessageTemplates, useAutomationRules } from '@/hooks/messages/useMessages'
-import { MessagesList } from './components/MessagesList'
-import { SendMessageDialog } from './components/SendMessageDialog'
+import { useState } from "react";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { BarChart3, Clock, Mail, MessageSquare, Send, Settings, Smartphone, Users, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { useAutomationRules, useMessages, useMessageStats, useMessageTemplates } from "@/hooks/messages/useMessages";
+import { MessagesList } from "./components/MessagesList";
+import { SendMessageDialog } from "./components/SendMessageDialog";
 // BulkMessageDialog temporariamente removido devido a erro de dados
-import { QuickTestDialog } from './components/QuickTestDialog'
-import { TemplatesManager } from './components/TemplatesManager'
-import { AutomationManager } from './components/AutomationManager'
-import { MessageStats } from './components/MessageStats'
+import { QuickTestDialog } from "./components/QuickTestDialog";
+import { TemplatesManager } from "./components/TemplatesManager";
+import { AutomationManager } from "./components/AutomationManager";
+import { MessageStats } from "./components/MessageStats";
 
 export default function MessagesPage() {
-    const [activeTab, setActiveTab] = useState('overview')
-    const [sendDialogOpen, setSendDialogOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState("overview");
+    const [sendDialogOpen, setSendDialogOpen] = useState(false);
     // const [bulkDialogOpen, setBulkDialogOpen] = useState(false) // Removido temporariamente
-    const [quickTestOpen, setQuickTestOpen] = useState(false)
+    const [quickTestOpen, setQuickTestOpen] = useState(false);
 
     // Hooks para dados
-    const { data: messages = [], isLoading: messagesLoading } = useMessages()
-    const { data: stats } = useMessageStats()
-    const { data: templates = [] } = useMessageTemplates()
-    const { data: automationRules = [] } = useAutomationRules()
+    const { data: messages = [], isLoading: messagesLoading } = useMessages();
+    const { data: stats } = useMessageStats();
+    const { data: templates = [] } = useMessageTemplates();
+    const { data: automationRules = [] } = useAutomationRules();
 
     // Estatísticas rápidas
-    const recentMessages = messages.slice(0, 5)
-    const pendingMessages = messages.filter(m => m.status === 'pending').length
-    const activeTemplates = templates.filter(t => t.is_active).length
-    const activeRules = automationRules.filter(r => r.is_active).length
+    const recentMessages = messages.slice(0, 5);
+    const pendingMessages = messages.filter(m => m.status === "pending").length;
+    const activeTemplates = templates.filter(t => t.is_active).length;
+    const activeRules = automationRules.filter(r => r.is_active).length;
 
     return (
         <AdminLayout 
             title="Mensagens" 
             breadcrumbs={[
-                { label: 'Dashboard', path: '/admin' },
-                { label: 'Mensagens', path: '/admin/messages' }
+                { label: "Dashboard", path: "/admin" },
+                { label: "Mensagens", path: "/admin/messages" }
             ]}
             actions={
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -59,7 +59,7 @@ export default function MessagesPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setActiveTab('templates')}
+                        onClick={() => setActiveTab("templates")}
                         className="w-full sm:w-auto"
                     >
                         <Settings className="h-4 w-4 mr-2" />
@@ -115,7 +115,7 @@ export default function MessagesPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {stats?.delivery_rate ? `${stats.delivery_rate.toFixed(1)}%` : '0%'}
+                            {stats?.delivery_rate ? `${stats.delivery_rate.toFixed(1)}%` : "0%"}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {stats?.total_delivered || 0} entregues
@@ -182,7 +182,7 @@ export default function MessagesPage() {
                                         {recentMessages.map((message) => (
                                             <div key={message.id} className="flex items-center justify-between p-2 border rounded">
                                                 <div className="flex items-center gap-3">
-                                                    {message.channel === 'email' ? (
+                                                    {message.channel === "email" ? (
                                                         <Mail className="h-4 w-4 text-blue-500" />
                                                     ) : (
                                                         <Smartphone className="h-4 w-4 text-green-500" />
@@ -195,9 +195,9 @@ export default function MessagesPage() {
                                                     </div>
                                                 </div>
                                                 <Badge variant={
-                                                    message.status === 'delivered' ? 'default' :
-                                                        message.status === 'sent' ? 'secondary' :
-                                                            message.status === 'failed' ? 'destructive' : 'outline'
+                                                    message.status === "delivered" ? "default" :
+                                                        message.status === "sent" ? "secondary" :
+                                                            message.status === "failed" ? "destructive" : "outline"
                                                 }>
                                                     {message.status}
                                                 </Badge>
@@ -227,7 +227,7 @@ export default function MessagesPage() {
                                         {templates.slice(0, 5).map((template) => (
                                             <div key={template.id} className="flex items-center justify-between p-2 border rounded">
                                                 <div className="flex items-center gap-3">
-                                                    {template.channel === 'email' ? (
+                                                    {template.channel === "email" ? (
                                                         <Mail className="h-4 w-4 text-blue-500" />
                                                     ) : (
                                                         <Smartphone className="h-4 w-4 text-green-500" />
@@ -253,7 +253,7 @@ export default function MessagesPage() {
                                             variant="outline"
                                             size="sm"
                                             className="mt-2"
-                                            onClick={() => setActiveTab('templates')}
+                                            onClick={() => setActiveTab("templates")}
                                         >
                                             Criar Template
                                         </Button>
@@ -301,5 +301,5 @@ export default function MessagesPage() {
             />
         </div>
         </AdminLayout>
-    )
+    );
 }

@@ -3,56 +3,56 @@
  * Baseado no modelo ReportsTemp com filtros por cidade e data do evento
  */
 
-import { useState } from 'react'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState } from "react";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Users, 
-  Search,
-  FileDown,
-  Phone,
-  Mail,
+  AlertCircle, 
   Calendar,
-  AlertCircle
-} from 'lucide-react'
-import { useRegistrationsFiltered, useAvailableCities } from '@/hooks/useRegistrationsFiltered'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { toast } from 'sonner'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import type { Registration } from '@/hooks/useRegistrations'
-import { formatDate } from '@/utils/dateUtils'
+  FileDown,
+  Mail,
+  Phone,
+  Search,
+  Users
+} from "lucide-react";
+import { useAvailableCities, useRegistrationsFiltered } from "@/hooks/useRegistrationsFiltered";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import type { Registration } from "@/hooks/useRegistrations";
+import { formatDate } from "@/utils/dateUtils";
 
 const AdminPatientsV2 = () => {
-  const [selectedCity, setSelectedCity] = useState<string>('all')
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Buscar cidades disponíveis
-  const { data: availableCities = [] } = useAvailableCities()
+  const { data: availableCities = [] } = useAvailableCities();
 
   // Buscar dados com filtros (registrations que contêm os dados dos pacientes)
   const { data: registrations = [], isLoading, error } = useRegistrationsFiltered({
-    city: selectedCity !== 'all' ? selectedCity : undefined,
+    city: selectedCity !== "all" ? selectedCity : undefined,
     date: selectedDate ? new Date(selectedDate) : undefined
-  })
+  });
 
   // Extrair pacientes únicos das registrations e ordenar alfabeticamente
   const uniquePatients = registrations
     .reduce((acc: any[], reg: Registration) => {
-      const existingPatient = acc.find(p => p.id === reg.patient.id)
+      const existingPatient = acc.find(p => p.id === reg.patient.id);
       if (!existingPatient) {
         acc.push({
           id: reg.patient.id,
@@ -62,58 +62,58 @@ const AdminPatientsV2 = () => {
           birth_date: reg.patient.data_nascimento,
           city: reg.event_date.event.city,
           created_at: reg.created_at
-        })
+        });
       }
-      return acc
+      return acc;
     }, [])
-    .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
   const generatePDF = () => {
     if (uniquePatients.length === 0) {
-      toast.error('Nenhum paciente encontrado para os filtros selecionados')
-      return
+      toast.error("Nenhum paciente encontrado para os filtros selecionados");
+      return;
     }
 
-    setIsGenerating(true)
+    setIsGenerating(true);
     
     try {
-      const doc = new jsPDF()
+      const doc = new jsPDF();
       
       // Título do relatório
-      const title = 'RELATÓRIO DE PACIENTES CADASTRADOS'
+      const title = "RELATÓRIO DE PACIENTES CADASTRADOS";
       
       // Usar a função formatDate corrigida
-      const dateDisplayText = selectedDate ? formatDate(selectedDate) : 'Todas as Datas'
+      const dateDisplayText = selectedDate ? formatDate(selectedDate) : "Todas as Datas";
       
-      const subtitle = `${selectedCity !== 'all' ? selectedCity : 'Todas as Cidades'} - ${dateDisplayText}`
+      const subtitle = `${selectedCity !== "all" ? selectedCity : "Todas as Cidades"} - ${dateDisplayText}`;
       
-      doc.setFontSize(16)
-      doc.text(title, 14, 20)
+      doc.setFontSize(16);
+      doc.text(title, 14, 20);
       
-      doc.setFontSize(12)
-      doc.text(subtitle, 14, 30)
-      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 40)
-      doc.text(`Total de pacientes: ${uniquePatients.length}`, 14, 50)
+      doc.setFontSize(12);
+      doc.text(subtitle, 14, 30);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 40);
+      doc.text(`Total de pacientes: ${uniquePatients.length}`, 14, 50);
 
       // Preparar dados para a tabela
       const tableData = uniquePatients.map((patient, index) => [
         index + 1,
-        patient.name || 'N/A',
-        patient.birth_date ? formatDate(patient.birth_date) : 'N/A',
-        patient.email || 'N/A',
-        patient.phone || 'N/A',
-        patient.city || 'N/A'
-      ])
+        patient.name || "N/A",
+        patient.birth_date ? formatDate(patient.birth_date) : "N/A",
+        patient.email || "N/A",
+        patient.phone || "N/A",
+        patient.city || "N/A"
+      ]);
 
       // Cabeçalhos da tabela
       const headers = [
-        '#',
-        'Nome',
-        'Data Nascimento',
-        'Email',
-        'Telefone', 
-        'Cidade'
-      ]
+        "#",
+        "Nome",
+        "Data Nascimento",
+        "Email",
+        "Telefone", 
+        "Cidade"
+      ];
 
       // Gerar tabela
       autoTable(doc, {
@@ -128,36 +128,36 @@ const AdminPatientsV2 = () => {
           fillColor: [41, 128, 185],
           textColor: 255,
           fontSize: 9,
-          fontStyle: 'bold'
+          fontStyle: "bold"
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
         }
-      })
+      });
 
       // Nome do arquivo
-      const cityName = selectedCity !== 'all' ? selectedCity.replace(/\s+/g, '_') : 'todas_cidades'
-      const dateStr = selectedDate ? selectedDate.replace(/-/g, '_') : new Date().toISOString().split('T')[0].replace(/-/g, '_')
-      const filename = `pacientes_${cityName}_${dateStr}.pdf`
+      const cityName = selectedCity !== "all" ? selectedCity.replace(/\s+/g, "_") : "todas_cidades";
+      const dateStr = selectedDate ? selectedDate.replace(/-/g, "_") : new Date().toISOString().split("T")[0].replace(/-/g, "_");
+      const filename = `pacientes_${cityName}_${dateStr}.pdf`;
 
       // Salvar PDF
-      doc.save(filename)
+      doc.save(filename);
       
-      toast.success(`Relatório gerado: ${filename}`)
+      toast.success(`Relatório gerado: ${filename}`);
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error)
-      toast.error('Erro ao gerar relatório PDF')
+      console.error("Erro ao gerar PDF:", error);
+      toast.error("Erro ao gerar relatório PDF");
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <AdminLayout 
       title="Gestão de Pacientes" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Pacientes', path: '/admin-v2/patients' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Pacientes", path: "/admin-v2/patients" }
       ]}
     >
       {error && (
@@ -228,21 +228,21 @@ const AdminPatientsV2 = () => {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-sm font-medium text-blue-600">Total de Pacientes</div>
                 <div className="text-2xl font-bold text-blue-900">
-                  {isLoading ? '...' : uniquePatients.length}
+                  {isLoading ? "..." : uniquePatients.length}
                 </div>
               </div>
               
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="text-sm font-medium text-green-600">Registros Confirmados</div>
                 <div className="text-2xl font-bold text-green-900">
-                  {isLoading ? '...' : registrations.filter((r: Registration) => r.status === 'confirmed').length}
+                  {isLoading ? "..." : registrations.filter((r: Registration) => r.status === "confirmed").length}
                 </div>
               </div>
 
               <div className="bg-yellow-50 p-4 rounded-lg">
                 <div className="text-sm font-medium text-yellow-600">Registros Pendentes</div>
                 <div className="text-2xl font-bold text-yellow-900">
-                  {isLoading ? '...' : registrations.filter((r: Registration) => r.status === 'pending').length}
+                  {isLoading ? "..." : registrations.filter((r: Registration) => r.status === "pending").length}
                 </div>
               </div>
             </div>
@@ -264,12 +264,12 @@ const AdminPatientsV2 = () => {
                     <tbody>
                       {uniquePatients.slice(0, 5).map((patient) => (
                         <tr key={patient.id}>
-                          <td className="border border-gray-300 px-2 py-1">{patient.name || 'N/A'}</td>
+                          <td className="border border-gray-300 px-2 py-1">{patient.name || "N/A"}</td>
                           <td className="border border-gray-300 px-2 py-1">
-                            {patient.birth_date ? formatDate(patient.birth_date) : 'N/A'}
+                            {patient.birth_date ? formatDate(patient.birth_date) : "N/A"}
                           </td>
-                          <td className="border border-gray-300 px-2 py-1">{patient.email || 'N/A'}</td>
-                          <td className="border border-gray-300 px-2 py-1">{patient.phone || 'N/A'}</td>
+                          <td className="border border-gray-300 px-2 py-1">{patient.email || "N/A"}</td>
+                          <td className="border border-gray-300 px-2 py-1">{patient.phone || "N/A"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -291,7 +291,7 @@ const AdminPatientsV2 = () => {
               size="lg"
             >
               <FileDown className="h-4 w-4 mr-2" />
-              {isGenerating ? 'Gerando PDF...' : 'Gerar Relatório PDF'}
+              {isGenerating ? "Gerando PDF..." : "Gerar Relatório PDF"}
             </Button>
 
             {uniquePatients.length === 0 && !isLoading && (
@@ -317,7 +317,7 @@ const AdminPatientsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminPatientsV2
+export default AdminPatientsV2;

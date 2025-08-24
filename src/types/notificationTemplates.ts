@@ -6,7 +6,7 @@
 export interface NotificationTemplate {
   id: string
   name: string
-  type: 'email' | 'whatsapp' | 'sms'
+  type: "email" | "whatsapp" | "sms"
   subject?: string
   content: string
   is_active: boolean
@@ -17,7 +17,7 @@ export interface NotificationTemplate {
 // Input interface for creating/updating templates
 export interface NotificationTemplateInput {
   name: string
-  type: 'email' | 'whatsapp' | 'sms'
+  type: "email" | "whatsapp" | "sms"
   subject?: string
   content: string
   is_active: boolean
@@ -29,7 +29,7 @@ export interface TemplateVariable {
   description: string
   example: string
   required: boolean
-  type: 'patient' | 'event' | 'system'
+  type: "patient" | "event" | "system"
 }
 
 // Template validation rules
@@ -56,12 +56,12 @@ export interface TemplateValidationRules {
 
 // Error types for template operations
 export enum TemplateErrorType {
-  VALIDATION_ERROR = 'validation_error',
-  DUPLICATE_NAME = 'duplicate_name',
-  TEMPLATE_NOT_FOUND = 'template_not_found',
-  PERMISSION_DENIED = 'permission_denied',
-  PROCESSING_ERROR = 'processing_error',
-  VARIABLE_ERROR = 'variable_error'
+  VALIDATION_ERROR = "validation_error",
+  DUPLICATE_NAME = "duplicate_name",
+  TEMPLATE_NOT_FOUND = "template_not_found",
+  PERMISSION_DENIED = "permission_denied",
+  PROCESSING_ERROR = "processing_error",
+  VARIABLE_ERROR = "variable_error"
 }
 
 // Template error interface
@@ -117,13 +117,13 @@ export interface TemplateFormState {
 
 // Template list filters
 export interface TemplateFilters {
-  type?: 'email' | 'whatsapp' | 'sms' | 'all'
-  status?: 'active' | 'inactive' | 'all'
+  type?: "email" | "whatsapp" | "sms" | "all"
+  status?: "active" | "inactive" | "all"
   search?: string
 }
 
 // Template operation types
-export type TemplateOperation = 'create' | 'edit' | 'duplicate' | 'delete' | 'toggle'
+export type TemplateOperation = "create" | "edit" | "duplicate" | "delete" | "toggle"
 
 // Hook return types
 export interface UseNotificationTemplatesReturn {
@@ -153,7 +153,7 @@ export interface NotificationTemplatesCardProps {
 
 export interface TemplateFormProps {
   template?: NotificationTemplate
-  type: 'email' | 'whatsapp' | 'sms'
+  type: "email" | "whatsapp" | "sms"
   onSave: (template: NotificationTemplateInput) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
@@ -166,13 +166,13 @@ export interface TemplatePreviewProps {
 }
 
 export interface VariablesHelperProps {
-  type: 'email' | 'whatsapp' | 'sms'
+  type: "email" | "whatsapp" | "sms"
   onVariableClick: (variable: string) => void
   className?: string
 }
 
 export interface TemplatesListProps {
-  type: 'email' | 'whatsapp' | 'sms'
+  type: "email" | "whatsapp" | "sms"
   templates: NotificationTemplate[]
   onEdit: (template: NotificationTemplate) => void
   onDuplicate: (template: NotificationTemplate) => void
@@ -182,20 +182,20 @@ export interface TemplatesListProps {
 }
 
 // Constants
-export const TEMPLATE_TYPES = ['email', 'whatsapp', 'sms'] as const
-export const TEMPLATE_STATUSES = ['active', 'inactive'] as const
-export const VARIABLE_TYPES = ['patient', 'event', 'system'] as const
+export const TEMPLATE_TYPES = ["email", "whatsapp", "sms"] as const;
+export const TEMPLATE_STATUSES = ["active", "inactive"] as const;
+export const VARIABLE_TYPES = ["patient", "event", "system"] as const;
 
 // Default sample data for previews
 export const DEFAULT_SAMPLE_DATA: TemplateSampleData = {
-  patient_name: 'Maria Silva Santos',
-  patient_email: 'maria.silva@email.com',
-  event_title: 'Atendimento Oftalmológico Gratuito',
-  event_date: '22/08/2025',
-  event_time: '08:00 - 18:00',
-  event_location: 'Paróquia São José',
-  event_address: 'Rua das Flores, 123 - Centro, Timóteo - MG',
-  event_city: 'Timóteo',
-  confirmation_link: 'https://enxergar.com.br/confirm/abc123',
-  unsubscribe_link: 'https://enxergar.com.br/unsubscribe/abc123'
-}
+  patient_name: "Maria Silva Santos",
+  patient_email: "maria.silva@email.com",
+  event_title: "Atendimento Oftalmológico Gratuito",
+  event_date: "22/08/2025",
+  event_time: "08:00 - 18:00",
+  event_location: "Paróquia São José",
+  event_address: "Rua das Flores, 123 - Centro, Timóteo - MG",
+  event_city: "Timóteo",
+  confirmation_link: "https://enxergar.com.br/confirm/abc123",
+  unsubscribe_link: "https://enxergar.com.br/unsubscribe/abc123"
+};

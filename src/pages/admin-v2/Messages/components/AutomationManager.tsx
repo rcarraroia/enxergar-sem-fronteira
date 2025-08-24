@@ -2,50 +2,50 @@
  * GERENCIADOR DE AUTOMAÇÃO
  */
 
-import { useState } from 'react'
-import { Plus, Play, Pause, Settings, Clock, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAutomationRules, useCreateAutomationRule, useMessageTemplates } from '@/hooks/messages/useMessages'
-import { TRIGGER_EVENTS } from '@/types/messages'
-import type { CreateAutomationRuleData } from '@/types/messages'
+import { useState } from "react";
+import { Clock, Pause, Play, Plus, Settings, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAutomationRules, useCreateAutomationRule, useMessageTemplates } from "@/hooks/messages/useMessages";
+import { TRIGGER_EVENTS } from "@/types/messages";
+import type { CreateAutomationRuleData } from "@/types/messages";
 
 export function AutomationManager() {
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
-  const { data: rules = [], isLoading } = useAutomationRules()
-  const { data: templates = [] } = useMessageTemplates()
-  const { mutate: createRule, isPending: isCreating } = useCreateAutomationRule()
+  const { data: rules = [], isLoading } = useAutomationRules();
+  const { data: templates = [] } = useMessageTemplates();
+  const { mutate: createRule, isPending: isCreating } = useCreateAutomationRule();
 
   const getTriggerEventLabel = (event: string) => {
     const labels: Record<string, string> = {
-      'on_registration_success': 'Cadastro realizado',
-      'on_appointment_created': 'Consulta agendada',
-      'on_appointment_24h_before': '24h antes da consulta',
-      'on_appointment_cancelled': 'Consulta cancelada',
-      'on_donation_received': 'Doação recebida',
-      'on_donation_failed': 'Doação falhou',
-      'on_campaign_completion': 'Campanha finalizada',
-      'on_campaign_milestone': 'Meta da campanha atingida',
-      'on_promoter_registered': 'Promotor cadastrado',
-      'on_event_completed': 'Evento finalizado'
-    }
-    return labels[event] || event
-  }
+      "on_registration_success": "Cadastro realizado",
+      "on_appointment_created": "Consulta agendada",
+      "on_appointment_24h_before": "24h antes da consulta",
+      "on_appointment_cancelled": "Consulta cancelada",
+      "on_donation_received": "Doação recebida",
+      "on_donation_failed": "Doação falhou",
+      "on_campaign_completion": "Campanha finalizada",
+      "on_campaign_milestone": "Meta da campanha atingida",
+      "on_promoter_registered": "Promotor cadastrado",
+      "on_event_completed": "Evento finalizado"
+    };
+    return labels[event] || event;
+  };
 
   const getDelayLabel = (minutes: number) => {
-    if (minutes === 0) return 'Imediato'
-    if (minutes < 60) return `${minutes} minutos`
-    if (minutes < 1440) return `${Math.floor(minutes / 60)} horas`
-    return `${Math.floor(minutes / 1440)} dias`
-  }
+    if (minutes === 0) {return "Imediato";}
+    if (minutes < 60) {return `${minutes} minutos`;}
+    if (minutes < 1440) {return `${Math.floor(minutes / 60)} horas`;}
+    return `${Math.floor(minutes / 1440)} dias`;
+  };
 
   return (
     <div className="space-y-4">
@@ -88,8 +88,8 @@ export function AutomationManager() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={rule.is_active ? 'default' : 'secondary'}>
-                      {rule.is_active ? 'Ativa' : 'Inativa'}
+                    <Badge variant={rule.is_active ? "default" : "secondary"}>
+                      {rule.is_active ? "Ativa" : "Inativa"}
                     </Badge>
                     <Switch checked={rule.is_active} />
                   </div>
@@ -104,7 +104,7 @@ export function AutomationManager() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">TEMPLATE</p>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm">{rule.template?.name || 'Template não encontrado'}</p>
+                      <p className="text-sm">{rule.template?.name || "Template não encontrado"}</p>
                       {rule.template && (
                         <Badge variant="outline" className="text-xs">
                           {rule.template.channel.toUpperCase()}
@@ -149,7 +149,7 @@ export function AutomationManager() {
         templates={templates}
       />
     </div>
-  )
+  );
 }
 
 function CreateRuleDialog({ 
@@ -166,42 +166,42 @@ function CreateRuleDialog({
   templates: any[]
 }) {
   const [formData, setFormData] = useState<CreateAutomationRuleData>({
-    name: '',
-    description: '',
-    trigger_event: '',
-    template_id: '',
+    name: "",
+    description: "",
+    trigger_event: "",
+    template_id: "",
     delay_minutes: 0
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
+    e.preventDefault();
+    onSubmit(formData);
     
     // Reset form
     setFormData({
-      name: '',
-      description: '',
-      trigger_event: '',
-      template_id: '',
+      name: "",
+      description: "",
+      trigger_event: "",
+      template_id: "",
       delay_minutes: 0
-    })
-  }
+    });
+  };
 
   const triggerEvents = Object.entries(TRIGGER_EVENTS).map(([key, value]) => ({
     value,
     label: {
-      'on_registration_success': 'Cadastro realizado',
-      'on_appointment_created': 'Consulta agendada',
-      'on_appointment_24h_before': '24h antes da consulta',
-      'on_appointment_cancelled': 'Consulta cancelada',
-      'on_donation_received': 'Doação recebida',
-      'on_donation_failed': 'Doação falhou',
-      'on_campaign_completion': 'Campanha finalizada',
-      'on_campaign_milestone': 'Meta da campanha atingida',
-      'on_promoter_registered': 'Promotor cadastrado',
-      'on_event_completed': 'Evento finalizado'
+      "on_registration_success": "Cadastro realizado",
+      "on_appointment_created": "Consulta agendada",
+      "on_appointment_24h_before": "24h antes da consulta",
+      "on_appointment_cancelled": "Consulta cancelada",
+      "on_donation_received": "Doação recebida",
+      "on_donation_failed": "Doação falhou",
+      "on_campaign_completion": "Campanha finalizada",
+      "on_campaign_milestone": "Meta da campanha atingida",
+      "on_promoter_registered": "Promotor cadastrado",
+      "on_event_completed": "Evento finalizado"
     }[key] || key
-  }))
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -303,11 +303,11 @@ function CreateRuleDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Criando...' : 'Criar Regra'}
+              {isLoading ? "Criando..." : "Criar Regra"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

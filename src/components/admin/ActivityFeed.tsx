@@ -1,17 +1,17 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
-  UserPlus, 
   CalendarPlus, 
-  UserCheck, 
-  RefreshCw,
-  Clock
-} from 'lucide-react'
-import { ActivityItem } from '@/hooks/useRecentActivity'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Clock, 
+  RefreshCw, 
+  UserCheck,
+  UserPlus
+} from "lucide-react";
+import type { ActivityItem } from "@/hooks/useRecentActivity";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface ActivityFeedProps {
   activities: ActivityItem[]
@@ -21,23 +21,23 @@ interface ActivityFeedProps {
 export const ActivityFeed = ({ activities, className }: ActivityFeedProps) => {
   const getIcon = (type: string) => {
     switch (type) {
-      case 'patient_registered': return UserPlus
-      case 'event_created': return CalendarPlus
-      case 'registration_completed': return UserCheck
-      case 'sync_completed': return RefreshCw
-      default: return Clock
+      case "patient_registered": return UserPlus;
+      case "event_created": return CalendarPlus;
+      case "registration_completed": return UserCheck;
+      case "sync_completed": return RefreshCw;
+      default: return Clock;
     }
-  }
+  };
 
   const getIconColor = (type: string) => {
     switch (type) {
-      case 'patient_registered': return 'text-blue-600'
-      case 'event_created': return 'text-green-600'
-      case 'registration_completed': return 'text-purple-600'
-      case 'sync_completed': return 'text-orange-600'
-      default: return 'text-gray-600'
+      case "patient_registered": return "text-blue-600";
+      case "event_created": return "text-green-600";
+      case "registration_completed": return "text-purple-600";
+      case "sync_completed": return "text-orange-600";
+      default: return "text-gray-600";
     }
-  }
+  };
 
   return (
     <Card className={className}>
@@ -55,8 +55,8 @@ export const ActivityFeed = ({ activities, className }: ActivityFeedProps) => {
         ) : (
           <div className="space-y-4">
             {activities.map((activity) => {
-              const Icon = getIcon(activity.type)
-              const iconColor = getIconColor(activity.type)
+              const Icon = getIcon(activity.type);
+              const iconColor = getIconColor(activity.type);
               
               return (
                 <div key={activity.id} className="flex items-start gap-3">
@@ -78,11 +78,11 @@ export const ActivityFeed = ({ activities, className }: ActivityFeedProps) => {
                     </Badge>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

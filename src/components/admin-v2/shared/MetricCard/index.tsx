@@ -3,11 +3,12 @@
  * CORREÇÃO: Sem useRef, sem violações das regras de hooks
  */
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { LucideIcon} from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface MetricCardProps {
   title: string
@@ -15,7 +16,7 @@ export interface MetricCardProps {
   icon: LucideIcon
   trend?: {
     value: number
-    direction: 'up' | 'down'
+    direction: "up" | "down"
     period: string
   }
   loading?: boolean
@@ -46,7 +47,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -58,7 +59,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             {title}
           </div>
           <Badge variant="secondary" className="text-lg font-bold">
-            {typeof value === 'number' ? value.toLocaleString() : value}
+            {typeof value === "number" ? value.toLocaleString() : value}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -66,21 +67,21 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <CardContent className="pt-0">
         {trend && (
           <div className="flex items-center gap-2">
-            {trend.direction === 'up' ? (
+            {trend.direction === "up" ? (
               <TrendingUp className="h-4 w-4 text-green-600" />
             ) : (
               <TrendingDown className="h-4 w-4 text-red-600" />
             )}
             <span className={cn(
               "text-sm font-medium",
-              trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
+              trend.direction === "up" ? "text-green-600" : "text-red-600"
             )}>
-              {trend.direction === 'up' ? '+' : ''}{trend.value}
+              {trend.direction === "up" ? "+" : ""}{trend.value}
             </span>
             <span className="text-sm text-muted-foreground">{trend.period}</span>
           </div>
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

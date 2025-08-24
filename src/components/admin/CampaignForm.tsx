@@ -1,51 +1,52 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useCampaigns, CreateCampaignData } from '@/hooks/useCampaigns'
-import { useEvents } from '@/hooks/useEvents'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import type { CreateCampaignData } from "@/hooks/useCampaigns";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useEvents } from "@/hooks/useEvents";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Calendar, CalendarIcon, Plus, X } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar as CalendarComponent } from '@/components/ui/calendar'
-import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+} from "@/components/ui/select";
+import { Calendar, CalendarIcon, Plus, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const campaignSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório'),
+  title: z.string().min(1, "Título é obrigatório"),
   description: z.string().optional(),
   event_id: z.string().optional(),
   goal_amount: z.number().optional(),
   suggested_amounts: z.array(z.number()).optional(),
   allow_custom_amount: z.boolean().default(true),
   allow_subscriptions: z.boolean().default(true),
-  status: z.enum(['active', 'paused', 'ended']).default('active'),
+  status: z.enum(["active", "paused", "ended"]).default("active"),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
-})
+});
 
 type CampaignFormData = z.infer<typeof campaignSchema>
 
 export const CampaignForm = () => {
-  const { createCampaign } = useCampaigns()
-  const { data: events } = useEvents()
-  const [customAmounts, setCustomAmounts] = useState<number[]>([25, 50, 100, 200])
-  const [newAmount, setNewAmount] = useState('')
-  const [startDate, setStartDate] = useState<Date>()
-  const [endDate, setEndDate] = useState<Date>()
+  const { createCampaign } = useCampaigns();
+  const { data: events } = useEvents();
+  const [customAmounts, setCustomAmounts] = useState<number[]>([25, 50, 100, 200]);
+  const [newAmount, setNewAmount] = useState("");
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
 
   const {
     register,
@@ -59,11 +60,11 @@ export const CampaignForm = () => {
     defaultValues: {
       allow_custom_amount: true,
       allow_subscriptions: true,
-      status: 'active'
+      status: "active"
     }
-  })
+  });
 
-  const selectedEventId = watch('event_id')
+  const selectedEventId = watch("event_id");
 
   const onSubmit = async (data: CampaignFormData) => {
     try {
@@ -78,30 +79,30 @@ export const CampaignForm = () => {
         status: data.status!,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
-      }
+      };
 
-      createCampaign.mutate(submitData)
-      reset()
-      setCustomAmounts([25, 50, 100, 200])
-      setStartDate(undefined)
-      setEndDate(undefined)
-      setNewAmount('')
+      createCampaign.mutate(submitData);
+      reset();
+      setCustomAmounts([25, 50, 100, 200]);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setNewAmount("");
     } catch (error) {
-      console.error('Erro ao criar campanha:', error)
+      console.error("Erro ao criar campanha:", error);
     }
-  }
+  };
 
   const addCustomAmount = () => {
-    const amount = parseFloat(newAmount)
+    const amount = parseFloat(newAmount);
     if (amount > 0 && !customAmounts.includes(amount)) {
-      setCustomAmounts([...customAmounts, amount].sort((a, b) => a - b))
-      setNewAmount('')
+      setCustomAmounts([...customAmounts, amount].sort((a, b) => a - b));
+      setNewAmount("");
     }
-  }
+  };
 
   const removeCustomAmount = (amount: number) => {
-    setCustomAmounts(customAmounts.filter(a => a !== amount))
-  }
+    setCustomAmounts(customAmounts.filter(a => a !== amount));
+  };
 
   return (
     <Card>
@@ -119,7 +120,7 @@ export const CampaignForm = () => {
               <Label htmlFor="title">Título da Campanha</Label>
               <Input
                 id="title"
-                {...register('title')}
+                {...register("title")}
                 placeholder="Ex: Ajude-nos a levar atendimento para São Paulo"
               />
               {errors.title && (
@@ -131,7 +132,7 @@ export const CampaignForm = () => {
               <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
-                {...register('description')}
+                {...register("description")}
                 placeholder="Descreva os objetivos e impacto da campanha..."
                 rows={4}
               />
@@ -139,7 +140,7 @@ export const CampaignForm = () => {
 
             <div>
               <Label htmlFor="event_id">Evento Associado (Opcional)</Label>
-              <Select value={selectedEventId || ""} onValueChange={(value) => setValue('event_id', value || undefined)}>
+              <Select value={selectedEventId || ""} onValueChange={(value) => setValue("event_id", value || undefined)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um evento" />
                 </SelectTrigger>
@@ -164,7 +165,7 @@ export const CampaignForm = () => {
                 type="number"
                 step="0.01"
                 min="0"
-                {...register('goal_amount', { valueAsNumber: true })}
+                {...register("goal_amount", { valueAsNumber: true })}
                 placeholder="0.00"
               />
             </div>
@@ -271,8 +272,8 @@ export const CampaignForm = () => {
                 </p>
               </div>
               <Switch
-                checked={watch('allow_custom_amount')}
-                onCheckedChange={(checked) => setValue('allow_custom_amount', checked)}
+                checked={watch("allow_custom_amount")}
+                onCheckedChange={(checked) => setValue("allow_custom_amount", checked)}
               />
             </div>
 
@@ -284,14 +285,14 @@ export const CampaignForm = () => {
                 </p>
               </div>
               <Switch
-                checked={watch('allow_subscriptions')}
-                onCheckedChange={(checked) => setValue('allow_subscriptions', checked)}
+                checked={watch("allow_subscriptions")}
+                onCheckedChange={(checked) => setValue("allow_subscriptions", checked)}
               />
             </div>
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select value={watch('status')} onValueChange={(value) => setValue('status', value as 'active' | 'paused' | 'ended')}>
+              <Select value={watch("status")} onValueChange={(value) => setValue("status", value as "active" | "paused" | "ended")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -305,10 +306,10 @@ export const CampaignForm = () => {
           </div>
 
           <Button type="submit" className="w-full" disabled={createCampaign.isPending}>
-            {createCampaign.isPending ? 'Criando...' : 'Criar Campanha'}
+            {createCampaign.isPending ? "Criando..." : "Criar Campanha"}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

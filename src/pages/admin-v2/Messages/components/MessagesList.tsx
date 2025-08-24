@@ -2,72 +2,72 @@
  * COMPONENTE DE LISTAGEM DE MENSAGENS
  */
 
-import { useState } from 'react'
-import { Search, Filter, Mail, Smartphone, MessageSquare, Eye, MoreHorizontal } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useMessages } from '@/hooks/messages/useMessages'
-import type { MessageFilters, MessageChannel, MessageStatus } from '@/types/messages'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { useState } from "react";
+import { Eye, Filter, Mail, MessageSquare, MoreHorizontal, Search, Smartphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMessages } from "@/hooks/messages/useMessages";
+import type { MessageChannel, MessageFilters, MessageStatus } from "@/types/messages";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export function MessagesList() {
-  const [filters, setFilters] = useState<MessageFilters>({})
-  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<MessageFilters>({});
+  const [search, setSearch] = useState("");
 
-  const { data: messages = [], isLoading } = useMessages(filters)
+  const { data: messages = [], isLoading } = useMessages(filters);
 
   // Filtrar mensagens por busca
   const filteredMessages = messages.filter(message => {
-    if (!search) return true
-    const searchLower = search.toLowerCase()
+    if (!search) {return true;}
+    const searchLower = search.toLowerCase();
     return (
       message.recipient_contact.toLowerCase().includes(searchLower) ||
       message.content.toLowerCase().includes(searchLower) ||
-      (message.subject && message.subject.toLowerCase().includes(searchLower))
-    )
-  })
+      (message.subject?.toLowerCase().includes(searchLower))
+    );
+  });
 
   const getChannelIcon = (channel: MessageChannel) => {
     switch (channel) {
-      case 'email':
-        return <Mail className="h-4 w-4 text-blue-500" />
-      case 'sms':
-        return <Smartphone className="h-4 w-4 text-green-500" />
-      case 'whatsapp':
-        return <MessageSquare className="h-4 w-4 text-green-600" />
+      case "email":
+        return <Mail className="h-4 w-4 text-blue-500" />;
+      case "sms":
+        return <Smartphone className="h-4 w-4 text-green-500" />;
+      case "whatsapp":
+        return <MessageSquare className="h-4 w-4 text-green-600" />;
       default:
-        return <MessageSquare className="h-4 w-4" />
+        return <MessageSquare className="h-4 w-4" />;
     }
-  }
+  };
 
   const getStatusBadge = (status: MessageStatus) => {
     const variants = {
-      pending: 'outline',
-      sent: 'secondary',
-      delivered: 'default',
-      failed: 'destructive',
-      read: 'default'
-    } as const
+      pending: "outline",
+      sent: "secondary",
+      delivered: "default",
+      failed: "destructive",
+      read: "default"
+    } as const;
 
     return (
-      <Badge variant={variants[status] || 'outline'}>
+      <Badge variant={variants[status] || "outline"}>
         {status}
       </Badge>
-    )
-  }
+    );
+  };
 
   const formatDate = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), {
       addSuffix: true,
       locale: ptBR
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -90,11 +90,11 @@ export function MessagesList() {
             
             <div className="flex flex-col sm:flex-row gap-2">
               <Select
-                value={filters.channel || 'all'}
+                value={filters.channel || "all"}
                 onValueChange={(value) => 
                   setFilters(prev => ({ 
                     ...prev, 
-                    channel: value === 'all' ? undefined : value as MessageChannel 
+                    channel: value === "all" ? undefined : value as MessageChannel 
                   }))
                 }
               >
@@ -110,11 +110,11 @@ export function MessagesList() {
               </Select>
 
               <Select
-                value={filters.status || 'all'}
+                value={filters.status || "all"}
                 onValueChange={(value) => 
                   setFilters(prev => ({ 
                     ...prev, 
-                    status: value === 'all' ? undefined : value as MessageStatus 
+                    status: value === "all" ? undefined : value as MessageStatus 
                   }))
                 }
               >
@@ -300,8 +300,8 @@ export function MessagesList() {
               <p className="text-lg font-medium">Nenhuma mensagem encontrada</p>
               <p className="text-sm">
                 {search || filters.channel || filters.status 
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Comece enviando sua primeira mensagem'
+                  ? "Tente ajustar os filtros de busca"
+                  : "Comece enviando sua primeira mensagem"
                 }
               </p>
             </div>
@@ -309,5 +309,5 @@ export function MessagesList() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -2,32 +2,32 @@
  * EVENT FORM V2 - Formulário de criação/edição de eventos
  */
 
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
+  AlertCircle, 
+  ArrowLeft, 
   Calendar, 
-  MapPin, 
   Clock, 
-  Users, 
-  Plus, 
-  Trash2,
+  MapPin, 
+  Plus,
   Save,
-  ArrowLeft,
-  AlertCircle
-} from 'lucide-react'
-import { useCreateEventV2, useUpdateEventV2, useEventV2, type EventFormData } from '@/hooks/admin-v2/useEventsV2'
-import { format } from 'date-fns'
+  Trash2,
+  Users
+} from "lucide-react";
+import { type EventFormData, useCreateEventV2, useEventV2, useUpdateEventV2 } from "@/hooks/admin-v2/useEventsV2";
+import { format } from "date-fns";
 
 interface EventFormProps {
   eventId?: string
-  mode: 'create' | 'edit'
+  mode: "create" | "edit"
 }
 
 interface EventDateForm {
@@ -40,33 +40,33 @@ interface EventDateForm {
 }
 
 export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<EventFormData>({
-    title: '',
-    description: '',
-    location: '',
-    address: '',
-    city: '',
+    title: "",
+    description: "",
+    location: "",
+    address: "",
+    city: "",
     dates: []
-  })
-  const [eventDates, setEventDates] = useState<EventDateForm[]>([])
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  });
+  const [eventDates, setEventDates] = useState<EventDateForm[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { data: existingEvent, isLoading: loadingEvent } = useEventV2(eventId || '')
-  const createEventMutation = useCreateEventV2()
-  const updateEventMutation = useUpdateEventV2()
+  const { data: existingEvent, isLoading: loadingEvent } = useEventV2(eventId || "");
+  const createEventMutation = useCreateEventV2();
+  const updateEventMutation = useUpdateEventV2();
 
   // Carregar dados do evento existente
   useEffect(() => {
-    if (mode === 'edit' && existingEvent) {
+    if (mode === "edit" && existingEvent) {
       setFormData({
         title: existingEvent.title,
         description: existingEvent.description,
         location: existingEvent.location,
-        address: existingEvent.address || '',
-        city: existingEvent.city || '',
+        address: existingEvent.address || "",
+        city: existingEvent.city || "",
         dates: []
-      })
+      });
       
       if (existingEvent.upcoming_dates) {
         setEventDates(existingEvent.upcoming_dates.map(date => ({
@@ -76,55 +76,55 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
           total_slots: date.total_slots,
           available_slots: date.available_slots,
           location_details: date.location_details
-        })))
+        })));
       }
     }
-  }, [mode, existingEvent])
+  }, [mode, existingEvent]);
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Título é obrigatório'
+      newErrors.title = "Título é obrigatório";
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Descrição é obrigatória'
+      newErrors.description = "Descrição é obrigatória";
     }
 
     if (!formData.location.trim()) {
-      newErrors.location = 'Local é obrigatório'
+      newErrors.location = "Local é obrigatório";
     }
 
     if (eventDates.length === 0) {
-      newErrors.dates = 'Pelo menos uma data é obrigatória'
+      newErrors.dates = "Pelo menos uma data é obrigatória";
     }
 
     // Validar datas
     eventDates.forEach((date, index) => {
       if (!date.date) {
-        newErrors[`date_${index}`] = 'Data é obrigatória'
+        newErrors[`date_${index}`] = "Data é obrigatória";
       }
       if (!date.start_time) {
-        newErrors[`start_time_${index}`] = 'Horário de início é obrigatório'
+        newErrors[`start_time_${index}`] = "Horário de início é obrigatório";
       }
       if (!date.end_time) {
-        newErrors[`end_time_${index}`] = 'Horário de fim é obrigatório'
+        newErrors[`end_time_${index}`] = "Horário de fim é obrigatório";
       }
       if (date.total_slots <= 0) {
-        newErrors[`total_slots_${index}`] = 'Número de vagas deve ser maior que 0'
+        newErrors[`total_slots_${index}`] = "Número de vagas deve ser maior que 0";
       }
-    })
+    });
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
     try {
@@ -136,54 +136,54 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
           end_time: date.end_time,
           total_slots: date.total_slots
         }))
-      }
+      };
 
-      if (mode === 'create') {
-        await createEventMutation.mutateAsync(eventData)
-        navigate('/admin-v2/events')
-      } else if (mode === 'edit' && eventId) {
-        await updateEventMutation.mutateAsync({ eventId, eventData })
-        navigate('/admin-v2/events')
+      if (mode === "create") {
+        await createEventMutation.mutateAsync(eventData);
+        navigate("/admin-v2/events");
+      } else if (mode === "edit" && eventId) {
+        await updateEventMutation.mutateAsync({ eventId, eventData });
+        navigate("/admin-v2/events");
       }
     } catch (error) {
-      console.error('Erro ao salvar evento:', error)
+      console.error("Erro ao salvar evento:", error);
     }
-  }
+  };
 
   const addEventDate = () => {
     const newDate: EventDateForm = {
-      date: '',
-      start_time: '09:00',
-      end_time: '17:00',
+      date: "",
+      start_time: "09:00",
+      end_time: "17:00",
       total_slots: 20,
       available_slots: 20,
-      location_details: ''
-    }
-    setEventDates([...eventDates, newDate])
-  }
+      location_details: ""
+    };
+    setEventDates([...eventDates, newDate]);
+  };
 
   const removeEventDate = (index: number) => {
-    setEventDates(eventDates.filter((_, i) => i !== index))
-  }
+    setEventDates(eventDates.filter((_, i) => i !== index));
+  };
 
   const updateEventDate = (index: number, field: keyof EventDateForm, value: string | number) => {
-    const updatedDates = [...eventDates]
-    updatedDates[index] = { ...updatedDates[index], [field]: value }
-    setEventDates(updatedDates)
-  }
+    const updatedDates = [...eventDates];
+    updatedDates[index] = { ...updatedDates[index], [field]: value };
+    setEventDates(updatedDates);
+  };
 
-  const isLoading = createEventMutation.isPending || updateEventMutation.isPending || loadingEvent
+  const isLoading = createEventMutation.isPending || updateEventMutation.isPending || loadingEvent;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate('/admin-v2/events')}>
+        <Button variant="outline" onClick={() => navigate("/admin-v2/events")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
         <h1 className="text-2xl font-bold">
-          {mode === 'create' ? 'Criar Novo Evento' : 'Editar Evento'}
+          {mode === "create" ? "Criar Novo Evento" : "Editar Evento"}
         </h1>
       </div>
 
@@ -204,7 +204,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Ex: Consulta Oftalmológica - São Paulo"
-                className={errors.title ? 'border-red-500' : ''}
+                className={errors.title ? "border-red-500" : ""}
               />
               {errors.title && (
                 <p className="text-sm text-red-600 mt-1">{errors.title}</p>
@@ -219,7 +219,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Descreva o evento, procedimentos, requisitos..."
                 rows={4}
-                className={errors.description ? 'border-red-500' : ''}
+                className={errors.description ? "border-red-500" : ""}
               />
               {errors.description && (
                 <p className="text-sm text-red-600 mt-1">{errors.description}</p>
@@ -233,7 +233,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 placeholder="Ex: Hospital das Clínicas - São Paulo"
-                className={errors.location ? 'border-red-500' : ''}
+                className={errors.location ? "border-red-500" : ""}
               />
               {errors.location && (
                 <p className="text-sm text-red-600 mt-1">{errors.location}</p>
@@ -296,8 +296,8 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                           <Input
                             type="date"
                             value={eventDate.date}
-                            onChange={(e) => updateEventDate(index, 'date', e.target.value)}
-                            className={errors[`date_${index}`] ? 'border-red-500' : ''}
+                            onChange={(e) => updateEventDate(index, "date", e.target.value)}
+                            className={errors[`date_${index}`] ? "border-red-500" : ""}
                           />
                           {errors[`date_${index}`] && (
                             <p className="text-sm text-red-600 mt-1">{errors[`date_${index}`]}</p>
@@ -309,8 +309,8 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                           <Input
                             type="time"
                             value={eventDate.start_time}
-                            onChange={(e) => updateEventDate(index, 'start_time', e.target.value)}
-                            className={errors[`start_time_${index}`] ? 'border-red-500' : ''}
+                            onChange={(e) => updateEventDate(index, "start_time", e.target.value)}
+                            className={errors[`start_time_${index}`] ? "border-red-500" : ""}
                           />
                           {errors[`start_time_${index}`] && (
                             <p className="text-sm text-red-600 mt-1">{errors[`start_time_${index}`]}</p>
@@ -322,8 +322,8 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                           <Input
                             type="time"
                             value={eventDate.end_time}
-                            onChange={(e) => updateEventDate(index, 'end_time', e.target.value)}
-                            className={errors[`end_time_${index}`] ? 'border-red-500' : ''}
+                            onChange={(e) => updateEventDate(index, "end_time", e.target.value)}
+                            className={errors[`end_time_${index}`] ? "border-red-500" : ""}
                           />
                           {errors[`end_time_${index}`] && (
                             <p className="text-sm text-red-600 mt-1">{errors[`end_time_${index}`]}</p>
@@ -336,8 +336,8 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                             type="number"
                             min="1"
                             value={eventDate.total_slots}
-                            onChange={(e) => updateEventDate(index, 'total_slots', parseInt(e.target.value) || 0)}
-                            className={errors[`total_slots_${index}`] ? 'border-red-500' : ''}
+                            onChange={(e) => updateEventDate(index, "total_slots", parseInt(e.target.value) || 0)}
+                            className={errors[`total_slots_${index}`] ? "border-red-500" : ""}
                           />
                           {errors[`total_slots_${index}`] && (
                             <p className="text-sm text-red-600 mt-1">{errors[`total_slots_${index}`]}</p>
@@ -348,8 +348,8 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
                       <div className="mt-4">
                         <Label>Detalhes do Local (opcional)</Label>
                         <Input
-                          value={eventDate.location_details || ''}
-                          onChange={(e) => updateEventDate(index, 'location_details', e.target.value)}
+                          value={eventDate.location_details || ""}
+                          onChange={(e) => updateEventDate(index, "location_details", e.target.value)}
                           placeholder="Ex: Sala 201, 2º andar"
                         />
                       </div>
@@ -372,15 +372,15 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                {mode === 'create' ? 'Criar Evento' : 'Salvar Alterações'}
+                {mode === "create" ? "Criar Evento" : "Salvar Alterações"}
               </>
             )}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/admin-v2/events')}>
+          <Button type="button" variant="outline" onClick={() => navigate("/admin-v2/events")}>
             Cancelar
           </Button>
         </div>
       </form>
     </div>
-  )
-}
+  );
+};

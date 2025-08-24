@@ -1,37 +1,37 @@
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/hooks/useAuth'
-import { Loader2, LogIn } from 'lucide-react'
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, LogIn } from "lucide-react";
 
 interface LoginFormProps {
   onToggleMode: () => void
 }
 
 export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
-  const { signIn } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
+  const { signIn } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
+    email: "",
+    password: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.email || !formData.password) return
+    e.preventDefault();
+    if (!formData.email || !formData.password) {return;}
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await signIn(formData.email, formData.password)
+      await signIn(formData.email, formData.password);
     } catch (error) {
-      console.error('Erro no login:', error)
+      console.error("Erro no login:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -72,7 +72,7 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {isLoading ? "Entrando..." : "Entrar"}
           </Button>
 
           <div className="text-center">
@@ -88,5 +88,5 @@ export const LoginForm = ({ onToggleMode }: LoginFormProps) => {
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

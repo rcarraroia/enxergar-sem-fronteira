@@ -1,43 +1,43 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { useEvents } from '@/hooks/useEvents'
-import PatientRegistrationForm from '@/components/PatientRegistrationForm'
-import { RegistrationSuccessModal } from '@/components/RegistrationSuccessModal'
-import Header from '@/components/Header'
-import { Footer } from '@/components/Footer'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Calendar, MapPin, Clock, Users } from 'lucide-react'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useEvents } from "@/hooks/useEvents";
+import PatientRegistrationForm from "@/components/PatientRegistrationForm";
+import { RegistrationSuccessModal } from "@/components/RegistrationSuccessModal";
+import Header from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Registration = () => {
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const { data: events, isLoading } = useEvents()
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [registeredPatientName, setRegisteredPatientName] = useState('')
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { data: events, isLoading } = useEvents();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registeredPatientName, setRegisteredPatientName] = useState("");
 
   // Pegar parâmetros da URL
-  const eventId = searchParams.get('eventId')
-  const eventDateId = searchParams.get('eventDateId')
+  const eventId = searchParams.get("eventId");
+  const eventDateId = searchParams.get("eventDateId");
 
   useEffect(() => {
     if (!eventId || !eventDateId) {
-      navigate('/', { replace: true })
+      navigate("/", { replace: true });
     }
-  }, [eventId, eventDateId, navigate])
+  }, [eventId, eventDateId, navigate]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
 
   if (!eventId || !eventDateId) {
-    return null
+    return null;
   }
 
-  const event = events?.find(e => e.id === eventId)
-  const eventDate = event?.event_dates?.find(ed => ed.id === eventDateId)
+  const event = events?.find(e => e.id === eventId);
+  const eventDate = event?.event_dates?.find(ed => ed.id === eventDateId);
 
   if (!event || !eventDate) {
     return (
@@ -49,14 +49,14 @@ const Registration = () => {
             <p className="text-muted-foreground mb-4">
               O evento que você está procurando não existe ou não está mais disponível.
             </p>
-            <Button onClick={() => navigate('/eventos')}>
+            <Button onClick={() => navigate("/eventos")}>
               Ver Eventos Disponíveis
             </Button>
           </div>
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   // Verificar se ainda há vagas disponíveis
@@ -70,39 +70,39 @@ const Registration = () => {
             <p className="text-muted-foreground mb-4">
               Infelizmente, não há mais vagas disponíveis para esta data do evento.
             </p>
-            <Button onClick={() => navigate('/eventos')}>
+            <Button onClick={() => navigate("/eventos")}>
               Ver Outras Datas Disponíveis
             </Button>
           </div>
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   const handleRegistrationSuccess = (patientName: string) => {
-    setRegisteredPatientName(patientName)
-    setShowSuccessModal(true)
-  }
+    setRegisteredPatientName(patientName);
+    setShowSuccessModal(true);
+  };
 
   const handleCloseModal = () => {
-    setShowSuccessModal(false)
-    navigate('/')
-  }
+    setShowSuccessModal(false);
+    navigate("/");
+  };
 
   const formatEventDate = (dateString: string, timeString: string) => {
     try {
-      const [hours, minutes] = timeString.split(':')
-      const date = new Date(dateString + 'T00:00:00')
-      date.setHours(parseInt(hours), parseInt(minutes))
+      const [hours, minutes] = timeString.split(":");
+      const date = new Date(`${dateString  }T00:00:00`);
+      date.setHours(parseInt(hours), parseInt(minutes));
       
       return format(date, "EEEE, dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
         locale: ptBR
-      })
+      });
     } catch (error) {
-      return `${dateString} às ${timeString}`
+      return `${dateString} às ${timeString}`;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -179,7 +179,7 @@ const Registration = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Registration
+export default Registration;

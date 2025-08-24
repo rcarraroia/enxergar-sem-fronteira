@@ -1,30 +1,30 @@
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface LoadingSkeletonProps {
   className?: string
-  variant?: 'card' | 'text' | 'avatar' | 'button' | 'table'
+  variant?: "card" | "text" | "avatar" | "button" | "table"
   lines?: number
 }
 
 export const LoadingSkeleton = ({ 
   className, 
-  variant = 'card',
+  variant = "card",
   lines = 3 
 }: LoadingSkeletonProps) => {
-  const baseClasses = "animate-pulse bg-muted rounded"
+  const baseClasses = "animate-pulse bg-muted rounded";
   
-  if (variant === 'card') {
+  if (variant === "card") {
     return (
       <div className={cn("space-y-3 p-4", className)}>
         <div className={`${baseClasses} h-4 w-3/4`} />
         <div className={`${baseClasses} h-4 w-1/2`} />
         <div className={`${baseClasses} h-24 w-full`} />
       </div>
-    )
+    );
   }
   
-  if (variant === 'text') {
+  if (variant === "text") {
     return (
       <div className={cn("space-y-2", className)}>
         {Array.from({ length: lines }).map((_, i) => (
@@ -35,22 +35,22 @@ export const LoadingSkeleton = ({
           />
         ))}
       </div>
-    )
+    );
   }
   
-  if (variant === 'avatar') {
+  if (variant === "avatar") {
     return (
       <div className={cn(`${baseClasses} w-10 h-10 rounded-full`, className)} />
-    )
+    );
   }
   
-  if (variant === 'button') {
+  if (variant === "button") {
     return (
       <div className={cn(`${baseClasses} h-10 w-24`, className)} />
-    )
+    );
   }
   
-  if (variant === 'table') {
+  if (variant === "table") {
     return (
       <div className={cn("space-y-2", className)}>
         <div className={`${baseClasses} h-8 w-full`} />
@@ -63,11 +63,11 @@ export const LoadingSkeleton = ({
           </div>
         ))}
       </div>
-    )
+    );
   }
   
-  return <div className={cn(baseClasses, className)} />
-}
+  return <div className={cn(baseClasses, className)} />;
+};
 
 export const EventCardSkeleton = () => (
   <div className="border rounded-lg p-6 space-y-4 animate-pulse">
@@ -87,7 +87,7 @@ export const EventCardSkeleton = () => (
       <div className="h-10 bg-muted rounded w-32" />
     </div>
   </div>
-)
+);
 
 export const PatientCardSkeleton = () => (
   <div className="border rounded-lg p-4 space-y-3 animate-pulse">
@@ -103,7 +103,7 @@ export const PatientCardSkeleton = () => (
       <div className="h-3 bg-muted rounded w-36" />
     </div>
   </div>
-)
+);
 
 export const DashboardSkeleton = () => (
   <div className="space-y-6">
@@ -121,4 +121,4 @@ export const DashboardSkeleton = () => (
       <LoadingSkeleton variant="card" className="h-64" />
     </div>
   </div>
-)
+);

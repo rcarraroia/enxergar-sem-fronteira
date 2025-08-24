@@ -3,17 +3,17 @@
  * Página temporária para navegação
  */
 
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RefreshCw, Construction } from 'lucide-react'
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Construction, RefreshCw } from "lucide-react";
 
 const AdminSyncV2 = () => {
   return (
     <AdminLayout 
       title="Sincronização de Dados" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Sincronização', path: '/admin-v2/sync' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Sincronização", path: "/admin-v2/sync" }
       ]}
     >
       <Card>
@@ -38,7 +38,7 @@ const AdminSyncV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminSyncV2
+export default AdminSyncV2;

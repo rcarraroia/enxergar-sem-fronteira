@@ -1,34 +1,34 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { 
-  Search, 
-  Calendar as CalendarIcon,
+  Calendar as CalendarIcon, 
   Download,
   RefreshCw,
+  Search,
   X
-} from 'lucide-react'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface RegistrationFiltersProps {
   searchTerm: string
@@ -64,15 +64,15 @@ export function RegistrationFilters({
   filteredCount
 }: RegistrationFiltersProps) {
   const clearFilters = () => {
-    onSearchChange('')
-    onCityChange('all')
-    onDateChange(undefined)
-    onStatusChange('all')
-    onEventStatusChange('all')
-  }
+    onSearchChange("");
+    onCityChange("all");
+    onDateChange(undefined);
+    onStatusChange("all");
+    onEventStatusChange("all");
+  };
 
-  const hasActiveFilters = searchTerm || selectedCity !== 'all' || selectedDate || 
-                          statusFilter !== 'all' || eventStatusFilter !== 'all'
+  const hasActiveFilters = searchTerm || selectedCity !== "all" || selectedDate || 
+                          statusFilter !== "all" || eventStatusFilter !== "all";
 
   return (
     <Card>
@@ -207,16 +207,16 @@ export function RegistrationFilters({
                   Busca: "{searchTerm}"
                   <X 
                     className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={() => onSearchChange('')}
+                    onClick={() => onSearchChange("")}
                   />
                 </Badge>
               )}
-              {selectedCity && selectedCity !== 'all' && (
+              {selectedCity && selectedCity !== "all" && (
                 <Badge variant="secondary" className="text-xs">
                   Cidade: {selectedCity}
                   <X 
                     className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={() => onCityChange('all')}
+                    onClick={() => onCityChange("all")}
                   />
                 </Badge>
               )}
@@ -229,23 +229,23 @@ export function RegistrationFilters({
                   />
                 </Badge>
               )}
-              {statusFilter && statusFilter !== 'all' && (
+              {statusFilter && statusFilter !== "all" && (
                 <Badge variant="secondary" className="text-xs">
-                  Status: {statusFilter === 'confirmed' ? 'Confirmada' : 
-                          statusFilter === 'pending' ? 'Pendente' : 
-                          statusFilter === 'cancelled' ? 'Cancelada' : 'Compareceu'}
+                  Status: {statusFilter === "confirmed" ? "Confirmada" : 
+                          statusFilter === "pending" ? "Pendente" : 
+                          statusFilter === "cancelled" ? "Cancelada" : "Compareceu"}
                   <X 
                     className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={() => onStatusChange('all')}
+                    onClick={() => onStatusChange("all")}
                   />
                 </Badge>
               )}
-              {eventStatusFilter && eventStatusFilter !== 'all' && (
+              {eventStatusFilter && eventStatusFilter !== "all" && (
                 <Badge variant="secondary" className="text-xs">
-                  Evento: {eventStatusFilter === 'active' ? 'Ativos' : 'Concluídos'}
+                  Evento: {eventStatusFilter === "active" ? "Ativos" : "Concluídos"}
                   <X 
                     className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={() => onEventStatusChange('all')}
+                    onClick={() => onEventStatusChange("all")}
                   />
                 </Badge>
               )}
@@ -262,5 +262,5 @@ export function RegistrationFilters({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

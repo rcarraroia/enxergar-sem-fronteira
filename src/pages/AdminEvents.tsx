@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { useEventsAdmin, EventFormData } from '@/hooks/useEventsAdmin'
-import { EventForm } from '@/components/admin/EventForm'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import type { EventFormData } from "@/hooks/useEventsAdmin";
+import { useEventsAdmin } from "@/hooks/useEventsAdmin";
+import { EventForm } from "@/components/admin/EventForm";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   Table, 
   TableBody, 
@@ -14,7 +15,7 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -25,103 +26,103 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 import { 
+  ArrowLeft, 
   Calendar, 
-  MapPin, 
-  Users, 
   Clock, 
-  Plus, 
   Edit, 
-  Trash2, 
-  ArrowLeft,
+  Loader2, 
+  MapPin, 
+  Plus, 
   Search,
-  Loader2
-} from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { formatDate, formatTimeRange } from '@/utils/dateUtils'
+  Trash2,
+  Users
+} from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { formatDate, formatTimeRange } from "@/utils/dateUtils";
 
-type ViewMode = 'list' | 'create' | 'edit'
+type ViewMode = "list" | "create" | "edit"
 
 const AdminEvents = () => {
-  const { user, signOut } = useAuth()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEventsAdmin()
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEventsAdmin();
   
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [selectedEvent, setSelectedEvent] = useState<any>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Verificar se deve abrir o formulário de criação automaticamente
   useEffect(() => {
-    const action = searchParams.get('action')
-    if (action === 'create') {
-      console.log('🎯 AdminEvents: Abrindo formulário de criação automaticamente')
-      setViewMode('create')
+    const action = searchParams.get("action");
+    if (action === "create") {
+      console.log("🎯 AdminEvents: Abrindo formulário de criação automaticamente");
+      setViewMode("create");
       // Limpar o parâmetro da URL
-      navigate('/admin/events', { replace: true })
+      navigate("/admin/events", { replace: true });
     }
-  }, [searchParams, navigate])
+  }, [searchParams, navigate]);
 
   const filteredEvents = events?.filter(event =>
     event.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.organizers?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
+  ) || [];
 
   const handleCreateEvent = (data: EventFormData) => {
     createEvent.mutate(data, {
       onSuccess: () => {
-        setViewMode('list')
+        setViewMode("list");
       }
-    })
-  }
+    });
+  };
 
   const handleUpdateEvent = (data: EventFormData & { id: string }) => {
     updateEvent.mutate(data, {
       onSuccess: () => {
-        setViewMode('list')
-        setSelectedEvent(null)
+        setViewMode("list");
+        setSelectedEvent(null);
       }
-    })
-  }
+    });
+  };
 
   const handleDeleteEvent = (eventId: string) => {
-    deleteEvent.mutate(eventId)
-  }
+    deleteEvent.mutate(eventId);
+  };
 
   const handleEdit = (event: any) => {
     // Converter event_dates para o formato esperado pelo formulário
     const eventWithDates = {
       ...event,
       dates: event.event_dates || []
-    }
-    setSelectedEvent(eventWithDates)
-    setViewMode('edit')
-  }
+    };
+    setSelectedEvent(eventWithDates);
+    setViewMode("edit");
+  };
 
   const getStatusBadge = (status: string, eventDates: any[]) => {
-    const totalAvailable = eventDates?.reduce((sum, date) => sum + date.available_slots, 0) || 0
+    const totalAvailable = eventDates?.reduce((sum, date) => sum + date.available_slots, 0) || 0;
     
-    if (status === 'full' || totalAvailable === 0) {
-      return <Badge variant="secondary">Lotado</Badge>
+    if (status === "full" || totalAvailable === 0) {
+      return <Badge variant="secondary">Lotado</Badge>;
     }
-    if (status === 'closed') {
-      return <Badge variant="destructive">Fechado</Badge>
+    if (status === "closed") {
+      return <Badge variant="destructive">Fechado</Badge>;
     }
-    return <Badge variant="default">Aberto</Badge>
-  }
+    return <Badge variant="default">Aberto</Badge>;
+  };
 
 
 
-  if (viewMode === 'create') {
+  if (viewMode === "create") {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <Button 
             variant="outline" 
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -130,22 +131,22 @@ const AdminEvents = () => {
         </div>
         <EventForm
           onSubmit={handleCreateEvent}
-          onCancel={() => setViewMode('list')}
+          onCancel={() => setViewMode("list")}
           isLoading={createEvent.isPending}
         />
       </div>
-    )
+    );
   }
 
-  if (viewMode === 'edit' && selectedEvent) {
+  if (viewMode === "edit" && selectedEvent) {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
           <Button 
             variant="outline" 
             onClick={() => {
-              setViewMode('list')
-              setSelectedEvent(null)
+              setViewMode("list");
+              setSelectedEvent(null);
             }}
             className="mb-4"
           >
@@ -157,13 +158,13 @@ const AdminEvents = () => {
           initialData={selectedEvent}
           onSubmit={handleUpdateEvent}
           onCancel={() => {
-            setViewMode('list')
-            setSelectedEvent(null)
+            setViewMode("list");
+            setSelectedEvent(null);
           }}
           isLoading={updateEvent.isPending}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -177,11 +178,11 @@ const AdminEvents = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate('/admin')}>
+          <Button onClick={() => navigate("/admin")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar ao Dashboard
           </Button>
-          <Button onClick={() => setViewMode('create')}>
+          <Button onClick={() => setViewMode("create")}>
             <Plus className="mr-2 h-4 w-4" />
             Novo Atendimento
           </Button>
@@ -221,7 +222,7 @@ const AdminEvents = () => {
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchTerm ? 'Nenhum atendimento encontrado com este filtro' : 'Nenhum atendimento cadastrado'}
+                {searchTerm ? "Nenhum atendimento encontrado com este filtro" : "Nenhum atendimento cadastrado"}
               </p>
             </div>
           ) : (
@@ -238,8 +239,8 @@ const AdminEvents = () => {
               </TableHeader>
               <TableBody>
                 {filteredEvents.map((event) => {
-                  const totalSlots = event.event_dates?.reduce((sum, date) => sum + date.total_slots, 0) || 0
-                  const availableSlots = event.event_dates?.reduce((sum, date) => sum + date.available_slots, 0) || 0
+                  const totalSlots = event.event_dates?.reduce((sum, date) => sum + date.total_slots, 0) || 0;
+                  const availableSlots = event.event_dates?.reduce((sum, date) => sum + date.available_slots, 0) || 0;
                   
                   return (
                     <TableRow key={event.id}>
@@ -247,12 +248,12 @@ const AdminEvents = () => {
                         <div>
                           <div className="font-medium">{event.city}</div>
                           <div className="text-sm text-muted-foreground">
-                            Org: {event.organizers?.name || 'Organizador Local'}
+                            Org: {event.organizers?.name || "Organizador Local"}
                           </div>
                           {event.description && (
                             <div className="text-sm text-muted-foreground">
                               {event.description.slice(0, 60)}
-                              {event.description.length > 60 && '...'}
+                              {event.description.length > 60 && "..."}
                             </div>
                           )}
                         </div>
@@ -325,7 +326,7 @@ const AdminEvents = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -333,7 +334,7 @@ const AdminEvents = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default AdminEvents
+export default AdminEvents;

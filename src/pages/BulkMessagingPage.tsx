@@ -5,28 +5,28 @@
  * incluindo interface simples e avançada.
  */
 
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 // Components
-import { BulkMessageSender } from '@/components/admin/BulkMessageSender'
-import { QuickBulkSender } from '@/components/admin/QuickBulkSender'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { BulkMessageSender } from "@/components/admin/BulkMessageSender";
+import { QuickBulkSender } from "@/components/admin/QuickBulkSender";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // UI Components
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Icons
-import { Info, MessageSquare, Send, Settings, Users, Zap } from 'lucide-react'
+import { Info, MessageSquare, Send, Settings, Users, Zap } from "lucide-react";
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 
 export const BulkMessagingPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('quick')
+  const [activeTab, setActiveTab] = useState("quick");
 
   return (
     <ProtectedRoute requireAdmin>
@@ -222,7 +222,7 @@ export const BulkMessagingPage: React.FC = () => {
         </div>
       </div>
     </ProtectedRoute>
-  )
-}
+  );
+};
 
-export default BulkMessagingPage
+export default BulkMessagingPage;

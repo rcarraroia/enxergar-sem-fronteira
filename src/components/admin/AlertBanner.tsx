@@ -1,9 +1,9 @@
 
-import React from 'react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, Info, CheckCircle, XCircle, X } from 'lucide-react'
-import { SystemAlert } from '@/hooks/useSystemAlerts'
+import React from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, CheckCircle, Info, X, XCircle } from "lucide-react";
+import type { SystemAlert } from "@/hooks/useSystemAlerts";
 
 interface AlertBannerProps {
   alert: SystemAlert
@@ -14,22 +14,22 @@ interface AlertBannerProps {
 export const AlertBanner = ({ alert, onDismiss, onAction }: AlertBannerProps) => {
   const getIcon = () => {
     switch (alert.type) {
-      case 'error': return XCircle
-      case 'warning': return AlertTriangle
-      case 'success': return CheckCircle
-      default: return Info
+      case "error": return XCircle;
+      case "warning": return AlertTriangle;
+      case "success": return CheckCircle;
+      default: return Info;
     }
-  }
+  };
 
   const getVariant = () => {
     switch (alert.type) {
-      case 'error': return 'destructive'
-      case 'warning': return 'default'
-      default: return 'default'
+      case "error": return "destructive";
+      case "warning": return "default";
+      default: return "default";
     }
-  }
+  };
 
-  const Icon = getIcon()
+  const Icon = getIcon();
 
   return (
     <Alert variant={getVariant() as any} className="relative">
@@ -62,5 +62,5 @@ export const AlertBanner = ({ alert, onDismiss, onAction }: AlertBannerProps) =>
         </div>
       </AlertDescription>
     </Alert>
-  )
-}
+  );
+};

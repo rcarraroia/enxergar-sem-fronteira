@@ -1,36 +1,36 @@
 
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export const RoleBasedRedirect = () => {
-  const { user, userRole, loading } = useAuth()
-  const navigate = useNavigate()
+  const { user, userRole, loading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && user && userRole) {
-      console.log('🔄 Redirecionando baseado no papel:', userRole)
+      console.log("🔄 Redirecionando baseado no papel:", userRole);
       
       // REMOVIDO: Lógica de redirecionamento automático
       // O redirecionamento agora é feito apenas quando o usuário faz login
       // Não fazemos redirecionamento automático na navegação normal
       
       switch (userRole) {
-        case 'admin':
+        case "admin":
           // Admin pode navegar livremente, sem redirecionamento forçado
-          break
-        case 'organizer':
+          break;
+        case "organizer":
           // Organizador pode navegar livremente, sem redirecionamento forçado
-          break
-        case 'user':
+          break;
+        case "user":
           // Usuário comum pode navegar livremente, sem redirecionamento forçado
-          break
+          break;
         default:
           // Não fazer nada - deixar o usuário na página atual
-          break
+          break;
       }
     }
-  }, [user, userRole, loading, navigate])
+  }, [user, userRole, loading, navigate]);
 
   if (loading) {
     return (
@@ -40,8 +40,8 @@ export const RoleBasedRedirect = () => {
           <span className="text-muted-foreground">Carregando...</span>
         </div>
       </div>
-    )
+    );
   }
 
-  return null
-}
+  return null;
+};

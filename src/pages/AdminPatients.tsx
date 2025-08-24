@@ -1,23 +1,23 @@
 
-import React from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { PatientsList } from '@/components/admin/PatientsList'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { LogOut, Users, ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { PatientsList } from "@/components/admin/PatientsList";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, LogOut, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AdminPatients = () => {
-  const { user, signOut, isAdmin } = useAuth()
-  const navigate = useNavigate()
+  const { user, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+      console.error("Erro ao fazer logout:", error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,7 +28,7 @@ const AdminPatients = () => {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate("/admin")}
                 className="p-2"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -61,7 +61,7 @@ const AdminPatients = () => {
         <PatientsList />
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default AdminPatients
+export default AdminPatients;

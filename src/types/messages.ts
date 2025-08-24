@@ -2,10 +2,10 @@
  * MÓDULO DE MENSAGENS - TIPOS TYPESCRIPT
  */
 
-export type MessageChannel = 'email' | 'sms' | 'whatsapp'
-export type RecipientType = 'patient' | 'promoter' | 'donor' | 'admin'
-export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'read'
-export type EventType = 'sent' | 'delivered' | 'failed' | 'webhook_received' | 'retry'
+export type MessageChannel = "email" | "sms" | "whatsapp"
+export type RecipientType = "patient" | "promoter" | "donor" | "admin"
+export type MessageStatus = "pending" | "sent" | "delivered" | "failed" | "read"
+export type EventType = "sent" | "delivered" | "failed" | "webhook_received" | "retry"
 
 // Template de mensagem
 export interface MessageTemplate {
@@ -173,30 +173,30 @@ export interface MessageStats {
 // Eventos de trigger disponíveis
 export const TRIGGER_EVENTS = {
   // Pacientes
-  ON_REGISTRATION_SUCCESS: 'on_registration_success',
-  ON_APPOINTMENT_CREATED: 'on_appointment_created',
-  ON_APPOINTMENT_24H_BEFORE: 'on_appointment_24h_before',
-  ON_APPOINTMENT_CANCELLED: 'on_appointment_cancelled',
+  ON_REGISTRATION_SUCCESS: "on_registration_success",
+  ON_APPOINTMENT_CREATED: "on_appointment_created",
+  ON_APPOINTMENT_24H_BEFORE: "on_appointment_24h_before",
+  ON_APPOINTMENT_CANCELLED: "on_appointment_cancelled",
   
   // Doadores
-  ON_DONATION_RECEIVED: 'on_donation_received',
-  ON_DONATION_FAILED: 'on_donation_failed',
+  ON_DONATION_RECEIVED: "on_donation_received",
+  ON_DONATION_FAILED: "on_donation_failed",
   
   // Campanhas
-  ON_CAMPAIGN_COMPLETION: 'on_campaign_completion',
-  ON_CAMPAIGN_MILESTONE: 'on_campaign_milestone',
+  ON_CAMPAIGN_COMPLETION: "on_campaign_completion",
+  ON_CAMPAIGN_MILESTONE: "on_campaign_milestone",
   
   // Promotores
-  ON_PROMOTER_REGISTERED: 'on_promoter_registered',
-  ON_EVENT_COMPLETED: 'on_event_completed'
-} as const
+  ON_PROMOTER_REGISTERED: "on_promoter_registered",
+  ON_EVENT_COMPLETED: "on_event_completed"
+} as const;
 
 export type TriggerEvent = typeof TRIGGER_EVENTS[keyof typeof TRIGGER_EVENTS]
 
 // Variáveis padrão disponíveis por contexto
 export const DEFAULT_VARIABLES = {
-  patient: ['nome', 'email', 'telefone', 'data_consulta', 'local_consulta'],
-  promoter: ['nome', 'email', 'evento', 'data_evento', 'local_evento'],
-  donor: ['nome', 'email', 'valor_doacao', 'campanha', 'data_doacao'],
-  admin: ['nome', 'email']
-} as const
+  patient: ["nome", "email", "telefone", "data_consulta", "local_consulta"],
+  promoter: ["nome", "email", "evento", "data_evento", "local_evento"],
+  donor: ["nome", "email", "valor_doacao", "campanha", "data_doacao"],
+  admin: ["nome", "email"]
+} as const;

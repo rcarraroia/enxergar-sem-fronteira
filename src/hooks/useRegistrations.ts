@@ -1,6 +1,6 @@
 
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Registration {
   id: string
@@ -34,14 +34,14 @@ export interface Registration {
 
 export const useRegistrations = (eventId?: string, eventDateId?: string) => {
   return useQuery({
-    queryKey: ['registrations', eventId, eventDateId],
+    queryKey: ["registrations", eventId, eventDateId],
     queryFn: async () => {
-      console.log('🔍 Buscando inscrições...', 
+      console.log("🔍 Buscando inscrições...", 
         eventId ? `para evento ${eventId}` : 
-        eventDateId ? `para data ${eventDateId}` : 'todas')
+        eventDateId ? `para data ${eventDateId}` : "todas");
       
       let query = supabase
-        .from('registrations')
+        .from("registrations")
         .select(`
           id,
           status,
@@ -71,38 +71,38 @@ export const useRegistrations = (eventId?: string, eventDateId?: string) => {
             )
           )
         `)
-        .order('created_at', { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (eventDateId) {
         // Filtrar por event_date_id específico
-        query = query.eq('event_date_id', eventDateId)
+        query = query.eq("event_date_id", eventDateId);
       } else if (eventId) {
         // Buscar por event_date_id relacionado ao eventId
         const { data: eventDates } = await supabase
-          .from('event_dates')
-          .select('id')
-          .eq('event_id', eventId)
+          .from("event_dates")
+          .select("id")
+          .eq("event_id", eventId);
         
         if (eventDates && eventDates.length > 0) {
-          const eventDateIds = eventDates.map(ed => ed.id)
-          query = query.in('event_date_id', eventDateIds)
+          const eventDateIds = eventDates.map(ed => ed.id);
+          query = query.in("event_date_id", eventDateIds);
         } else {
           // Se não encontrou datas para o evento, retornar array vazio
-          console.log('📭 Nenhuma data encontrada para o evento:', eventId)
-          return []
+          console.log("📭 Nenhuma data encontrada para o evento:", eventId);
+          return [];
         }
       }
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
       if (error) {
-        console.error('❌ Erro ao buscar inscrições:', error)
-        throw error
+        console.error("❌ Erro ao buscar inscrições:", error);
+        throw error;
       }
 
-      console.log(`✅ Encontradas ${data?.length || 0} inscrições`)
-      console.log('📊 Dados das inscrições:', data)
-      return data as Registration[]
+      console.log(`✅ Encontradas ${data?.length || 0} inscrições`);
+      console.log("📊 Dados das inscrições:", data);
+      return data as Registration[];
     }
-  })
-}
+  });
+};

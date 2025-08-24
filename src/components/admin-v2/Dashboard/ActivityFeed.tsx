@@ -2,55 +2,55 @@
  * ACTIVITY FEED V2 - Feed de atividades com dados reais
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Clock,
-  UserPlus, 
-  CalendarPlus, 
-  UserCheck, 
-  RefreshCw,
-  Loader2
-} from 'lucide-react'
-import { useRecentActivityV2 } from '@/hooks/admin-v2/useRecentActivity'
+  CalendarPlus,
+  Clock, 
+  Loader2, 
+  RefreshCw, 
+  UserCheck,
+  UserPlus
+} from "lucide-react";
+import { useRecentActivityV2 } from "@/hooks/admin-v2/useRecentActivity";
 
 export const ActivityFeed: React.FC = () => {
-  const { data: activities = [], isLoading, error } = useRecentActivityV2()
+  const { data: activities = [], isLoading, error } = useRecentActivityV2();
   const getIcon = (type: string) => {
     switch (type) {
-      case 'patient_registered': return UserPlus
-      case 'event_created': return CalendarPlus
-      case 'registration_completed': return UserCheck
-      case 'event_updated': return RefreshCw
-      default: return Clock
+      case "patient_registered": return UserPlus;
+      case "event_created": return CalendarPlus;
+      case "registration_completed": return UserCheck;
+      case "event_updated": return RefreshCw;
+      default: return Clock;
     }
-  }
+  };
 
   const getIconColor = (type: string) => {
     switch (type) {
-      case 'patient_registered': return 'text-blue-600'
-      case 'event_created': return 'text-green-600'
-      case 'registration_completed': return 'text-purple-600'
-      case 'event_updated': return 'text-orange-600'
-      default: return 'text-gray-600'
+      case "patient_registered": return "text-blue-600";
+      case "event_created": return "text-green-600";
+      case "registration_completed": return "text-purple-600";
+      case "event_updated": return "text-orange-600";
+      default: return "text-gray-600";
     }
-  }
+  };
 
   const formatTimeAgo = (timestamp: string) => {
-    const now = new Date()
-    const time = new Date(timestamp)
-    const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60));
     
     if (diffInMinutes < 1) {
-      return 'Agora mesmo'
+      return "Agora mesmo";
     } else if (diffInMinutes < 60) {
-      return `${diffInMinutes} min atrás`
+      return `${diffInMinutes} min atrás`;
     } else if (diffInMinutes < 1440) {
-      return `${Math.floor(diffInMinutes / 60)}h atrás`
+      return `${Math.floor(diffInMinutes / 60)}h atrás`;
     } else {
-      return `${Math.floor(diffInMinutes / 1440)} dias atrás`
+      return `${Math.floor(diffInMinutes / 1440)} dias atrás`;
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -67,7 +67,7 @@ export const ActivityFeed: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -85,7 +85,7 @@ export const ActivityFeed: React.FC = () => {
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -107,8 +107,8 @@ export const ActivityFeed: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {activities.map((activity) => {
-              const Icon = getIcon(activity.type)
-              const iconColor = getIconColor(activity.type)
+              const Icon = getIcon(activity.type);
+              const iconColor = getIconColor(activity.type);
               
               return (
                 <div key={activity.id} className="flex items-start gap-3">
@@ -127,11 +127,11 @@ export const ActivityFeed: React.FC = () => {
                     </Badge>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};

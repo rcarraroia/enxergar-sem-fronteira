@@ -17,66 +17,74 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
     queryFn: async () => {
       console.log('🔍 Buscando inscrições com filtros:', filters)
       
-      let query = supabase
-        .from('registrations')
-        .select(`
-          id,
-          status,
-          created_at,
-          updated_at,
-          event_date_id,
-          patients (
+      try {
+        let query = supabase
+          .from('registrations')
+          .select(`
             id,
-            nome,
-            email,
-            telefone,
-            data_nascimento,
-            diagnostico
-          ),
-          event_dates (
-            id,
-            date,
-            start_time,
-            end_time,
-            total_slots,
-            available_slots,
-            events (
+            status,
+            created_at,
+            updated_at,
+            event_date_id,
+            patient_id,
+            patients!inner (
               id,
-              title,
-              location,
-              city,
-              address
+              nome,
+              email,
+              telefone,
+              data_nascimento,
+              diagnostico
+            ),
+            event_dates!inner (
+              id,
+              date,
+              start_time,
+              end_time,
+              total_slots,
+              available_slots,
+              events!inner (
+                id,
+                title,
+                location,
+                city,
+                address
+              )
             )
-          )
-        `)
-        .order('created_at', { ascending: false })
+          `)
+          .order('created_at', { ascending: false })
 
-      // Aplicar filtro de status da inscrição
-      if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status)
-      }
+        console.log('📊 Executando query no Supabase...')
 
-      const { data: allRegistrations, error } = await query
-
-      if (error) {
-        console.error('❌ Erro ao buscar inscrições:', error)
-        throw error
-      }
-
-      if (!allRegistrations) {
-        return []
-      }
-
-      // Filtrar no cliente para filtros mais complexos
-      let filteredRegistrations = allRegistrations.filter(reg => {
-        // Verificar se a estrutura está correta
-        if (!reg.patients || !reg.event_dates?.events) {
-          return false
+        // Aplicar filtro de status da inscrição
+        if (filters.status && filters.status !== 'all') {
+          query = query.eq('status', filters.status)
         }
 
-        const patient = reg.patients
-        const eventDate = reg.event_dates
-        const event = eventDate.events
+        const { data: allRegistrations, error } = await query
+
+        if (error) {
+          console.error('❌ Erro ao buscar inscrições:', error)
+          throw error
+        }
+
+        console.log('📊 Dados brutos do Supabase:', allRegistrations)
+
+        if (!allRegistrations || allRegistrations.length === 0) {
+          console.log('⚠️ Nenhum registro encontrado')
+          return []
+        }
+
+        // Filtrar no cliente para filtros mais complexos
+        let filteredRegistrations = allRegistrations.filter(reg => {
+          // Verificar se a estrutura está correta
+          if (!reg.patients || !reg.event_dates?.events) {
+            console.log('⚠️ Registro com estrutura inválida:', reg)
+            return false
+          }
+
+          const patient = reg.patients
+          const eventDate = reg.event_dates
+          const event = eventDate.events
 
         // Filtro de busca por texto
         if (filters.searchTerm) {

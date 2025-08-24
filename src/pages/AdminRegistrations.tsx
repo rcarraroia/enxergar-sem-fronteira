@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Table, 
   TableBody, 
@@ -11,105 +11,105 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import { 
-  Users, 
-  Calendar,
+  Calendar, 
+  FileText,
+  Mail,
   MapPin,
   Phone,
-  Mail,
-  FileText
-} from 'lucide-react'
-import { RegistrationFilters } from '@/components/admin/RegistrationFilters'
-import { useRegistrationsFiltered, useAvailableCities } from '@/hooks/useRegistrationsFiltered'
-import { toast } from 'sonner'
-import type { Registration } from '@/hooks/useRegistrations'
+  Users
+} from "lucide-react";
+import { RegistrationFilters } from "@/components/admin/RegistrationFilters";
+import { useAvailableCities, useRegistrationsFiltered } from "@/hooks/useRegistrationsFiltered";
+import { toast } from "sonner";
+import type { Registration } from "@/hooks/useRegistrations";
 
 export default function AdminRegistrations() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   // Estados dos filtros
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCity, setSelectedCity] = useState('all')
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [eventStatusFilter, setEventStatusFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [eventStatusFilter, setEventStatusFilter] = useState("all");
 
   // Verificar se deve filtrar por data específica
   useEffect(() => {
-    const dateParam = searchParams.get('date')
+    const dateParam = searchParams.get("date");
     if (dateParam) {
-      console.log('🎯 AdminRegistrations: Aplicando filtro de data:', dateParam)
-      setSelectedDate(new Date(dateParam))
+      console.log("🎯 AdminRegistrations: Aplicando filtro de data:", dateParam);
+      setSelectedDate(new Date(dateParam));
       // Limpar o parâmetro da URL
-      navigate('/admin/registrations', { replace: true })
+      navigate("/admin/registrations", { replace: true });
     }
-  }, [searchParams, navigate])
+  }, [searchParams, navigate]);
 
   // Buscar dados com filtros
   const { data: registrations = [], isLoading, refetch } = useRegistrationsFiltered({
     searchTerm: searchTerm || undefined,
-    city: selectedCity !== 'all' ? selectedCity : undefined,
+    city: selectedCity !== "all" ? selectedCity : undefined,
     date: selectedDate,
-    status: statusFilter !== 'all' ? statusFilter : undefined,
-    eventStatus: eventStatusFilter !== 'all' ? eventStatusFilter : undefined
-  })
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    eventStatus: eventStatusFilter !== "all" ? eventStatusFilter : undefined
+  });
 
   // Buscar cidades disponíveis
-  const { data: availableCities = [] } = useAvailableCities()
+  const { data: availableCities = [] } = useAvailableCities();
 
   const handleStatusChange = async (registrationId: string, newStatus: string) => {
     try {
       // Implementar mudança de status
-      toast.success('Status atualizado com sucesso!')
-      refetch()
+      toast.success("Status atualizado com sucesso!");
+      refetch();
     } catch (error) {
-      toast.error('Erro ao atualizar status')
+      toast.error("Erro ao atualizar status");
     }
-  }
+  };
 
   const exportRegistrations = () => {
     if (registrations.length === 0) {
-      toast.error('Nenhuma inscrição para exportar')
-      return
+      toast.error("Nenhuma inscrição para exportar");
+      return;
     }
 
     const csvContent = [
-      ['Nome', 'Email', 'Telefone', 'Cidade', 'Evento', 'Data', 'Status'].join(','),
+      ["Nome", "Email", "Telefone", "Cidade", "Evento", "Data", "Status"].join(","),
       ...registrations.map((reg: Registration) => [
         reg.patient.nome,
         reg.patient.email,
         reg.patient.telefone,
         reg.event_date.event.city,
         reg.event_date.event.title,
-        new Date(reg.event_date.date).toLocaleDateString('pt-BR'),
+        new Date(reg.event_date.date).toLocaleDateString("pt-BR"),
         reg.status
-      ].join(','))
-    ].join('\n')
+      ].join(","))
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', 'inscricoes.csv')
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "inscricoes.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
-    toast.success('Dados exportados com sucesso!')
-  }
+    toast.success("Dados exportados com sucesso!");
+  };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-48">Carregando...</div>
+    return <div className="flex items-center justify-center h-48">Carregando...</div>;
   }
 
   return (
@@ -143,7 +143,7 @@ export default function AdminRegistrations() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Confirmadas</p>
                 <p className="text-2xl font-bold">
-                  {registrations.filter((r: Registration) => r.status === 'confirmed').length}
+                  {registrations.filter((r: Registration) => r.status === "confirmed").length}
                 </p>
               </div>
             </div>
@@ -157,7 +157,7 @@ export default function AdminRegistrations() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
                 <p className="text-2xl font-bold">
-                  {registrations.filter((r: Registration) => r.status === 'pending').length}
+                  {registrations.filter((r: Registration) => r.status === "pending").length}
                 </p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function AdminRegistrations() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Canceladas</p>
                 <p className="text-2xl font-bold">
-                  {registrations.filter((r: Registration) => r.status === 'cancelled').length}
+                  {registrations.filter((r: Registration) => r.status === "cancelled").length}
                 </p>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function AdminRegistrations() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div>{new Date(registration.event_date.date).toLocaleDateString('pt-BR')}</div>
+                        <div>{new Date(registration.event_date.date).toLocaleDateString("pt-BR")}</div>
                         <div className="text-sm text-muted-foreground">
                           {registration.event_date.start_time}
                         </div>
@@ -258,18 +258,18 @@ export default function AdminRegistrations() {
                     <TableCell>
                       <Badge
                         variant={
-                          registration.status === 'confirmed' ? 'default' :
-                          registration.status === 'pending' ? 'secondary' : 'destructive'
+                          registration.status === "confirmed" ? "default" :
+                          registration.status === "pending" ? "secondary" : "destructive"
                         }
                       >
-                        {registration.status === 'confirmed' ? 'Confirmada' :
-                         registration.status === 'pending' ? 'Pendente' : 
-                         registration.status === 'attended' ? 'Compareceu' : 'Cancelada'}
+                        {registration.status === "confirmed" ? "Confirmada" :
+                         registration.status === "pending" ? "Pendente" : 
+                         registration.status === "attended" ? "Compareceu" : "Cancelada"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(registration.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(registration.created_at).toLocaleDateString("pt-BR")}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -302,5 +302,5 @@ export default function AdminRegistrations() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

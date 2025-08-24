@@ -1,12 +1,12 @@
 
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Clock, Users, Eye, ArrowRight, RefreshCw } from 'lucide-react';
-import { useEvents } from '@/hooks/useEvents';
-import { useNavigate } from 'react-router-dom';
-import { formatTime, formatDate } from '@/utils/dateUtils';
-import { useState } from 'react';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Calendar, Clock, Eye, MapPin, RefreshCw, Users } from "lucide-react";
+import { useEvents } from "@/hooks/useEvents";
+import { useNavigate } from "react-router-dom";
+import { formatDate, formatTime } from "@/utils/dateUtils";
+import { useState } from "react";
 
 const EventsSection = () => {
   const { data: events, isLoading, refetch, isFetching } = useEvents();
@@ -16,25 +16,25 @@ const EventsSection = () => {
   const getStatusInfo = (availableSlots: number, totalSlots: number) => {
     if (availableSlots === 0) {
       return {
-        badge: 'Lotado',
-        variant: 'destructive' as const,
-        bgColor: 'bg-destructive/10',
-        textColor: 'text-destructive'
+        badge: "Lotado",
+        variant: "destructive" as const,
+        bgColor: "bg-destructive/10",
+        textColor: "text-destructive"
       };
     }
     if (availableSlots <= totalSlots * 0.3) {
       return {
-        badge: 'Vagas Limitadas',
-        variant: 'secondary' as const,
-        bgColor: 'bg-warning/10',
-        textColor: 'text-warning'
+        badge: "Vagas Limitadas",
+        variant: "secondary" as const,
+        bgColor: "bg-warning/10",
+        textColor: "text-warning"
       };
     }
     return {
-      badge: 'Inscrições Abertas',
-      variant: 'default' as const,
-      bgColor: 'bg-secondary/10',
-      textColor: 'text-secondary'
+      badge: "Inscrições Abertas",
+      variant: "default" as const,
+      bgColor: "bg-secondary/10",
+      textColor: "text-secondary"
     };
   };
 
@@ -43,13 +43,13 @@ const EventsSection = () => {
     e.stopPropagation();
     
     if (isNavigating) {
-      console.log('⚠️ EventsSection: Navegação já em andamento, ignorando clique');
+      console.log("⚠️ EventsSection: Navegação já em andamento, ignorando clique");
       return;
     }
     
     setIsNavigating(true);
-    console.log('🎯 EventsSection: Redirecionando para seleção de eventos (ÚNICO)');
-    navigate('/eventos');
+    console.log("🎯 EventsSection: Redirecionando para seleção de eventos (ÚNICO)");
+    navigate("/eventos");
   };
 
   const handleWaitingListClick = (e: React.MouseEvent) => {
@@ -57,17 +57,17 @@ const EventsSection = () => {
     e.stopPropagation();
     
     if (isNavigating) {
-      console.log('⚠️ EventsSection: Navegação já em andamento, ignorando clique da lista de espera');
+      console.log("⚠️ EventsSection: Navegação já em andamento, ignorando clique da lista de espera");
       return;
     }
     
     setIsNavigating(true);
-    console.log('🎯 EventsSection: Redirecionando para lista de espera (ÚNICO)');
-    navigate('/eventos');
+    console.log("🎯 EventsSection: Redirecionando para lista de espera (ÚNICO)");
+    navigate("/eventos");
   };
 
   const handleRefresh = () => {
-    console.log('🔄 Atualizando lista de eventos...');
+    console.log("🔄 Atualizando lista de eventos...");
     refetch();
   };
 
@@ -116,7 +116,7 @@ const EventsSection = () => {
               disabled={isFetching}
               className="ml-2"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
           </div>
           
@@ -156,7 +156,7 @@ const EventsSection = () => {
                         <div>
                           <h3 className="font-semibold text-foreground text-lg">{expandedEvent.city}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Organizado por: {expandedEvent.organizers?.name || 'Organizador Local'}
+                            Organizado por: {expandedEvent.organizers?.name || "Organizador Local"}
                           </p>
                           <Badge variant={statusInfo.variant} className="mt-1">
                             {statusInfo.badge}
@@ -209,11 +209,11 @@ const EventsSection = () => {
 
                     {/* Action Button */}
                     <Button 
-                      className={`w-full ${availableSlots === 0 ? 'opacity-50 cursor-not-allowed' : 'btn-hero group'}`}
+                      className={`w-full ${availableSlots === 0 ? "opacity-50 cursor-not-allowed" : "btn-hero group"}`}
                       disabled={availableSlots === 0 || isNavigating}
                       onClick={handleEventClick}
                     >
-                      {isNavigating ? 'Redirecionando...' : availableSlots === 0 ? 'Data Lotada' : 'Inscrever-se'}
+                      {isNavigating ? "Redirecionando..." : availableSlots === 0 ? "Data Lotada" : "Inscrever-se"}
                       {availableSlots > 0 && !isNavigating && (
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       )}
@@ -245,7 +245,7 @@ const EventsSection = () => {
                 onClick={handleWaitingListClick}
                 disabled={isNavigating}
               >
-                {isNavigating ? 'Redirecionando...' : 'Entrar na Lista de Espera'}
+                {isNavigating ? "Redirecionando..." : "Entrar na Lista de Espera"}
               </Button>
             </div>
           </Card>

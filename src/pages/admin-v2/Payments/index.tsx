@@ -3,17 +3,17 @@
  * Página temporária para navegação
  */
 
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, Construction } from 'lucide-react'
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Construction, CreditCard } from "lucide-react";
 
 const AdminPaymentsV2 = () => {
   return (
     <AdminLayout 
       title="Gestão de Pagamentos" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Pagamentos', path: '/admin-v2/payments' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Pagamentos", path: "/admin-v2/payments" }
       ]}
     >
       <Card>
@@ -38,7 +38,7 @@ const AdminPaymentsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminPaymentsV2
+export default AdminPaymentsV2;

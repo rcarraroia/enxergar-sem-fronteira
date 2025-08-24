@@ -1,9 +1,9 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
-import React from 'react'
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
+import React from "react";
 
 // Mock Supabase
-vi.mock('@/integrations/supabase/client', () => ({
+vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),
@@ -22,23 +22,23 @@ vi.mock('@/integrations/supabase/client', () => ({
       delete: vi.fn(() => Promise.resolve({ data: null, error: null }))
     }))
   }
-}))
+}));
 
 // Mock React Router
-vi.mock('react-router-dom', () => ({
+vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
-  useLocation: () => ({ pathname: '/' }),
+  useLocation: () => ({ pathname: "/" }),
   useParams: () => ({}),
   BrowserRouter: ({ children }: { children: React.ReactNode }) => children,
   Routes: ({ children }: { children: React.ReactNode }) => children,
   Route: ({ children }: { children: React.ReactNode }) => children,
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => {
-    return React.createElement('a', { href: to }, children)
+    return React.createElement("a", { href: to }, children);
   }
-}))
+}));
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
@@ -50,4 +50,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});

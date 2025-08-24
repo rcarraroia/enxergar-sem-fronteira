@@ -1,29 +1,29 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
-  MessageSquare, 
+  Eye, 
+  MessageSquare,
   Plus,
-  Settings,
-  Eye
-} from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+  Settings
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const NotificationTemplatesCard = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   
   // Versão simplificada para evitar erros de hooks
-  const templates: any[] = []
+  const templates: any[] = [];
 
   const handleManageAll = () => {
-    navigate('/admin/settings?tab=templates')
-  }
+    navigate("/admin/settings?tab=templates");
+  };
 
   const handleCreateTemplate = () => {
-    navigate('/admin/settings?tab=templates&action=create')
-  }
+    navigate("/admin/settings?tab=templates&action=create");
+  };
 
   return (
     <Card className="h-full">
@@ -90,5 +90,5 @@ export const NotificationTemplatesCard = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

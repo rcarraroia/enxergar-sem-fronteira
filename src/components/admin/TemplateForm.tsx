@@ -4,10 +4,10 @@
  * VERSÃO SIMPLIFICADA para evitar React Error #310
  */
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { TemplateFormProps } from '@/types/notificationTemplates'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import type { TemplateFormProps } from "@/types/notificationTemplates";
 
 export const TemplateForm: React.FC<TemplateFormProps> = ({
   template,
@@ -39,5 +39,5 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};

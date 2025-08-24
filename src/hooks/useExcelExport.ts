@@ -4,13 +4,13 @@
 
 import {
     convertRegistrationsToExportData,
-    exportToExcel,
-    generateDataStats,
     type ExportData,
-    type ExportOptions
-} from '@/utils/excelExporter';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+    type ExportOptions,
+    exportToExcel,
+    generateDataStats
+} from "@/utils/excelExporter";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface UseExcelExportOptions {
   onSuccess?: (filename: string, stats: any) => void;
@@ -31,7 +31,7 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
     }> = {}
   ) => {
     if (registrations.length === 0) {
-      toast.error('Nenhum dado disponível para exportação');
+      toast.error("Nenhum dado disponível para exportação");
       return false;
     }
 
@@ -45,21 +45,21 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
       if (!exportOptions.includeAllFields) {
         exportData = exportData.map(item => ({
           ...item,
-          cpf: '', // Remove CPF por privacidade
-          endereco: '', // Remove endereço por privacidade
+          cpf: "", // Remove CPF por privacidade
+          endereco: "", // Remove endereço por privacidade
         }));
       }
 
       // Gerar nome do arquivo baseado nos filtros
       let filename = defaultFilename;
       if (!filename) {
-        const cityName = exportOptions.selectedCity !== 'all' && exportOptions.selectedCity
-          ? exportOptions.selectedCity.replace(/\s+/g, '_')
-          : 'todas_cidades';
+        const cityName = exportOptions.selectedCity !== "all" && exportOptions.selectedCity
+          ? exportOptions.selectedCity.replace(/\s+/g, "_")
+          : "todas_cidades";
         const dateStr = exportOptions.selectedDate
-          ? exportOptions.selectedDate.replace(/-/g, '_')
-          : new Date().toISOString().split('T')[0].replace(/-/g, '_');
-        const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, '');
+          ? exportOptions.selectedDate.replace(/-/g, "_")
+          : new Date().toISOString().split("T")[0].replace(/-/g, "_");
+        const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, "");
 
         filename = `agendamentos_${cityName}_${dateStr}_${timestamp}.xlsx`;
       }
@@ -67,7 +67,7 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
       // Exportar para Excel
       await exportToExcel(exportData, {
         filename,
-        sheetName: 'Agendamentos',
+        sheetName: "Agendamentos",
         formatData: true,
         ...exportOptions
       });
@@ -91,14 +91,14 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
       return true;
 
     } catch (error) {
-      console.error('Erro na exportação Excel:', error);
+      console.error("Erro na exportação Excel:", error);
 
-      const exportError = error instanceof Error ? error : new Error('Erro desconhecido na exportação');
+      const exportError = error instanceof Error ? error : new Error("Erro desconhecido na exportação");
 
       if (onError) {
         onError(exportError);
       } else {
-        toast.error('Erro ao exportar arquivo Excel');
+        toast.error("Erro ao exportar arquivo Excel");
       }
 
       return false;
@@ -112,7 +112,7 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
     exportOptions: ExportOptions = {}
   ) => {
     if (data.length === 0) {
-      toast.error('Nenhum dado disponível para exportação');
+      toast.error("Nenhum dado disponível para exportação");
       return false;
     }
 
@@ -120,10 +120,10 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
 
     try {
       const filename = exportOptions.filename ||
-        `dados_exportados_${new Date().toISOString().split('T')[0]}.xlsx`;
+        `dados_exportados_${new Date().toISOString().split("T")[0]}.xlsx`;
 
       await exportToExcel(data, {
-        sheetName: 'Dados',
+        sheetName: "Dados",
         formatData: true,
         ...exportOptions,
         filename
@@ -140,14 +140,14 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
       return true;
 
     } catch (error) {
-      console.error('Erro na exportação Excel:', error);
+      console.error("Erro na exportação Excel:", error);
 
-      const exportError = error instanceof Error ? error : new Error('Erro desconhecido na exportação');
+      const exportError = error instanceof Error ? error : new Error("Erro desconhecido na exportação");
 
       if (onError) {
         onError(exportError);
       } else {
-        toast.error('Erro ao exportar arquivo Excel');
+        toast.error("Erro ao exportar arquivo Excel");
       }
 
       return false;

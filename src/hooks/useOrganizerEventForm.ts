@@ -1,9 +1,9 @@
 
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface EventFormData {
   title: string
@@ -30,132 +30,132 @@ interface Event extends EventFormData {
 }
 
 export const useOrganizerEventForm = (eventId?: string) => {
-  const { user } = useAuth()
-  const [saving, setSaving] = useState(false)
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
 
   // Buscar evento para edição
   const { data: event, isLoading: loading } = useQuery({
-    queryKey: ['organizer-event', eventId],
+    queryKey: ["organizer-event", eventId],
     queryFn: async (): Promise<Event | null> => {
-      if (!eventId || !user?.id) return null
+      if (!eventId || !user?.id) {return null;}
 
       const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .eq('organizer_id', user.id)
-        .single()
+        .from("events")
+        .select("*")
+        .eq("id", eventId)
+        .eq("organizer_id", user.id)
+        .single();
 
       if (error) {
-        console.error('Erro ao buscar evento:', error)
-        throw error
+        console.error("Erro ao buscar evento:", error);
+        throw error;
       }
 
-      return data
+      return data;
     },
     enabled: !!eventId && !!user?.id
-  })
+  });
 
   const createEvent = async (eventData: EventFormData) => {
     if (!user?.id) {
-      throw new Error('Usuário não autenticado')
+      throw new Error("Usuário não autenticado");
     }
 
-    setSaving(true)
+    setSaving(true);
     try {
       const { data, error } = await supabase
-        .from('events')
+        .from("events")
         .insert({
           ...eventData,
           organizer_id: user.id,
-          status: 'open'
+          status: "open"
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
-        console.error('Erro ao criar evento:', error)
-        toast.error('Erro ao criar evento: ' + error.message)
-        throw error
+        console.error("Erro ao criar evento:", error);
+        toast.error(`Erro ao criar evento: ${  error.message}`);
+        throw error;
       }
 
-      console.log('Evento criado com sucesso:', data)
-      return data
+      console.log("Evento criado com sucesso:", data);
+      return data;
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const createEventDate = async (eventId: string, eventDateData: EventDate) => {
     if (!user?.id) {
-      throw new Error('Usuário não autenticado')
+      throw new Error("Usuário não autenticado");
     }
 
-    setSaving(true)
+    setSaving(true);
     try {
       const { data, error } = await supabase
-        .from('event_dates')
+        .from("event_dates")
         .insert({
           event_id: eventId,
           ...eventDateData,
           available_slots: eventDateData.total_slots
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
-        console.error('Erro ao criar data do evento:', error)
-        toast.error('Erro ao criar data do evento: ' + error.message)
-        throw error
+        console.error("Erro ao criar data do evento:", error);
+        toast.error(`Erro ao criar data do evento: ${  error.message}`);
+        throw error;
       }
 
-      console.log('Data do evento criada com sucesso:', data)
-      return data
+      console.log("Data do evento criada com sucesso:", data);
+      return data;
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const updateEvent = async (eventId: string, eventData: EventFormData) => {
     if (!user?.id) {
-      throw new Error('Usuário não autenticado')
+      throw new Error("Usuário não autenticado");
     }
 
-    setSaving(true)
+    setSaving(true);
     try {
       // Verificar se o evento pertence ao organizador
       const { data: existingEvent, error: checkError } = await supabase
-        .from('events')
-        .select('id, organizer_id')
-        .eq('id', eventId)
-        .eq('organizer_id', user.id)
-        .single()
+        .from("events")
+        .select("id, organizer_id")
+        .eq("id", eventId)
+        .eq("organizer_id", user.id)
+        .single();
 
       if (checkError || !existingEvent) {
-        toast.error('Evento não encontrado ou você não tem permissão para editá-lo')
-        throw new Error('Evento não encontrado')
+        toast.error("Evento não encontrado ou você não tem permissão para editá-lo");
+        throw new Error("Evento não encontrado");
       }
 
       const { data, error } = await supabase
-        .from('events')
+        .from("events")
         .update(eventData)
-        .eq('id', eventId)
-        .eq('organizer_id', user.id)
+        .eq("id", eventId)
+        .eq("organizer_id", user.id)
         .select()
-        .single()
+        .single();
 
       if (error) {
-        console.error('Erro ao atualizar evento:', error)
-        toast.error('Erro ao atualizar evento: ' + error.message)
-        throw error
+        console.error("Erro ao atualizar evento:", error);
+        toast.error(`Erro ao atualizar evento: ${  error.message}`);
+        throw error;
       }
 
-      console.log('Evento atualizado com sucesso:', data)
-      return data
+      console.log("Evento atualizado com sucesso:", data);
+      return data;
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return {
     event,
@@ -164,5 +164,5 @@ export const useOrganizerEventForm = (eventId?: string) => {
     createEvent,
     createEventDate,
     updateEvent
-  }
-}
+  };
+};

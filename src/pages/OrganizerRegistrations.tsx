@@ -1,33 +1,33 @@
 
-import React, { useState, useEffect } from 'react'
-import { OrganizerLayout } from '@/components/organizer/OrganizerLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import React, { useEffect, useState } from "react";
+import { OrganizerLayout } from "@/components/organizer/OrganizerLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Search,
-  Filter,
-  Download,
-  Mail,
-  Check,
-  X,
   Calendar,
-  Users,
+  Check,
+  Download,
+  FileText,
+  Filter,
+  Mail,
+  Search,
   TrendingUp,
-  FileText
-} from 'lucide-react'
-import { useOrganizerRegistrations } from '@/hooks/useOrganizerRegistrations'
-import { useOrganizerEvents } from '@/hooks/useOrganizerEvents'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Users,
+  X
+} from "lucide-react";
+import { useOrganizerRegistrations } from "@/hooks/useOrganizerRegistrations";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -35,8 +35,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -45,9 +45,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const OrganizerRegistrations = () => {
   const { 
@@ -58,78 +58,78 @@ const OrganizerRegistrations = () => {
     markAttendance,
     sendBulkNotification,
     fetchRegistrationsByOrganizer
-  } = useOrganizerRegistrations()
-  const { events } = useOrganizerEvents()
+  } = useOrganizerRegistrations();
+  const { events } = useOrganizerEvents();
   
-  const [searchTerm, setSearchTerm] = useState('')
-  const [eventFilter, setEventFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>([])
-  const [notificationMessage, setNotificationMessage] = useState('')
-  const [notificationSubject, setNotificationSubject] = useState('')
+  const [searchTerm, setSearchTerm] = useState("");
+  const [eventFilter, setEventFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSubject, setNotificationSubject] = useState("");
 
   const filteredRegistrations = registrations.filter(registration => {
     const matchesSearch = 
       registration.patient.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       registration.patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.patient.cpf.includes(searchTerm)
+      registration.patient.cpf.includes(searchTerm);
     
-    const matchesEvent = eventFilter === 'all' || 
-      registration.event_date.event.id === eventFilter
+    const matchesEvent = eventFilter === "all" || 
+      registration.event_date.event.id === eventFilter;
     
-    const matchesStatus = statusFilter === 'all' || 
-      registration.status === statusFilter
+    const matchesStatus = statusFilter === "all" || 
+      registration.status === statusFilter;
     
-    return matchesSearch && matchesEvent && matchesStatus
-  })
+    return matchesSearch && matchesEvent && matchesStatus;
+  });
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRegistrations(filteredRegistrations.map(r => r.id))
+      setSelectedRegistrations(filteredRegistrations.map(r => r.id));
     } else {
-      setSelectedRegistrations([])
+      setSelectedRegistrations([]);
     }
-  }
+  };
 
   const handleSelectRegistration = (registrationId: string, checked: boolean) => {
     if (checked) {
-      setSelectedRegistrations(prev => [...prev, registrationId])
+      setSelectedRegistrations(prev => [...prev, registrationId]);
     } else {
-      setSelectedRegistrations(prev => prev.filter(id => id !== registrationId))
+      setSelectedRegistrations(prev => prev.filter(id => id !== registrationId));
     }
-  }
+  };
 
   const handleMarkAttendance = async (registrationId: string, attended: boolean) => {
-    await markAttendance(registrationId, attended)
-  }
+    await markAttendance(registrationId, attended);
+  };
 
-  const handleExport = async (format: 'csv' | 'pdf' = 'csv') => {
-    await exportRegistrations(format, eventFilter !== 'all' ? eventFilter : undefined)
-  }
+  const handleExport = async (format: "csv" | "pdf" = "csv") => {
+    await exportRegistrations(format, eventFilter !== "all" ? eventFilter : undefined);
+  };
 
   const handleSendNotification = async () => {
     if (selectedRegistrations.length === 0) {
-      return
+      return;
     }
     
-    await sendBulkNotification(selectedRegistrations, notificationMessage, notificationSubject)
-    setSelectedRegistrations([])
-    setNotificationMessage('')
-    setNotificationSubject('')
-  }
+    await sendBulkNotification(selectedRegistrations, notificationMessage, notificationSubject);
+    setSelectedRegistrations([]);
+    setNotificationMessage("");
+    setNotificationSubject("");
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge variant="secondary">Confirmado</Badge>
-      case 'attended':
-        return <Badge variant="default">Presente</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>
+      case "confirmed":
+        return <Badge variant="secondary">Confirmado</Badge>;
+      case "attended":
+        return <Badge variant="default">Presente</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelado</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -143,7 +143,7 @@ const OrganizerRegistrations = () => {
           <div className="h-96 bg-gray-200 rounded-lg"></div>
         </div>
       </OrganizerLayout>
-    )
+    );
   }
 
   return (
@@ -216,7 +216,7 @@ const OrganizerRegistrations = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">
-                  {events.filter(e => e.status === 'open').length}
+                  {events.filter(e => e.status === "open").length}
                 </div>
                 <p className="text-sm text-muted-foreground">Recebendo inscrições</p>
               </CardContent>
@@ -267,7 +267,7 @@ const OrganizerRegistrations = () => {
               </Select>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => handleExport('csv')}>
+                <Button variant="outline" onClick={() => handleExport("csv")}>
                   <Download className="h-4 w-4 mr-2" />
                   Exportar CSV
                 </Button>
@@ -310,8 +310,8 @@ const OrganizerRegistrations = () => {
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => {
-                          setNotificationMessage('')
-                          setNotificationSubject('')
+                          setNotificationMessage("");
+                          setNotificationSubject("");
                         }}>
                           Cancelar
                         </Button>
@@ -373,7 +373,7 @@ const OrganizerRegistrations = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div>{format(new Date(registration.event_date.date), 'dd/MM/yyyy', { locale: ptBR })}</div>
+                        <div>{format(new Date(registration.event_date.date), "dd/MM/yyyy", { locale: ptBR })}</div>
                         <div className="text-sm text-gray-500">
                           {registration.event_date.start_time} - {registration.event_date.end_time}
                         </div>
@@ -384,12 +384,12 @@ const OrganizerRegistrations = () => {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-gray-500">
-                        {format(new Date(registration.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                        {format(new Date(registration.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        {registration.status !== 'attended' && (
+                        {registration.status !== "attended" && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -399,7 +399,7 @@ const OrganizerRegistrations = () => {
                             <Check className="h-4 w-4" />
                           </Button>
                         )}
-                        {registration.status === 'attended' && (
+                        {registration.status === "attended" && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -423,9 +423,9 @@ const OrganizerRegistrations = () => {
                   Nenhuma inscrição encontrada
                 </h3>
                 <p className="text-gray-600">
-                  {searchTerm || eventFilter !== 'all' || statusFilter !== 'all'
-                    ? 'Tente ajustar os filtros para encontrar inscrições.'
-                    : 'Ainda não há inscrições para seus eventos.'
+                  {searchTerm || eventFilter !== "all" || statusFilter !== "all"
+                    ? "Tente ajustar os filtros para encontrar inscrições."
+                    : "Ainda não há inscrições para seus eventos."
                   }
                 </p>
               </div>
@@ -434,7 +434,7 @@ const OrganizerRegistrations = () => {
         </Card>
       </div>
     </OrganizerLayout>
-  )
-}
+  );
+};
 
-export default OrganizerRegistrations
+export default OrganizerRegistrations;

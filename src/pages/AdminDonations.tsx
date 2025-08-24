@@ -1,65 +1,65 @@
 
-import React from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { useCampaigns } from '@/hooks/useCampaigns'
-import { useDonations, useSubscriptions } from '@/hooks/useDonations'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { LogOut, ArrowLeft, Heart, DollarSign, TrendingUp, AlertCircle, Users, Calendar } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { CampaignForm } from '@/components/admin/CampaignForm'
-import { CampaignsList } from '@/components/admin/CampaignsList'
+import React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useDonations, useSubscriptions } from "@/hooks/useDonations";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle, ArrowLeft, Calendar, DollarSign, Heart, LogOut, TrendingUp, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { CampaignForm } from "@/components/admin/CampaignForm";
+import { CampaignsList } from "@/components/admin/CampaignsList";
 
 const AdminDonations = () => {
-  const { user, signOut, isAdmin } = useAuth()
-  const navigate = useNavigate()
-  const { campaigns } = useCampaigns()
-  const { donations } = useDonations()
-  const { subscriptions } = useSubscriptions()
+  const { user, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { campaigns } = useCampaigns();
+  const { donations } = useDonations();
+  const { subscriptions } = useSubscriptions();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+      console.error("Erro ao fazer logout:", error);
     }
-  }
+  };
 
   // Calcular métricas
   const stats = {
     totalCampaigns: campaigns?.length || 0,
-    activeCampaigns: campaigns?.filter(c => c.status === 'active').length || 0,
+    activeCampaigns: campaigns?.filter(c => c.status === "active").length || 0,
     totalRaised: campaigns?.reduce((sum, c) => sum + c.current_amount, 0) || 0,
     totalDonations: donations?.length || 0,
-    activeSubscriptions: subscriptions?.filter(s => s.status === 'active').length || 0,
+    activeSubscriptions: subscriptions?.filter(s => s.status === "active").length || 0,
     thisMonthDonations: donations?.filter(d => {
-      const donationDate = new Date(d.created_at)
-      const now = new Date()
+      const donationDate = new Date(d.created_at);
+      const now = new Date();
       return donationDate.getMonth() === now.getMonth() && 
-             donationDate.getFullYear() === now.getFullYear()
+             donationDate.getFullYear() === now.getFullYear();
     }).length || 0
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: 'default',
-      paid: 'default',
-      failed: 'destructive'
-    } as const
+      pending: "default",
+      paid: "default",
+      failed: "destructive"
+    } as const;
 
     const labels = {
-      pending: 'Pendente',
-      paid: 'Paga',
-      failed: 'Falhou'
-    }
+      pending: "Pendente",
+      paid: "Paga",
+      failed: "Falhou"
+    };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+      <Badge variant={variants[status as keyof typeof variants] || "default"}>
         {labels[status as keyof typeof labels] || status}
       </Badge>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,7 +71,7 @@ const AdminDonations = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/admin')}
+                onClick={() => navigate("/admin")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar
@@ -120,7 +120,7 @@ const AdminDonations = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {stats.totalRaised.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                R$ {stats.totalRaised.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </div>
             </CardContent>
           </Card>
@@ -188,18 +188,18 @@ const AdminDonations = () => {
                     <div key={donation.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">
-                          {donation.campaigns?.title || 'Campanha não identificada'}
+                          {donation.campaigns?.title || "Campanha não identificada"}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {donation.donor_name} • {donation.donor_email}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(donation.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(donation.created_at).toLocaleDateString("pt-BR")}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
-                          R$ {Number(donation.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {Number(donation.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                         </p>
                         {getStatusBadge(donation.payment_status)}
                       </div>
@@ -215,7 +215,7 @@ const AdminDonations = () => {
         <CampaignsList />
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default AdminDonations
+export default AdminDonations;

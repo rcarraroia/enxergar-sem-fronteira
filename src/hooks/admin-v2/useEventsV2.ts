@@ -3,9 +3,9 @@
  * EVENTS HOOK V2 - Gestão de eventos (versão corrigida)
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface EventV2 {
   id: string
@@ -14,7 +14,7 @@ export interface EventV2 {
   location: string
   address: string
   city: string
-  status: 'open' | 'closed' | 'full' | 'cancelled'
+  status: "open" | "closed" | "full" | "cancelled"
   organizer_id: string
   created_at: string
   updated_at: string
@@ -73,13 +73,13 @@ export interface EventFilters {
 // Hook para buscar eventos
 export const useEventsV2 = (filters: EventFilters = {}) => {
   return useQuery({
-    queryKey: ['events-v2', filters],
+    queryKey: ["events-v2", filters],
     queryFn: async (): Promise<EventV2[]> => {
       try {
-        console.log('🔍 [Events V2] Buscando eventos com filtros:', filters)
+        console.log("🔍 [Events V2] Buscando eventos com filtros:", filters);
         
         let query = supabase
-          .from('events')
+          .from("events")
           .select(`
             *,
             event_dates (
@@ -90,46 +90,46 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
               total_slots,
               available_slots
             )
-          `)
+          `);
 
         // Aplicar filtros
         if (filters.search) {
-          query = query.or(`title.ilike.%${filters.search}%,location.ilike.%${filters.search}%`)
+          query = query.or(`title.ilike.%${filters.search}%,location.ilike.%${filters.search}%`);
         }
 
         if (filters.city) {
-          query = query.eq('city', filters.city)
+          query = query.eq("city", filters.city);
         }
 
-        if (filters.status && filters.status !== 'all') {
-          query = query.eq('status', filters.status)
+        if (filters.status && filters.status !== "all") {
+          query = query.eq("status", filters.status);
         }
 
         if (filters.organizer_id) {
-          query = query.eq('organizer_id', filters.organizer_id)
+          query = query.eq("organizer_id", filters.organizer_id);
         }
 
         // Ordenar por data de criação (mais recente primeiro)
-        query = query.order('created_at', { ascending: false })
+        query = query.order("created_at", { ascending: false });
 
-        const { data: events, error } = await query
+        const { data: events, error } = await query;
 
         if (error) {
-          console.error('❌ [Events V2] Erro ao buscar eventos:', error)
-          throw error
+          console.error("❌ [Events V2] Erro ao buscar eventos:", error);
+          throw error;
         }
 
         // Processar dados dos eventos
         const processedEvents: EventV2[] = (events || []).map(event => {
-          const eventDates = event.event_dates || []
-          const totalSlots = eventDates.reduce((sum: number, date: any) => sum + date.total_slots, 0)
-          const occupiedSlots = eventDates.reduce((sum: number, date: any) => sum + (date.total_slots - date.available_slots), 0)
-          const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0
+          const eventDates = event.event_dates || [];
+          const totalSlots = eventDates.reduce((sum: number, date: any) => sum + date.total_slots, 0);
+          const occupiedSlots = eventDates.reduce((sum: number, date: any) => sum + (date.total_slots - date.available_slots), 0);
+          const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
 
           return {
             id: event.id,
             title: event.title,
-            description: event.description || '',
+            description: event.description || "",
             location: event.location,
             address: event.address,
             city: event.city,
@@ -141,50 +141,50 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
             occupied_slots: occupiedSlots,
             occupancy_rate: occupancyRate,
             upcoming_dates: eventDates.slice(0, 3) // Próximas 3 datas
-          }
-        })
+          };
+        });
 
-        console.log('📊 [Events V2] Eventos carregados:', processedEvents.length)
-        return processedEvents
+        console.log("📊 [Events V2] Eventos carregados:", processedEvents.length);
+        return processedEvents;
 
       } catch (error) {
-        console.error('❌ [Events V2] Erro crítico ao carregar eventos:', error)
-        throw error
+        console.error("❌ [Events V2] Erro crítico ao carregar eventos:", error);
+        throw error;
       }
     },
     staleTime: 10000, // 10 segundos
     refetchOnWindowFocus: true,
     refetchInterval: 30000 // 30 segundos
-  })
-}
+  });
+};
 
 // Hook para estatísticas de eventos
 export const useEventStatsV2 = () => {
   return useQuery({
-    queryKey: ['event-stats-v2'],
+    queryKey: ["event-stats-v2"],
     queryFn: async () => {
       try {
-        console.log('🔍 [Events V2] Buscando estatísticas...')
+        console.log("🔍 [Events V2] Buscando estatísticas...");
 
         // Buscar eventos
         const { data: events, error: eventsError } = await supabase
-          .from('events')
-          .select('id, status, created_at')
+          .from("events")
+          .select("id, status, created_at");
 
-        if (eventsError) throw eventsError
+        if (eventsError) {throw eventsError;}
 
         // Buscar datas dos eventos
         const { data: eventDates, error: datesError } = await supabase
-          .from('event_dates')
-          .select('total_slots, available_slots')
+          .from("event_dates")
+          .select("total_slots, available_slots");
 
-        if (datesError) throw datesError
+        if (datesError) {throw datesError;}
 
-        const totalEvents = events?.length || 0
-        const activeEvents = events?.filter(e => e.status === 'open').length || 0
-        const totalSlots = eventDates?.reduce((sum, date) => sum + date.total_slots, 0) || 0
-        const occupiedSlots = eventDates?.reduce((sum, date) => sum + (date.total_slots - date.available_slots), 0) || 0
-        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0
+        const totalEvents = events?.length || 0;
+        const activeEvents = events?.filter(e => e.status === "open").length || 0;
+        const totalSlots = eventDates?.reduce((sum, date) => sum + date.total_slots, 0) || 0;
+        const occupiedSlots = eventDates?.reduce((sum, date) => sum + (date.total_slots - date.available_slots), 0) || 0;
+        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
 
         return {
           total_events: totalEvents,
@@ -192,33 +192,33 @@ export const useEventStatsV2 = () => {
           total_slots: totalSlots,
           occupied_slots: occupiedSlots,
           occupancy_rate: occupancyRate
-        }
+        };
 
       } catch (error) {
-        console.error('❌ [Events V2] Erro ao carregar estatísticas:', error)
+        console.error("❌ [Events V2] Erro ao carregar estatísticas:", error);
         return {
           total_events: 0,
           active_events: 0,
           total_slots: 0,
           occupied_slots: 0,
           occupancy_rate: 0
-        }
+        };
       }
     },
     staleTime: 60000
-  })
-}
+  });
+};
 
 // Hook para buscar um evento específico
 export const useEventV2 = (eventId: string) => {
   return useQuery({
-    queryKey: ['event-v2', eventId],
+    queryKey: ["event-v2", eventId],
     queryFn: async (): Promise<EventV2> => {
       try {
-        console.log('🔍 [Events V2] Buscando evento:', eventId)
+        console.log("🔍 [Events V2] Buscando evento:", eventId);
         
         const { data: event, error } = await supabase
-          .from('events')
+          .from("events")
           .select(`
             *,
             event_dates (
@@ -230,24 +230,24 @@ export const useEventV2 = (eventId: string) => {
               available_slots
             )
           `)
-          .eq('id', eventId)
-          .single()
+          .eq("id", eventId)
+          .single();
 
         if (error) {
-          console.error('❌ [Events V2] Erro ao buscar evento:', error)
-          throw error
+          console.error("❌ [Events V2] Erro ao buscar evento:", error);
+          throw error;
         }
 
         // Processar dados do evento
-        const eventDates = event.event_dates || []
-        const totalSlots = eventDates.reduce((sum: number, date: any) => sum + date.total_slots, 0)
-        const occupiedSlots = eventDates.reduce((sum: number, date: any) => sum + (date.total_slots - date.available_slots), 0)
-        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0
+        const eventDates = event.event_dates || [];
+        const totalSlots = eventDates.reduce((sum: number, date: any) => sum + date.total_slots, 0);
+        const occupiedSlots = eventDates.reduce((sum: number, date: any) => sum + (date.total_slots - date.available_slots), 0);
+        const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
 
         const processedEvent: EventV2 = {
           id: event.id,
           title: event.title,
-          description: event.description || '',
+          description: event.description || "",
           location: event.location,
           address: event.address,
           city: event.city,
@@ -259,33 +259,33 @@ export const useEventV2 = (eventId: string) => {
           occupied_slots: occupiedSlots,
           occupancy_rate: occupancyRate,
           upcoming_dates: eventDates
-        }
+        };
 
-        console.log('✅ [Events V2] Evento carregado:', processedEvent.title)
-        return processedEvent
+        console.log("✅ [Events V2] Evento carregado:", processedEvent.title);
+        return processedEvent;
 
       } catch (error) {
-        console.error('❌ [Events V2] Erro crítico ao carregar evento:', error)
-        throw error
+        console.error("❌ [Events V2] Erro crítico ao carregar evento:", error);
+        throw error;
       }
     },
     enabled: !!eventId,
     staleTime: 30000
-  })
-}
+  });
+};
 
 // Hook para criar evento
 export const useCreateEventV2 = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: EventCreation) => {
       try {
-        console.log('🔨 [Events V2] Criando evento:', data.title)
+        console.log("🔨 [Events V2] Criando evento:", data.title);
         
         // Criar evento
         const { data: event, error: eventError } = await supabase
-          .from('events')
+          .from("events")
           .insert({
             title: data.title,
             description: data.description,
@@ -295,9 +295,9 @@ export const useCreateEventV2 = () => {
             organizer_id: (await supabase.auth.getUser()).data.user?.id!
           })
           .select()
-          .single()
+          .single();
 
-        if (eventError) throw eventError
+        if (eventError) {throw eventError;}
 
         // Criar datas do evento
         if (data.dates && data.dates.length > 0) {
@@ -308,47 +308,47 @@ export const useCreateEventV2 = () => {
             end_time: date.end_time,
             total_slots: date.total_slots,
             available_slots: date.total_slots
-          }))
+          }));
 
           const { error: datesError } = await supabase
-            .from('event_dates')
-            .insert(eventDates)
+            .from("event_dates")
+            .insert(eventDates);
 
-          if (datesError) throw datesError
+          if (datesError) {throw datesError;}
         }
 
-        console.log('✅ [Events V2] Evento criado:', event.id)
-        return event.id
+        console.log("✅ [Events V2] Evento criado:", event.id);
+        return event.id;
 
       } catch (error: any) {
-        console.error('❌ [Events V2] Erro crítico ao criar evento:', error)
-        throw error
+        console.error("❌ [Events V2] Erro crítico ao criar evento:", error);
+        throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events-v2'] })
-      queryClient.invalidateQueries({ queryKey: ['event-stats-v2'] })
-      toast.success('Evento criado com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ["events-v2"] });
+      queryClient.invalidateQueries({ queryKey: ["event-stats-v2"] });
+      toast.success("Evento criado com sucesso!");
     },
     onError: (error: any) => {
-      console.error('❌ [Events V2] Erro na criação:', error)
-      toast.error('Erro ao criar evento: ' + (error.message || 'Erro desconhecido'))
+      console.error("❌ [Events V2] Erro na criação:", error);
+      toast.error(`Erro ao criar evento: ${  error.message || "Erro desconhecido"}`);
     }
-  })
-}
+  });
+};
 
 // Hook para atualizar evento
 export const useUpdateEventV2 = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ eventId, data }: { eventId: string, data: Partial<EventFormData> }) => {
       try {
-        console.log('🔨 [Events V2] Atualizando evento:', eventId)
+        console.log("🔨 [Events V2] Atualizando evento:", eventId);
         
         // Atualizar evento
         const { data: event, error: eventError } = await supabase
-          .from('events')
+          .from("events")
           .update({
             title: data.title,
             description: data.description,
@@ -357,21 +357,21 @@ export const useUpdateEventV2 = () => {
             city: data.city,
             updated_at: new Date().toISOString()
           })
-          .eq('id', eventId)
+          .eq("id", eventId)
           .select()
-          .single()
+          .single();
 
-        if (eventError) throw eventError
+        if (eventError) {throw eventError;}
 
         // Se há novas datas, remover as antigas e criar as novas
         if (data.dates && data.dates.length > 0) {
           // Remover datas antigas
           const { error: deleteError } = await supabase
-            .from('event_dates')
+            .from("event_dates")
             .delete()
-            .eq('event_id', eventId)
+            .eq("event_id", eventId);
 
-          if (deleteError) throw deleteError
+          if (deleteError) {throw deleteError;}
 
           // Criar novas datas
           const eventDates = data.dates.map(date => ({
@@ -381,77 +381,77 @@ export const useUpdateEventV2 = () => {
             end_time: date.end_time,
             total_slots: date.total_slots,
             available_slots: date.total_slots
-          }))
+          }));
 
           const { error: datesError } = await supabase
-            .from('event_dates')
-            .insert(eventDates)
+            .from("event_dates")
+            .insert(eventDates);
 
-          if (datesError) throw datesError
+          if (datesError) {throw datesError;}
         }
 
-        console.log('✅ [Events V2] Evento atualizado:', event.id)
-        return event.id
+        console.log("✅ [Events V2] Evento atualizado:", event.id);
+        return event.id;
 
       } catch (error: any) {
-        console.error('❌ [Events V2] Erro crítico ao atualizar evento:', error)
-        throw error
+        console.error("❌ [Events V2] Erro crítico ao atualizar evento:", error);
+        throw error;
       }
     },
     onSuccess: (eventId) => {
-      queryClient.invalidateQueries({ queryKey: ['events-v2'] })
-      queryClient.invalidateQueries({ queryKey: ['event-v2', eventId] })
-      queryClient.invalidateQueries({ queryKey: ['event-stats-v2'] })
-      toast.success('Evento atualizado com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ["events-v2"] });
+      queryClient.invalidateQueries({ queryKey: ["event-v2", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["event-stats-v2"] });
+      toast.success("Evento atualizado com sucesso!");
     },
     onError: (error: any) => {
-      console.error('❌ [Events V2] Erro na atualização:', error)
-      toast.error('Erro ao atualizar evento: ' + (error.message || 'Erro desconhecido'))
+      console.error("❌ [Events V2] Erro na atualização:", error);
+      toast.error(`Erro ao atualizar evento: ${  error.message || "Erro desconhecido"}`);
     }
-  })
-}
+  });
+};
 
 // Hook para deletar evento
 export const useDeleteEventV2 = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (eventId: string) => {
       try {
-        console.log('🗑️ [Events V2] Deletando evento:', eventId)
+        console.log("🗑️ [Events V2] Deletando evento:", eventId);
         
         // Primeiro, deletar as datas do evento
         const { error: datesError } = await supabase
-          .from('event_dates')
+          .from("event_dates")
           .delete()
-          .eq('event_id', eventId)
+          .eq("event_id", eventId);
 
-        if (datesError) throw datesError
+        if (datesError) {throw datesError;}
 
         // Depois, deletar o evento
         const { error: eventError } = await supabase
-          .from('events')
+          .from("events")
           .delete()
-          .eq('id', eventId)
+          .eq("id", eventId);
 
-        if (eventError) throw eventError
+        if (eventError) {throw eventError;}
 
-        console.log('✅ [Events V2] Evento deletado:', eventId)
-        return eventId
+        console.log("✅ [Events V2] Evento deletado:", eventId);
+        return eventId;
 
       } catch (error: any) {
-        console.error('❌ [Events V2] Erro crítico ao deletar evento:', error)
-        throw error
+        console.error("❌ [Events V2] Erro crítico ao deletar evento:", error);
+        throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events-v2'] })
-      queryClient.invalidateQueries({ queryKey: ['event-stats-v2'] })
-      toast.success('Evento deletado com sucesso!')
+      queryClient.invalidateQueries({ queryKey: ["events-v2"] });
+      queryClient.invalidateQueries({ queryKey: ["event-stats-v2"] });
+      toast.success("Evento deletado com sucesso!");
     },
     onError: (error: any) => {
-      console.error('❌ [Events V2] Erro na exclusão:', error)
-      toast.error('Erro ao deletar evento: ' + (error.message || 'Erro desconhecido'))
+      console.error("❌ [Events V2] Erro na exclusão:", error);
+      toast.error(`Erro ao deletar evento: ${  error.message || "Erro desconhecido"}`);
     }
-  })
-}
+  });
+};

@@ -3,23 +3,23 @@
  * Página para edição de eventos existentes
  */
 
-import { useParams } from 'react-router-dom'
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { EventForm } from '@/components/admin-v2/Events/EventForm'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { useParams } from "react-router-dom";
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { EventForm } from "@/components/admin-v2/Events/EventForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const EditEventV2 = () => {
-  const { eventId } = useParams<{ eventId: string }>()
+  const { eventId } = useParams<{ eventId: string }>();
 
   if (!eventId) {
     return (
       <AdminLayout 
         title="Editar Evento" 
         breadcrumbs={[
-          { label: 'Dashboard', path: '/admin-v2' },
-          { label: 'Eventos', path: '/admin-v2/events' },
-          { label: 'Editar Evento', path: '/admin-v2/events/edit' }
+          { label: "Dashboard", path: "/admin-v2" },
+          { label: "Eventos", path: "/admin-v2/events" },
+          { label: "Editar Evento", path: "/admin-v2/events/edit" }
         ]}
       >
         <Alert variant="destructive">
@@ -29,21 +29,21 @@ const EditEventV2 = () => {
           </AlertDescription>
         </Alert>
       </AdminLayout>
-    )
+    );
   }
 
   return (
     <AdminLayout 
       title="Editar Evento" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Eventos', path: '/admin-v2/events' },
-        { label: 'Editar Evento', path: `/admin-v2/events/edit/${eventId}` }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Eventos", path: "/admin-v2/events" },
+        { label: "Editar Evento", path: `/admin-v2/events/edit/${eventId}` }
       ]}
     >
       <EventForm mode="edit" eventId={eventId} />
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default EditEventV2
+export default EditEventV2;

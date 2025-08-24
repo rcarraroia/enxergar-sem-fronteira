@@ -1,11 +1,11 @@
 
-import React from 'react'
-import Hero from '@/components/Hero'
-import AboutSection from '@/components/AboutSection'
-import EventsSection from '@/components/EventsSection'
-import PartnersSection from '@/components/PartnersSection'
-import Header from '@/components/Header'
-import { Footer } from '@/components/Footer'
+import React from "react";
+import Hero from "@/components/Hero";
+import AboutSection from "@/components/AboutSection";
+import EventsSection from "@/components/EventsSection";
+import PartnersSection from "@/components/PartnersSection";
+import Header from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -17,7 +17,7 @@ const Index = () => {
       <EventsSection />
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default Index
+export default Index;

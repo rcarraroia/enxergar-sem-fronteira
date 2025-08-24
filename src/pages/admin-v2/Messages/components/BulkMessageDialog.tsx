@@ -2,22 +2,22 @@
  * DIALOG PARA ENVIO DE MENSAGENS EM MASSA
  */
 
-import { useState, useEffect } from 'react'
-import { Send, Mail, Smartphone, MessageSquare, Users, Filter } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { useSendBulkMessage, useMessageTemplates } from '@/hooks/messages/useMessages'
-import { useRegistrationsV2 } from '@/hooks/admin-v2/useRegistrationsV2'
-import type { MessageChannel, RecipientType } from '@/types/messages'
+import { useEffect, useState } from "react";
+import { Filter, Mail, MessageSquare, Send, Smartphone, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useMessageTemplates, useSendBulkMessage } from "@/hooks/messages/useMessages";
+import { useRegistrationsV2 } from "@/hooks/admin-v2/useRegistrationsV2";
+import type { MessageChannel, RecipientType } from "@/types/messages";
 
 interface BulkMessageDialogProps {
   open: boolean
@@ -32,116 +32,116 @@ interface RecipientFilters {
 }
 
 export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps) {
-  const [channel, setChannel] = useState<MessageChannel>('email')
-  const [recipientType, setRecipientType] = useState<RecipientType>('patient')
-  const [subject, setSubject] = useState('')
-  const [content, setContent] = useState('')
-  const [templateId, setTemplateId] = useState<string>('none')
-  const [filters, setFilters] = useState<RecipientFilters>({})
-  const [previewRecipients, setPreviewRecipients] = useState<any[]>([])
-  const [showPreview, setShowPreview] = useState(false)
+  const [channel, setChannel] = useState<MessageChannel>("email");
+  const [recipientType, setRecipientType] = useState<RecipientType>("patient");
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [templateId, setTemplateId] = useState<string>("none");
+  const [filters, setFilters] = useState<RecipientFilters>({});
+  const [previewRecipients, setPreviewRecipients] = useState<any[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
 
-  const { mutate: sendBulkMessage, isPending } = useSendBulkMessage()
-  const { data: templates = [] } = useMessageTemplates()
-  const { data: registrations = [], error: registrationsError } = useRegistrationsV2()
+  const { mutate: sendBulkMessage, isPending } = useSendBulkMessage();
+  const { data: templates = [] } = useMessageTemplates();
+  const { data: registrations = [], error: registrationsError } = useRegistrationsV2();
   
   // Log de debug
-  console.log('🔍 [BulkMessageDialog] Registrations:', registrations)
-  console.log('❌ [BulkMessageDialog] Error:', registrationsError)
+  console.log("🔍 [BulkMessageDialog] Registrations:", registrations);
+  console.log("❌ [BulkMessageDialog] Error:", registrationsError);
 
   // Filtrar templates por canal
-  const channelTemplates = templates.filter(t => t.channel === channel)
+  const channelTemplates = templates.filter(t => t.channel === channel);
 
   // Filtrar destinatários baseado nos filtros
   useEffect(() => {
     if (!registrations || !Array.isArray(registrations)) {
-      console.log('⚠️ [BulkMessageDialog] Registrations não é um array válido:', registrations)
-      setPreviewRecipients([])
-      return
+      console.log("⚠️ [BulkMessageDialog] Registrations não é um array válido:", registrations);
+      setPreviewRecipients([]);
+      return;
     }
 
-    let filtered = registrations
+    let filtered = registrations;
 
     // Filtrar por tipo de contato disponível
-    if (channel === 'email') {
-      filtered = filtered.filter(r => r?.patient?.email && r.patient.email.trim() !== '')
-    } else if (channel === 'sms') {
-      filtered = filtered.filter(r => r?.patient?.telefone && r.patient.telefone.trim() !== '')
+    if (channel === "email") {
+      filtered = filtered.filter(r => r?.patient?.email && r.patient.email.trim() !== "");
+    } else if (channel === "sms") {
+      filtered = filtered.filter(r => r?.patient?.telefone && r.patient.telefone.trim() !== "");
     }
 
     // Aplicar filtros adicionais
     if (filters.status && filters.status.length > 0) {
-      filtered = filtered.filter(r => r?.status && filters.status!.includes(r.status))
+      filtered = filtered.filter(r => r?.status && filters.status!.includes(r.status));
     }
 
     // Para cidade, vamos usar a localização do evento por enquanto
     if (filters.city && filters.city.length > 0) {
-      filtered = filtered.filter(r => r?.event?.location && filters.city!.includes(r.event.location))
+      filtered = filtered.filter(r => r?.event?.location && filters.city!.includes(r.event.location));
     }
 
-    setPreviewRecipients(filtered)
-  }, [registrations, channel, filters])
+    setPreviewRecipients(filtered);
+  }, [registrations, channel, filters]);
 
   // Obter listas únicas para filtros
   const availableStatuses = Array.isArray(registrations) 
     ? [...new Set(registrations.map(r => r?.status).filter(Boolean))]
-    : []
+    : [];
   const availableCities = Array.isArray(registrations)
     ? [...new Set(registrations.map(r => r?.event?.location).filter(Boolean))]
-    : []
+    : [];
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    if (!content || previewRecipients.length === 0) return
+    if (!content || previewRecipients.length === 0) {return;}
 
     const recipients = previewRecipients.map(r => ({
-      contact: channel === 'email' ? r.patient?.email || '' : r.patient?.telefone || '',
-      name: r.patient?.nome || '',
+      contact: channel === "email" ? r.patient?.email || "" : r.patient?.telefone || "",
+      name: r.patient?.nome || "",
       variables: {
-        nome: r.patient?.nome || '',
-        cidade: r.event?.location || '',
+        nome: r.patient?.nome || "",
+        cidade: r.event?.location || "",
         status: r.status,
-        evento: r.event?.title || '',
-        data_evento: r.event_date?.date || ''
+        evento: r.event?.title || "",
+        data_evento: r.event_date?.date || ""
       }
-    }))
+    }));
 
     sendBulkMessage({
       channel,
       recipient_type: recipientType,
       recipients,
-      subject: channel === 'email' ? subject : undefined,
+      subject: channel === "email" ? subject : undefined,
       content,
-      template_id: templateId !== 'none' ? templateId : undefined
+      template_id: templateId !== "none" ? templateId : undefined
     }, {
       onSuccess: () => {
-        onOpenChange(false)
+        onOpenChange(false);
         // Reset form
-        setSubject('')
-        setContent('')
-        setTemplateId('none')
-        setFilters({})
+        setSubject("");
+        setContent("");
+        setTemplateId("none");
+        setFilters({});
       }
-    })
-  }
+    });
+  };
 
   const handleTemplateChange = (value: string) => {
-    if (value === 'none') {
-      setTemplateId('none')
-      setContent('')
-      setSubject('')
+    if (value === "none") {
+      setTemplateId("none");
+      setContent("");
+      setSubject("");
     } else {
-      setTemplateId(value)
-      const template = templates.find(t => t.id === value)
+      setTemplateId(value);
+      const template = templates.find(t => t.id === value);
       if (template) {
-        setContent(template.content)
+        setContent(template.content);
         if (template.subject) {
-          setSubject(template.subject)
+          setSubject(template.subject);
         }
       }
     }
-  }
+  };
 
   const handleStatusFilter = (status: string, checked: boolean) => {
     setFilters(prev => ({
@@ -149,8 +149,8 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
       status: checked 
         ? [...(prev.status || []), status]
         : (prev.status || []).filter(s => s !== status)
-    }))
-  }
+    }));
+  };
 
   const handleCityFilter = (city: string, checked: boolean) => {
     setFilters(prev => ({
@@ -158,8 +158,8 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
       city: checked 
         ? [...(prev.city || []), city]
         : (prev.city || []).filter(c => c !== city)
-    }))
-  }
+    }));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -267,7 +267,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
                     size="sm"
                     onClick={() => setShowPreview(!showPreview)}
                   >
-                    {showPreview ? 'Ocultar' : 'Visualizar'} Lista
+                    {showPreview ? "Ocultar" : "Visualizar"} Lista
                   </Button>
                 </div>
                 
@@ -277,7 +277,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
                       <div key={index} className="text-xs py-1 flex justify-between">
                         <span>{recipient.patient?.nome}</span>
                         <span className="text-muted-foreground">
-                          {channel === 'email' ? recipient.patient?.email : recipient.patient?.telefone}
+                          {channel === "email" ? recipient.patient?.email : recipient.patient?.telefone}
                         </span>
                       </div>
                     ))}
@@ -315,7 +315,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
           )}
 
           {/* Assunto (apenas para email) */}
-          {channel === 'email' && (
+          {channel === "email" && (
             <div className="space-y-2">
               <Label htmlFor="bulk-subject">Assunto</Label>
               <Input
@@ -341,7 +341,7 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
             <p className="text-xs text-muted-foreground">
               Variáveis disponíveis: {{nome}}, {{evento}}, {{data_evento}}, {{status}}
             </p>
-            {channel === 'sms' && (
+            {channel === "sms" && (
               <p className="text-xs text-muted-foreground">
                 {content.length}/160 caracteres por SMS
               </p>
@@ -373,5 +373,5 @@ export function BulkMessageDialog({ open, onOpenChange }: BulkMessageDialogProps
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,40 +1,40 @@
-import React, { useState } from 'react'
-import { useEventsAdmin } from '@/hooks/useEventsAdmin'
-import { useAsaasPayment } from '@/hooks/useAsaasPayment'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import React, { useState } from "react";
+import { useEventsAdmin } from "@/hooks/useEventsAdmin";
+import { useAsaasPayment } from "@/hooks/useAsaasPayment";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select'
-import { CreditCard, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+} from "@/components/ui/select";
+import { CreditCard, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const PaymentForm = () => {
-  const { events } = useEventsAdmin()
-  const { createPayment, loading } = useAsaasPayment()
+  const { events } = useEventsAdmin();
+  const { createPayment, loading } = useAsaasPayment();
   
   const [formData, setFormData] = useState({
-    eventId: '',
-    amount: '',
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
-    description: ''
-  })
+    eventId: "",
+    amount: "",
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
+    description: ""
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     if (!formData.eventId || !formData.amount || !formData.customerName || !formData.customerEmail) {
-      toast.error('Preencha todos os campos obrigatórios')
-      return
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
     }
 
     try {
@@ -45,23 +45,23 @@ export const PaymentForm = () => {
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
         description: formData.description
-      })
+      });
 
       // Reset form
       setFormData({
-        eventId: '',
-        amount: '',
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        description: ''
-      })
+        eventId: "",
+        amount: "",
+        customerName: "",
+        customerEmail: "",
+        customerPhone: "",
+        description: ""
+      });
     } catch (error) {
-      console.error('Erro ao criar pagamento:', error)
+      console.error("Erro ao criar pagamento:", error);
     }
-  }
+  };
 
-  const selectedEvent = events?.find(e => e.id === formData.eventId)
+  const selectedEvent = events?.find(e => e.id === formData.eventId);
 
   return (
     <Card>
@@ -153,11 +153,11 @@ export const PaymentForm = () => {
                 Criando...
               </>
             ) : (
-              'Criar Pagamento'
+              "Criar Pagamento"
             )}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Calendar, MapPin, Clock, Users, ArrowRight, Eye, Heart, Stethoscope } from 'lucide-react';
-import { useEvents } from '@/hooks/useEvents';
-import { useNavigate } from 'react-router-dom';
-import { formatTime, formatDate } from '@/utils/timeFormat';
-import { useState, useMemo } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, Calendar, Clock, Eye, Heart, MapPin, Stethoscope, Users } from "lucide-react";
+import { useEvents } from "@/hooks/useEvents";
+import { useNavigate } from "react-router-dom";
+import { formatDate, formatTime } from "@/utils/timeFormat";
+import { useMemo, useState } from "react";
 
 const Hero = () => {
   const { data: events } = useEvents();
@@ -13,7 +13,7 @@ const Hero = () => {
 
   // Nova lógica: determinar o evento a exibir baseado na regra de 75%
   const nextEventToDisplay = useMemo(() => {
-    if (!events || events.length === 0) return null;
+    if (!events || events.length === 0) {return null;}
 
     // Verificar se o primeiro evento atingiu 75% de ocupação
     const firstEvent = events[0];
@@ -40,21 +40,21 @@ const Hero = () => {
 
   const stats = [{
     icon: Eye,
-    value: '10.000+',
-    label: 'Consultas Realizadas'
+    value: "10.000+",
+    label: "Consultas Realizadas"
   }, {
     icon: Heart,
-    value: '95%',
-    label: 'Taxa de Satisfação'
+    value: "95%",
+    label: "Taxa de Satisfação"
   }, {
     icon: Users,
-    value: '50+',
-    label: 'Cidades Atendidas'
+    value: "50+",
+    label: "Cidades Atendidas"
   }, {
     icon: Stethoscope,
-    value: '24',
-    label: 'horas por dia, 7 dias por semana',
-    sublabel: 'Suporte Médico'
+    value: "24",
+    label: "horas por dia, 7 dias por semana",
+    sublabel: "Suporte Médico"
   }];
 
   const handleRegisterClick = (e: React.MouseEvent) => {
@@ -62,19 +62,19 @@ const Hero = () => {
     e.stopPropagation();
 
     if (isNavigating) {
-      console.log('⚠️ Hero: Navegação já em andamento, ignorando clique');
+      console.log("⚠️ Hero: Navegação já em andamento, ignorando clique");
       return;
     }
 
     setIsNavigating(true);
-    console.log('🎯 Hero: Redirecionando para seleção de eventos (ÚNICO)');
-    navigate('/eventos');
+    console.log("🎯 Hero: Redirecionando para seleção de eventos (ÚNICO)");
+    navigate("/eventos");
   };
 
   const formatWeekday = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long'
+    const date = new Date(`${dateString  }T00:00:00`);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long"
     });
   };
 
@@ -112,10 +112,10 @@ const Hero = () => {
                 disabled={isNavigating}
               >
                 <Calendar className="h-5 w-5 mr-2" />
-                {isNavigating ? 'Redirecionando...' : 'Agendar Consulta'}
+                {isNavigating ? "Redirecionando..." : "Agendar Consulta"}
                 {!isNavigating && <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />}
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => document.getElementById("events")?.scrollIntoView({ behavior: "smooth" })}>
                 <MapPin className="h-5 w-5 mr-2" />
                 Ver Próximos Eventos
               </Button>
@@ -127,7 +127,7 @@ const Hero = () => {
                 <Card key={index} className={`p-4 text-center medical-card animate-slide-up stagger-${index + 1}`}>
                   <stat.icon className="h-6 w-6 text-primary mx-auto mb-2 medical-icon" />
                   <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className={`text-xs text-muted-foreground ${stat.sublabel ? 'leading-tight' : ''}`}>
+                  <div className={`text-xs text-muted-foreground ${stat.sublabel ? "leading-tight" : ""}`}>
                     {stat.label}
                   </div>
                   {stat.sublabel && (
@@ -149,7 +149,7 @@ const Hero = () => {
                     <Eye className="h-10 w-10 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">
-                    {nextEventToDisplay && nextEventDate ? 'Próximo Evento' : 'Nenhum Evento Disponível'}
+                    {nextEventToDisplay && nextEventDate ? "Próximo Evento" : "Nenhum Evento Disponível"}
                   </h3>
                   {nextEventToDisplay && nextEventDate ? (
                     <div className="text-2xl font-bold text-primary mt-2 mb-2">
@@ -157,7 +157,7 @@ const Hero = () => {
                     </div>
                   ) : null}
                   <p className="text-muted-foreground">
-                    {nextEventToDisplay && nextEventDate ? 'Consultas oftalmológicas gratuitas' : 'Aguarde novos eventos'}
+                    {nextEventToDisplay && nextEventDate ? "Consultas oftalmológicas gratuitas" : "Aguarde novos eventos"}
                   </p>
                 </div>
 
@@ -202,7 +202,7 @@ const Hero = () => {
                       onClick={handleRegisterClick}
                       disabled={isNavigating}
                     >
-                      {isNavigating ? 'Redirecionando...' : 'Inscrever-se Agora'}
+                      {isNavigating ? "Redirecionando..." : "Inscrever-se Agora"}
                     </Button>
                   </>
                 ) : (
@@ -215,7 +215,7 @@ const Hero = () => {
                       onClick={handleRegisterClick}
                       disabled={isNavigating}
                     >
-                      {isNavigating ? 'Redirecionando...' : 'Entrar na Lista de Espera'}
+                      {isNavigating ? "Redirecionando..." : "Entrar na Lista de Espera"}
                     </Button>
                   </div>
                 )}

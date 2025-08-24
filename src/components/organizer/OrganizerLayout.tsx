@@ -1,64 +1,64 @@
 
-import React, { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
+import React, { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard, 
   Calendar, 
-  Users, 
-  User, 
+  Home, 
+  LayoutDashboard, 
   LogOut, 
-  Menu,
-  X,
-  Home
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useSystemSettings } from '@/hooks/useSystemSettings'
+  Menu, 
+  User,
+  Users,
+  X
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, signOut } = useAuth()
-  const { getSettingValue } = useSystemSettings()
-  const location = useLocation()
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { getSettingValue } = useSystemSettings();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error)
+      console.error("Erro ao fazer logout:", error);
     }
-  }
+  };
 
   const navigation = [
     {
-      name: 'Dashboard',
-      href: '/organizer',
+      name: "Dashboard",
+      href: "/organizer",
       icon: LayoutDashboard,
-      current: location.pathname === '/organizer'
+      current: location.pathname === "/organizer"
     },
     {
-      name: 'Meus Eventos',
-      href: '/organizer/events',
+      name: "Meus Eventos",
+      href: "/organizer/events",
       icon: Calendar,
-      current: location.pathname.startsWith('/organizer/events')
+      current: location.pathname.startsWith("/organizer/events")
     },
     {
-      name: 'Inscrições',
-      href: '/organizer/registrations',
+      name: "Inscrições",
+      href: "/organizer/registrations",
       icon: Users,
-      current: location.pathname === '/organizer/registrations'
+      current: location.pathname === "/organizer/registrations"
     },
     {
-      name: 'Perfil',
-      href: '/organizer/profile',
+      name: "Perfil",
+      href: "/organizer/profile",
       icon: User,
-      current: location.pathname === '/organizer/profile'
+      current: location.pathname === "/organizer/profile"
     }
-  ]
+  ];
 
-  const logoHeader = getSettingValue('logo_header')
-  const projectName = getSettingValue('project_name', 'Organizador')
+  const logoHeader = getSettingValue("logo_header");
+  const projectName = getSettingValue("project_name", "Organizador");
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -72,7 +72,7 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
                 alt={projectName} 
                 className="h-8 w-auto"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none'
+                  e.currentTarget.style.display = "none";
                 }}
               />
             ) : (
@@ -88,22 +88,22 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
           <div className="mt-5 flex-grow flex flex-col">
             <nav className="flex-1 px-2 space-y-1">
               {navigation.map((item) => {
-                const Icon = item.icon
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
                     to={item.href}
                     className={cn(
                       item.current
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors'
+                        ? "bg-primary text-primary-foreground"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors"
                     )}
                   >
                     <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                     {item.name}
                   </Link>
-                )
+                );
               })}
             </nav>
           </div>
@@ -166,7 +166,7 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
               </div>
               <nav className="mt-5 px-2 space-y-1">
                 {navigation.map((item) => {
-                  const Icon = item.icon
+                  const Icon = item.icon;
                   return (
                     <Link
                       key={item.name}
@@ -174,15 +174,15 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
                       onClick={() => setSidebarOpen(false)}
                       className={cn(
                         item.current
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+                          ? "bg-primary text-primary-foreground"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
                       )}
                     >
                       <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
                       {item.name}
                     </Link>
-                  )
+                  );
                 })}
               </nav>
             </div>
@@ -211,11 +211,11 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
             </Link>
             <span>/</span>
             <span className="text-gray-900">Organizador</span>
-            {location.pathname !== '/organizer' && (
+            {location.pathname !== "/organizer" && (
               <>
                 <span>/</span>
                 <span className="text-gray-900 capitalize">
-                  {location.pathname.split('/').pop()?.replace('-', ' ')}
+                  {location.pathname.split("/").pop()?.replace("-", " ")}
                 </span>
               </>
             )}
@@ -232,5 +232,5 @@ export const OrganizerLayout = ({ children }: { children: React.ReactNode }) => 
         </main>
       </div>
     </div>
-  )
-}
+  );
+};

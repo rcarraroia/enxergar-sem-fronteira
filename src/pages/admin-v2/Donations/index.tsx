@@ -3,17 +3,17 @@
  * Página temporária para navegação
  */
 
-import { AdminLayout } from '@/components/admin-v2/shared/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Heart, Construction } from 'lucide-react'
+import { AdminLayout } from "@/components/admin-v2/shared/Layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Construction, Heart } from "lucide-react";
 
 const AdminDonationsV2 = () => {
   return (
     <AdminLayout 
       title="Gestão de Doações" 
       breadcrumbs={[
-        { label: 'Dashboard', path: '/admin-v2' },
-        { label: 'Doações', path: '/admin-v2/donations' }
+        { label: "Dashboard", path: "/admin-v2" },
+        { label: "Doações", path: "/admin-v2/donations" }
       ]}
     >
       <Card>
@@ -38,7 +38,7 @@ const AdminDonationsV2 = () => {
         </CardContent>
       </Card>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminDonationsV2
+export default AdminDonationsV2;

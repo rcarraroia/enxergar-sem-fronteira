@@ -1,41 +1,41 @@
 
-import { Card } from '@/components/ui/card';
-import { Eye, Heart, Users, Stethoscope, Award, Globe, Shield, Clock } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { Award, Clock, Eye, Globe, Heart, Shield, Stethoscope, Users } from "lucide-react";
 
 const AboutSection = () => {
   const features = [
     {
       icon: Eye,
-      title: 'Atendimento Especializado',
-      description: 'Consultas oftalmológicas completas com profissionais qualificados'
+      title: "Atendimento Especializado",
+      description: "Consultas oftalmológicas completas com profissionais qualificados"
     },
     {
       icon: Heart,
-      title: 'Cuidado Humanizado',
-      description: 'Tratamento personalizado e acolhedor para todos os pacientes'
+      title: "Cuidado Humanizado",
+      description: "Tratamento personalizado e acolhedor para todos os pacientes"
     },
     {
       icon: Shield,
-      title: 'Acesso Universal',
-      description: 'Atendimento gratuito e de qualidade para comunidades carentes'
+      title: "Acesso Universal",
+      description: "Atendimento gratuito e de qualidade para comunidades carentes"
     },
     {
       icon: Clock,
-      title: 'Segurança e Qualidade',
-      description: 'Protocolos rigorosos de segurança e equipamentos modernos'
+      title: "Segurança e Qualidade",
+      description: "Protocolos rigorosos de segurança e equipamentos modernos"
     }
   ];
 
   const mission = {
-    title: 'Missão de Transformar Vidas',
-    description: 'O Projeto Enxergar Sem Fronteira nasceu da necessidade de levar cuidados oftalmológicos de qualidade para comunidades que não têm acesso a serviços especializados de saúde visual.',
-    vision: 'Nossa Visão',
-    visionText: 'Ser Brasil onde todas as pessoas tenham acesso a cuidados oftalmológicos de qualidade, independentemente de sua condição socioeconômica ou localização geográfica.',
+    title: "Missão de Transformar Vidas",
+    description: "O Projeto Enxergar Sem Fronteira nasceu da necessidade de levar cuidados oftalmológicos de qualidade para comunidades que não têm acesso a serviços especializados de saúde visual.",
+    vision: "Nossa Visão",
+    visionText: "Ser Brasil onde todas as pessoas tenham acesso a cuidados oftalmológicos de qualidade, independentemente de sua condição socioeconômica ou localização geográfica.",
     stats: [
-      { value: '95%', label: 'Taxa de Satisfação' },
-      { value: '5 Anos', label: 'de Experiência' },
-      { value: '50+', label: 'Cidades Atendidas' },
-      { value: '10k+', label: 'Consultas Realizadas' }
+      { value: "95%", label: "Taxa de Satisfação" },
+      { value: "5 Anos", label: "de Experiência" },
+      { value: "50+", label: "Cidades Atendidas" },
+      { value: "10k+", label: "Consultas Realizadas" }
     ]
   };
 

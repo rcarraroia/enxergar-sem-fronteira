@@ -5,25 +5,25 @@
  * para pacientes baseado em eventos e filtros específicos.
  */
 
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/integrations/supabase/client'
-import React, { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import React, { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // UI Components
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 // Icons
-import { AlertTriangle, CheckCircle, Eye, Mail, MessageSquare, Send, Smartphone, Users, XCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Eye, Mail, MessageSquare, Send, Smartphone, Users, XCircle } from "lucide-react";
 
 // ============================================================================
 // TYPES
@@ -41,7 +41,7 @@ interface Event {
 interface Template {
   id: string
   name: string
-  type: 'email' | 'sms' | 'whatsapp'
+  type: "email" | "sms" | "whatsapp"
   subject?: string
   content: string
   is_active: boolean
@@ -49,7 +49,7 @@ interface Template {
 
 interface BulkMessageFilters {
   eventIds: string[]
-  messageTypes: ('email' | 'sms' | 'whatsapp')[]
+  messageTypes: ("email" | "sms" | "whatsapp")[]
   templateName?: string
   customMessage?: string
   patientStatus?: string[]
@@ -92,31 +92,31 @@ export const BulkMessageSender: React.FC = () => {
   // STATE
   // ============================================================================
 
-  const [events, setEvents] = useState<Event[]>([])
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [lastResult, setLastResult] = useState<SendResult | null>(null)
+  const [events, setEvents] = useState<Event[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [lastResult, setLastResult] = useState<SendResult | null>(null);
 
   const [filters, setFilters] = useState<BulkMessageFilters>({
     eventIds: [],
-    messageTypes: ['email'],
-    templateName: '',
-    customMessage: '',
-    patientStatus: ['active'],
-    registrationStatus: ['confirmed'],
+    messageTypes: ["email"],
+    templateName: "",
+    customMessage: "",
+    patientStatus: ["active"],
+    registrationStatus: ["confirmed"],
     city: [],
     dateRange: undefined
-  })
+  });
 
-  const [previewMode, setPreviewMode] = useState(false)
-  const [previewData, setPreviewData] = useState<any>(null)
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
 
   // ============================================================================
   // HOOKS
   // ============================================================================
 
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin } = useAuth();
 
   // ============================================================================
   // EFFECTS
@@ -124,9 +124,9 @@ export const BulkMessageSender: React.FC = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      loadData()
+      loadData();
     }
-  }, [isAdmin])
+  }, [isAdmin]);
 
   // ============================================================================
   // DATA LOADING
@@ -134,11 +134,11 @@ export const BulkMessageSender: React.FC = () => {
 
   const loadData = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Load events with registration counts
       const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
+        .from("events")
         .select(`
           id,
           title,
@@ -147,37 +147,37 @@ export const BulkMessageSender: React.FC = () => {
           status,
           registrations:registrations(count)
         `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
 
-      if (eventsError) throw eventsError
+      if (eventsError) {throw eventsError;}
 
       // Process events data
       const processedEvents = eventsData?.map(event => ({
         ...event,
         registrations_count: event.registrations?.[0]?.count || 0
-      })) || []
+      })) || [];
 
-      setEvents(processedEvents)
+      setEvents(processedEvents);
 
       // Load templates
       const { data: templatesData, error: templatesError } = await supabase
-        .from('notification_templates')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
+        .from("notification_templates")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
 
-      if (templatesError) throw templatesError
+      if (templatesError) {throw templatesError;}
 
-      setTemplates(templatesData || [])
+      setTemplates(templatesData || []);
 
     } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast.error('Erro ao carregar dados')
+      console.error("Erro ao carregar dados:", error);
+      toast.error("Erro ao carregar dados");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   // ============================================================================
   // HANDLERS
@@ -189,21 +189,21 @@ export const BulkMessageSender: React.FC = () => {
       eventIds: checked
         ? [...prev.eventIds, eventId]
         : prev.eventIds.filter(id => id !== eventId)
-    }))
-  }
+    }));
+  };
 
-  const handleMessageTypeToggle = (type: 'email' | 'sms' | 'whatsapp', checked: boolean) => {
+  const handleMessageTypeToggle = (type: "email" | "sms" | "whatsapp", checked: boolean) => {
     setFilters(prev => ({
       ...prev,
       messageTypes: checked
         ? [...prev.messageTypes, type]
         : prev.messageTypes.filter(t => t !== type)
-    }))
-  }
+    }));
+  };
 
   const handlePreview = async () => {
     try {
-      setPreviewMode(true)
+      setPreviewMode(true);
 
       // Simular preview com dados de exemplo
       const previewResult = {
@@ -211,37 +211,37 @@ export const BulkMessageSender: React.FC = () => {
         selectedEvents: events.filter(e => filters.eventIds.includes(e.id)),
         messageTypes: filters.messageTypes,
         template: templates.find(t => t.name === filters.templateName)
-      }
+      };
 
-      setPreviewData(previewResult)
-      toast.info('Preview gerado com sucesso')
+      setPreviewData(previewResult);
+      toast.info("Preview gerado com sucesso");
     } catch (error) {
-      console.error('Erro no preview:', error)
-      toast.error('Erro ao gerar preview')
+      console.error("Erro no preview:", error);
+      toast.error("Erro ao gerar preview");
     }
-  }
+  };
 
   const handleSend = async (testMode = false) => {
     if (filters.messageTypes.length === 0) {
-      toast.error('Selecione pelo menos um tipo de mensagem')
-      return
+      toast.error("Selecione pelo menos um tipo de mensagem");
+      return;
     }
 
     if (filters.eventIds.length === 0) {
-      toast.error('Selecione pelo menos um evento')
-      return
+      toast.error("Selecione pelo menos um evento");
+      return;
     }
 
     if (!filters.templateName && !filters.customMessage) {
-      toast.error('Selecione um template ou digite uma mensagem customizada')
-      return
+      toast.error("Selecione um template ou digite uma mensagem customizada");
+      return;
     }
 
     try {
-      setSending(true)
-      setLastResult(null)
+      setSending(true);
+      setLastResult(null);
 
-      const { data, error } = await supabase.functions.invoke('send-bulk-messages', {
+      const { data, error } = await supabase.functions.invoke("send-bulk-messages", {
         body: {
           eventIds: filters.eventIds,
           messageTypes: filters.messageTypes,
@@ -255,25 +255,25 @@ export const BulkMessageSender: React.FC = () => {
             dateRange: filters.dateRange
           }
         }
-      })
+      });
 
-      if (error) throw error
+      if (error) {throw error;}
 
-      setLastResult(data)
+      setLastResult(data);
 
       if (data.success) {
-        toast.success(testMode ? 'Teste realizado com sucesso!' : 'Mensagens enviadas com sucesso!')
+        toast.success(testMode ? "Teste realizado com sucesso!" : "Mensagens enviadas com sucesso!");
       } else {
-        toast.error('Erro no envio: ' + data.message)
+        toast.error(`Erro no envio: ${  data.message}`);
       }
 
     } catch (error) {
-      console.error('Erro no envio:', error)
-      toast.error('Erro ao enviar mensagens')
+      console.error("Erro no envio:", error);
+      toast.error("Erro ao enviar mensagens");
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   // ============================================================================
   // RENDER HELPERS
@@ -327,7 +327,7 @@ export const BulkMessageSender: React.FC = () => {
         )}
       </CardContent>
     </Card>
-  )
+  );
 
   const renderMessageTypes = () => (
     <Card>
@@ -345,8 +345,8 @@ export const BulkMessageSender: React.FC = () => {
           <div className="flex items-center space-x-3">
             <Checkbox
               id="email"
-              checked={filters.messageTypes.includes('email')}
-              onCheckedChange={(checked) => handleMessageTypeToggle('email', checked as boolean)}
+              checked={filters.messageTypes.includes("email")}
+              onCheckedChange={(checked) => handleMessageTypeToggle("email", checked as boolean)}
             />
             <Mail className="h-4 w-4 text-blue-600" />
             <Label htmlFor="email" className="cursor-pointer">Email</Label>
@@ -355,8 +355,8 @@ export const BulkMessageSender: React.FC = () => {
           <div className="flex items-center space-x-3">
             <Checkbox
               id="sms"
-              checked={filters.messageTypes.includes('sms')}
-              onCheckedChange={(checked) => handleMessageTypeToggle('sms', checked as boolean)}
+              checked={filters.messageTypes.includes("sms")}
+              onCheckedChange={(checked) => handleMessageTypeToggle("sms", checked as boolean)}
             />
             <Smartphone className="h-4 w-4 text-green-600" />
             <Label htmlFor="sms" className="cursor-pointer">SMS</Label>
@@ -365,8 +365,8 @@ export const BulkMessageSender: React.FC = () => {
           <div className="flex items-center space-x-3">
             <Checkbox
               id="whatsapp"
-              checked={filters.messageTypes.includes('whatsapp')}
-              onCheckedChange={(checked) => handleMessageTypeToggle('whatsapp', checked as boolean)}
+              checked={filters.messageTypes.includes("whatsapp")}
+              onCheckedChange={(checked) => handleMessageTypeToggle("whatsapp", checked as boolean)}
             />
             <MessageSquare className="h-4 w-4 text-green-500" />
             <Label htmlFor="whatsapp" className="cursor-pointer">WhatsApp</Label>
@@ -379,13 +379,13 @@ export const BulkMessageSender: React.FC = () => {
               {filters.messageTypes.length} canal(is) selecionado(s)
             </div>
             <div className="text-xs text-green-700">
-              {filters.messageTypes.join(', ')}
+              {filters.messageTypes.join(", ")}
             </div>
           </div>
         )}
       </CardContent>
     </Card>
-  )
+  );
 
   const renderMessageContent = () => (
     <Card>
@@ -407,7 +407,7 @@ export const BulkMessageSender: React.FC = () => {
               <Label htmlFor="template">Template</Label>
               <Select
                 value={filters.templateName}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, templateName: value, customMessage: '' }))}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, templateName: value, customMessage: "" }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um template" />
@@ -439,22 +439,22 @@ export const BulkMessageSender: React.FC = () => {
                 id="customMessage"
                 placeholder="Digite sua mensagem aqui..."
                 value={filters.customMessage}
-                onChange={(e) => setFilters(prev => ({ ...prev, customMessage: e.target.value, templateName: '' }))}
+                onChange={(e) => setFilters(prev => ({ ...prev, customMessage: e.target.value, templateName: "" }))}
                 rows={6}
               />
             </div>
 
             <div className="text-xs text-gray-500">
-              Variáveis disponíveis: {'{patient_name}'}, {'{event_title}'}, {'{event_date}'}, {'{event_location}'}
+              Variáveis disponíveis: {"{patient_name}"}, {"{event_title}"}, {"{event_date}"}, {"{event_location}"}
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderResults = () => {
-    if (!lastResult) return null
+    if (!lastResult) {return null;}
 
     return (
       <Card>
@@ -519,8 +519,8 @@ export const BulkMessageSender: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   // ============================================================================
   // MAIN RENDER
@@ -536,7 +536,7 @@ export const BulkMessageSender: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (loading) {
@@ -546,7 +546,7 @@ export const BulkMessageSender: React.FC = () => {
           <div className="text-center">Carregando dados...</div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -620,7 +620,7 @@ export const BulkMessageSender: React.FC = () => {
 
       {renderResults()}
     </div>
-  )
-}
+  );
+};
 
-export default BulkMessageSender
+export default BulkMessageSender;

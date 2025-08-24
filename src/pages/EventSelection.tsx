@@ -1,30 +1,30 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useEvents } from '@/hooks/useEvents'
-import Header from '@/components/Header'
-import { Footer } from '@/components/Footer'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Clock, Users, ArrowRight, Loader2 } from 'lucide-react'
-import { formatTime, formatDate } from '@/utils/timeFormat'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEvents } from "@/hooks/useEvents";
+import Header from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Calendar, Clock, Loader2, MapPin, Users } from "lucide-react";
+import { formatDate, formatTime } from "@/utils/timeFormat";
 
 const EventSelection = () => {
-  const navigate = useNavigate()
-  const { data: events, isLoading } = useEvents()
-  const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const { data: events, isLoading } = useEvents();
+  const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(null);
 
   const handleDateSelection = (eventId: string, eventDateId: string) => {
-    console.log('📅 Data selecionada:', { eventId, eventDateId })
-    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`)
-  }
+    console.log("📅 Data selecionada:", { eventId, eventDateId });
+    navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`);
+  };
 
   const formatWeekday = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00')
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long'
-    })
-  }
+    const date = new Date(`${dateString  }T00:00:00`);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long"
+    });
+  };
 
   if (isLoading) {
     return (
@@ -38,7 +38,7 @@ const EventSelection = () => {
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   if (!events || events.length === 0) {
@@ -51,14 +51,14 @@ const EventSelection = () => {
             <p className="text-muted-foreground mb-8">
               Não há eventos abertos para inscrição no momento.
             </p>
-            <Button onClick={() => navigate('/')}>
+            <Button onClick={() => navigate("/")}>
               Voltar ao Início
             </Button>
           </div>
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   return (
@@ -98,18 +98,18 @@ const EventSelection = () => {
                     
                     <div className="grid gap-3">
                       {event.event_dates.map((eventDate) => {
-                        const isAvailable = eventDate.available_slots > 0
+                        const isAvailable = eventDate.available_slots > 0;
                         const occupancyPercentage = eventDate.total_slots > 0 
                           ? ((eventDate.total_slots - eventDate.available_slots) / eventDate.total_slots) * 100 
-                          : 0
+                          : 0;
 
                         return (
                           <div
                             key={eventDate.id}
                             className={`p-4 border rounded-lg transition-all ${
                               isAvailable 
-                                ? 'border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10' 
-                                : 'border-gray-200 bg-gray-50 opacity-60'
+                                ? "border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10" 
+                                : "border-gray-200 bg-gray-50 opacity-60"
                             }`}
                           >
                             <div className="flex items-center justify-between">
@@ -169,12 +169,12 @@ const EventSelection = () => {
                                     <ArrowRight className="h-4 w-4 ml-2" />
                                   </>
                                 ) : (
-                                  'Lotado'
+                                  "Lotado"
                                 )}
                               </Button>
                             </div>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   </div>
@@ -187,7 +187,7 @@ const EventSelection = () => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default EventSelection
+export default EventSelection;

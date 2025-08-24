@@ -1,22 +1,22 @@
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Calendar,
-  MapPin,
-  Users,
-  Edit,
   Copy,
+  Edit,
+  Eye,
+  MapPin,
   Pause,
   Play,
   Trash2,
-  Eye
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+  Users
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Event {
   id: string
@@ -24,7 +24,7 @@ interface Event {
   description?: string
   location: string
   city: string
-  status: 'open' | 'closed' | 'cancelled'
+  status: "open" | "closed" | "cancelled"
   registrations_count?: number
   event_dates?: {
     id: string
@@ -49,16 +49,16 @@ export const OrganizerEventCard = ({
 }: OrganizerEventCardProps) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'open':
-        return <Badge variant="default">Ativo</Badge>
-      case 'closed':
-        return <Badge variant="secondary">Pausado</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>
+      case "open":
+        return <Badge variant="default">Ativo</Badge>;
+      case "closed":
+        return <Badge variant="secondary">Pausado</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelado</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -82,7 +82,7 @@ export const OrganizerEventCard = ({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 flex-shrink-0" />
               <span>
-                {format(new Date(event.event_dates[0].date), 'dd/MM/yyyy', { locale: ptBR })}
+                {format(new Date(event.event_dates[0].date), "dd/MM/yyyy", { locale: ptBR })}
                 {event.event_dates.length > 1 && ` (+${event.event_dates.length - 1})`}
               </span>
             </div>
@@ -118,7 +118,7 @@ export const OrganizerEventCard = ({
             size="sm" 
             onClick={() => onToggleStatus(event.id, event.status)}
           >
-            {event.status === 'open' ? (
+            {event.status === "open" ? (
               <>
                 <Pause className="h-4 w-4 mr-1" />
                 Pausar
@@ -143,5 +143,5 @@ export const OrganizerEventCard = ({
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
