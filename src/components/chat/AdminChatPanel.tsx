@@ -12,6 +12,15 @@ import { Separator } from '@/components/ui/separator';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { AdminChatPanelProps } from '@/lib/chat/chatTypes';
 import { cn } from '@/lib/utils';
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  MessageSquare,
+  Plus,
+  User,
+  X
+} from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import ChatInterface from './ChatInterface';
 
