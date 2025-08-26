@@ -4,7 +4,8 @@
  * Hook customizado para gerenciamento de comunicação com n8n
  */
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';\nimport { useChatEventTracking } from '@/hooks/useChatMetrics';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useChatEventTracking } from '@/hooks/useChatMetrics';
 import {
     ChatError,
     ChatType,
