@@ -4,8 +4,8 @@
  * Hook customizado para gerenciamento de comunicação com n8n
  */
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useChatEventTracking } from '@/hooks/useChatMetrics';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import {
     ChatError,
     ChatType,
@@ -19,15 +19,6 @@ import {
     logN8nError,
     processN8nResponse
 } from '@/lib/chat/n8nClient';
-import { secureValidateMessage } from '@/lib/chat/securityMiddleware';
-import { useChatConfig, useChatPerformanceConfig } from '@/hooks/useChatConfig';
-import {
-  createChatError,
-  fromChatError,
-  CHAT_ERROR_CODES,
-  type ChatAppError
-} from '@/lib/chat/chatErrorFactory';
-import { logChatError, logSessionActivity } from '@/lib/chat/chatLogger';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ============================================================================
@@ -118,7 +109,8 @@ export const useN8nChat = (
   } | null>(null);
 
   // Hook de tratamento de erros
-  const { handleError } = useErrorHandler();\n  const { trackWebhookCall, trackError } = useChatEventTracking();
+  const { handleError } = useErrorHandler();
+  const { trackWebhookCall, trackError } = useChatEventTracking();
 
   // ============================================================================
   // INTERNAL FUNCTIONS
