@@ -439,12 +439,7 @@ export function endPerformanceMonitoring(operationId: string, sessionId?: string
 // EXPORTS
 // ============================================================================
 
-export {
-    ChatErrorHandler,
-    ChatPerformanceMonitor,
-    convertLegacyChatError,
-    convertToLegacyChatError
-};
+
 
 // Limpar operações antigas a cada 5 minutos
 setInterval(() => {
