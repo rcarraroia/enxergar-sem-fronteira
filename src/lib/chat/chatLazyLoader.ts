@@ -576,7 +576,7 @@ export function initializeChatPerformance(): void {
 // ============================================================================
 
 export {
-    ChatMemoryManager, ChatPerformanceOptimizer, componentCache
+    componentCache
 };
 
 // Auto-inicializar se chat estiver habilitado
