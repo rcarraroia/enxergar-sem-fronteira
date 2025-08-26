@@ -1,6 +1,6 @@
 
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 
@@ -161,8 +161,8 @@ export const useOrganizerRegistrations = () => {
       const attendedCount = filteredRegistrations.filter(
         reg => reg.status === "attended"
       ).length;
-      const attendanceRate = totalRegistrations > 0 
-        ? (attendedCount / totalRegistrations) * 100 
+      const attendanceRate = totalRegistrations > 0
+        ? (attendedCount / totalRegistrations) * 100
         : 0;
 
       // Top eventos por número de inscrições
@@ -198,7 +198,7 @@ export const useOrganizerRegistrations = () => {
         if (reg.patients?.data_nascimento) {
           const birthYear = new Date(reg.patients.data_nascimento).getFullYear();
           const age = currentYear - birthYear;
-          
+
           if (age < 18) {ageGroups["0-17"]++;}
           else if (age < 30) {ageGroups["18-29"]++;}
           else if (age < 50) {ageGroups["30-49"]++;}
@@ -228,7 +228,7 @@ export const useOrganizerRegistrations = () => {
 
   const exportRegistrations = async (format: "csv" | "pdf" = "csv", eventId?: string) => {
     try {
-      const registrationsToExport = eventId 
+      const registrationsToExport = eventId
         ? registrations.filter(reg => reg.event_date.event.id === eventId)
         : registrations;
 
@@ -244,8 +244,7 @@ export const useOrganizerRegistrations = () => {
             reg.event_date.date,
             reg.status
           ].join(","))
-        ].join("
-");
+        ].join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
@@ -281,15 +280,15 @@ export const useOrganizerRegistrations = () => {
   };
 
   const sendBulkNotification = async (
-    registrationIds: string[], 
-    message: string, 
+    registrationIds: string[],
+    message: string,
     subject: string
   ) => {
     try {
       // Aqui você implementaria o envio de notificações em massa
       // Por ora, vamos simular
       console.log("Enviando notificação para:", registrationIds, { subject, message });
-      
+
       toast.success(`Notificação enviada para ${registrationIds.length} pessoas!`);
     } catch (error) {
       console.error("Erro ao enviar notificações:", error);
