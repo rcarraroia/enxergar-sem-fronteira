@@ -6,7 +6,7 @@
  */
 export const formatTime = (timeString: string): string => {
   if (!timeString) {return "";}
-  
+
   // Remove segundos se existirem (08:00:00 → 08:00)
   return timeString.substring(0, 5);
 };
@@ -18,11 +18,11 @@ export const formatTime = (timeString: string): string => {
  */
 export const formatDate = (dateString: string): string => {
   if (!dateString) {return "";}
-  
+
   const date = new Date(`${dateString  }T00:00:00`);
   return date.toLocaleDateString("pt-BR", {
     day: "2-digit",
-    month: "2-digit", 
+    month: "2-digit",
     year: "numeric"
   });
 };
@@ -34,14 +34,13 @@ export const formatDate = (dateString: string): string => {
  */
 export const exportToCSV = (data: Record<string, unknown>[], filename: string) => {
   if (!data || data.length === 0) {return;}
-  
+
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(","),
     ...data.map(row => headers.map(header => `"${row[header] || ""}"`).join(","))
-  ].join("
-");
-  
+  ].join("\n");
+
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
