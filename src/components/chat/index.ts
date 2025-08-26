@@ -18,7 +18,7 @@ export { default as PublicChatWidget } from './PublicChatWidget';
 export { default as VoiceInput } from './VoiceInput';
 
 // Context and Providers
-export { ChatProvider, useChatContext } from './ChatContext';
+// export { ChatProvider, useChatContext } from './ChatContext';
 
 // Types
 export type {

@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import PartnersSection from "@/components/PartnersSection";
+import { PublicChatWidget } from "@/components/chat/PublicChatWidget";
 
 const Index = () => {
   return (
