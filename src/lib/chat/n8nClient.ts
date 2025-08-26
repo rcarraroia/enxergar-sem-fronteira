@@ -4,8 +4,9 @@
  * Cliente HTTP para comunicação com webhooks do n8n
  */
 
-import { createError, ErrorType } from '@/lib/errors/factory';
+import { createError } from '@/lib/errors/factory';
 import { logError } from '@/lib/errors/logger';
+import { ERROR_CODES } from '@/lib/errors/types';
 import { getChatConfig, isFeatureEnabled } from './chatConfig';
 import {
     createChatError
@@ -459,7 +460,7 @@ export const processN8nResponse = (
  */
 export const logN8nError = (error: ChatError, context?: Record<string, unknown>): void => {
   const errorToLog = createError(
-    ErrorType.INTEGRATION_ERROR,
+    ERROR_CODES.SYSTEM_ERROR,
     error.message,
     {
       component: 'N8nHttpClient',

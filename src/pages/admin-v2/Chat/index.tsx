@@ -24,7 +24,7 @@ import {
 import React, { useState } from 'react';
 
 // Importar componentes de chat
-import { AdminChatPanel } from '@/components/chat/AdminChatPanel';
+import AdminChatPanel from '@/components/chat/AdminChatPanel';
 import { ChatConfigPanel } from '@/components/chat/ChatConfigPanel';
 import { ChatMetricsDashboard } from '@/components/chat/ChatMetricsDashboard';
 import { ChatPerformanceMonitor } from '@/components/chat/ChatPerformanceMonitor';

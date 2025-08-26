@@ -7,7 +7,7 @@
 import { useOptimizedResize, useOptimizedScroll } from '@/hooks/useChatPerformance';
 import { ChatMessage } from '@/lib/chat/chatTypes';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { MessageBubble } from './MessageBubble';
+import MessageBubble from './MessageBubble';
 
 // ============================================================================
 // TYPES

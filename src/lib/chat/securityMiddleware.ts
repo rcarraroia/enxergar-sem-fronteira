@@ -6,25 +6,44 @@
  */
 
 import {
-  validateAndSanitizeMessage,
-  validateAndSanitizeN8nRequest,
-  validateN8nResponse,
-  checkRateLimit
-} from './chatSecurity';
-import {
-  createSecurityError,
-  createChatError,
-  createSessionError,
-  CHAT_ERROR_CODES,
-  type ChatAppError
+    CHAT_ERROR_CODES,
+    createChatError,
+    createSecurityError,
+    createSessionError,
+    type ChatAppError
 } from './chatErrorFactory';
 import { logChatError, logSecurityThreat } from './chatLogger';
 import {
-  ChatError,
-  ChatErrorType,
-  N8nChatRequest,
-  N8nChatResponse
+    N8nChatRequest,
+    N8nChatResponse
 } from './chatTypes';
+import { validateAndSanitizeMessage, validateN8nResponse } from './chatValidation';
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+const rateLimiter = new Map<string, { count: number; resetTime: number }>();
+
+/**
+ * Verifica rate limiting
+ */
+const checkRateLimit = (identifier: string, limit: number, windowMs: number): { allowed: boolean; resetTime?: number } => {
+  const now = Date.now();
+  const record = rateLimiter.get(identifier);
+
+  if (!record || now > record.resetTime) {
+    rateLimiter.set(identifier, { count: 1, resetTime: now + windowMs });
+    return { allowed: true };
+  }
+
+  if (record.count >= limit) {
+    return { allowed: false, resetTime: record.resetTime };
+  }
+
+  record.count++;
+  return { allowed: true };
+};
 
 // ============================================================================
 // TYPES
@@ -207,7 +226,7 @@ export class ChatSecurityMiddleware {
       }
 
       // Validar estrutura da requisição
-      const validationResult = validateAndSanitizeN8nRequest(request);
+      const validationResult = validateN8nRequest(request);
       if (!validationResult.success) {
         this.recordSuspiciousActivity(context, 'invalid_request');
 
@@ -446,7 +465,7 @@ export class ChatSecurityMiddleware {
   ): void {
     const current = this.suspiciousActivity.get(context.sessionId) || 0;
     const newCount = current + 1;
-    
+
     this.suspiciousActivity.set(context.sessionId, newCount);
 
     // Bloquear sessão após muitas atividades suspeitas
@@ -552,7 +571,6 @@ export function secureValidateResponse(
 export default ChatSecurityMiddleware;
 
 export type {
-  SecurityContext,
-  SecurityMiddlewareOptions,
-  MiddlewareResult
+    MiddlewareResult, SecurityContext,
+    SecurityMiddlewareOptions
 };

@@ -6,8 +6,9 @@
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { ChatError as ChatErrorType, ChatErrorType as ErrorType } from '@/lib/chat/chatTypes';
+import { ChatError as ChatErrorType } from '@/lib/chat/chatTypes';
 import { cn } from '@/lib/utils';
+import { AlertTriangle, Clock, RotateCcw, ShieldAlert, Wifi, X } from 'lucide-react';
 import React, { memo, useState } from 'react';
 
 // ============================================================================
@@ -34,37 +35,37 @@ interface ChatErrorProps {
 // ============================================================================
 
 const ERROR_MESSAGES = {
-  [ErrorType.NETWORK_ERROR]: {
+  [ChatErrorType.NETWORK_ERROR]: {
     title: 'Erro de Conexão',
     message: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
     icon: Wifi,
     color: 'text-orange-600'
   },
-  [ErrorType.WEBHOOK_ERROR]: {
+  [ChatErrorType.WEBHOOK_ERROR]: {
     title: 'Erro do Servidor',
     message: 'O servidor está temporariamente indisponível.',
     icon: AlertTriangle,
     color: 'text-red-600'
   },
-  [ErrorType.VALIDATION_ERROR]: {
+  [ChatErrorType.VALIDATION_ERROR]: {
     title: 'Dados Inválidos',
     message: 'A mensagem contém dados inválidos.',
     icon: ShieldAlert,
     color: 'text-yellow-600'
   },
-  [ErrorType.TIMEOUT_ERROR]: {
+  [ChatErrorType.TIMEOUT_ERROR]: {
     title: 'Tempo Esgotado',
     message: 'O servidor demorou muito para responder.',
     icon: Clock,
     color: 'text-blue-600'
   },
-  [ErrorType.VOICE_ERROR]: {
+  [ChatErrorType.VOICE_ERROR]: {
     title: 'Erro de Áudio',
     message: 'Não foi possível processar o áudio.',
     icon: AlertTriangle,
     color: 'text-purple-600'
   },
-  [ErrorType.SESSION_ERROR]: {
+  [ChatErrorType.SESSION_ERROR]: {
     title: 'Erro de Sessão',
     message: 'Houve um problema com sua sessão.',
     icon: AlertTriangle,
@@ -92,7 +93,7 @@ const ChatError: React.FC<ChatErrorProps> = memo(({
   const [showFullDetails, setShowFullDetails] = useState(false);
 
   // Configuração do erro
-  const errorConfig = ERROR_MESSAGES[error.type] || ERROR_MESSAGES[ErrorType.NETWORK_ERROR];
+  const errorConfig = ERROR_MESSAGES[error.type] || ERROR_MESSAGES[ChatErrorType.NETWORK_ERROR];
   const IconComponent = errorConfig.icon;
 
   // ============================================================================
@@ -249,28 +250,28 @@ const ChatError: React.FC<ChatErrorProps> = memo(({
    * Renderiza sugestões baseadas no tipo de erro
    */
   const renderSuggestions = () => {
-    const suggestions: Record<ErrorType, string[]> = {
-      [ErrorType.NETWORK_ERROR]: [
+    const suggestions: Record<ChatErrorType, string[]> = {
+      [ChatErrorType.NETWORK_ERROR]: [
         'Verifique sua conexão com a internet',
         'Tente recarregar a página'
       ],
-      [ErrorType.WEBHOOK_ERROR]: [
+      [ChatErrorType.WEBHOOK_ERROR]: [
         'O problema é temporário, tente novamente em alguns minutos',
         'Se persistir, entre em contato com o suporte'
       ],
-      [ErrorType.VALIDATION_ERROR]: [
+      [ChatErrorType.VALIDATION_ERROR]: [
         'Verifique se a mensagem não contém caracteres especiais',
         'Tente reformular sua mensagem'
       ],
-      [ErrorType.TIMEOUT_ERROR]: [
+      [ChatErrorType.TIMEOUT_ERROR]: [
         'Sua conexão pode estar lenta',
         'Tente novamente com uma mensagem mais curta'
       ],
-      [ErrorType.VOICE_ERROR]: [
+      [ChatErrorType.VOICE_ERROR]: [
         'Verifique se o microfone está funcionando',
         'Tente falar mais claramente'
       ],
-      [ErrorType.SESSION_ERROR]: [
+      [ChatErrorType.SESSION_ERROR]: [
         'Recarregue a página para iniciar uma nova sessão',
         'Limpe os dados do navegador se o problema persistir'
       ]
