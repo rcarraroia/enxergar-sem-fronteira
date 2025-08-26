@@ -1,6 +1,7 @@
 # Pre-commit Hooks
 
-Este documento explica o sistema de pre-commit hooks configurado no projeto para garantir qualidade de código.
+Este documento explica o sistema de pre-commit hooks configurado no projeto para
+garantir qualidade de código.
 
 ## ✅ Status Atual - CONFIGURADO E ATIVO
 
@@ -16,6 +17,7 @@ Os pre-commit hooks estão **totalmente configurados e funcionais** no projeto:
 ## 🎯 Objetivo
 
 Os pre-commit hooks garantem que:
+
 - **Código está formatado** corretamente
 - **Linting passa** sem erros
 - **Tipos TypeScript** estão corretos
@@ -49,6 +51,7 @@ chmod +x scripts/setup-hooks.sh
 **Quando executa**: Antes de cada commit
 
 **O que faz**:
+
 - ✅ Executa ESLint com correções automáticas
 - ✅ Formata código com Prettier
 - ✅ Verifica tipos TypeScript
@@ -69,11 +72,13 @@ git commit -m "feat: adicionar validação"
 **Quando executa**: Ao criar mensagem de commit
 
 **O que faz**:
+
 - ✅ Valida formato da mensagem
 - ✅ Garante uso de conventional commits
 - ✅ Bloqueia mensagens inadequadas
 
 **Formato aceito**:
+
 ```
 tipo(escopo): descrição
 
@@ -85,6 +90,7 @@ test(validation): adicionar testes
 ```
 
 **Tipos válidos**:
+
 - `feat`: nova funcionalidade
 - `fix`: correção de bug
 - `docs`: documentação
@@ -104,6 +110,7 @@ test(validation): adicionar testes
 **O que faz**:
 
 #### Para branches principais (main/master):
+
 - ✅ Verificação completa de tipos
 - ✅ Linting completo
 - ✅ Verificação de formatação
@@ -111,6 +118,7 @@ test(validation): adicionar testes
 - ✅ Build de produção
 
 #### Para branches de feature:
+
 - ✅ Verificação básica de tipos
 - ✅ Testes críticos apenas
 
@@ -174,13 +182,8 @@ O `lint-staged` executa comandos apenas em arquivos modificados:
       "prettier --write",
       "bash -c 'npm run type-check'"
     ],
-    "*.{js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ],
+    "*.{js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,css,md}": ["prettier --write"],
     "*.{ts,tsx,js,jsx}": [
       "bash -c 'npm run test:critical -- --run --passWithNoTests'"
     ]
@@ -336,6 +339,7 @@ git push origin main
 ### Adicionar Nova Verificação
 
 1. **Editar `.husky/pre-commit`**:
+
 ```bash
 # Adicionar nova verificação
 echo "🔍 Executando nova verificação..."
@@ -343,14 +347,11 @@ npm run nova-verificacao
 ```
 
 2. **Atualizar `lint-staged`** no `package.json`:
+
 ```json
 {
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write",
-      "nova-verificacao"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write", "nova-verificacao"]
   }
 }
 ```
@@ -358,6 +359,7 @@ npm run nova-verificacao
 ### Modificar Padrão de Commit
 
 Editar `.husky/commit-msg` para alterar regex:
+
 ```bash
 # Novo padrão
 commit_regex='^(seu-padrao): .{1,50}'
@@ -366,6 +368,7 @@ commit_regex='^(seu-padrao): .{1,50}'
 ### Ajustar Verificações por Branch
 
 Editar `.husky/pre-push` para diferentes branches:
+
 ```bash
 if [ "$current_branch" = "staging" ]; then
   # Verificações específicas para staging

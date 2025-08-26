@@ -1,0 +1,36 @@
+
+🎯 RELATÓRIO DE QUALIDADE DO CÓDIGO
+=====================================
+
+Status Geral: ❌ ERROR
+
+📊 MÉTRICAS PRINCIPAIS
+----------------------
+ESLint Erros:      0
+ESLint Warnings:   0
+TypeScript Erros:  0
+Cobertura Testes:  0%
+Testes Passando:   77/78
+Bundle Size:       -1KB
+
+🔍 COMPLEXIDADE DO CÓDIGO
+-------------------------
+Arquivos:          261
+Linhas de Código:  49634
+Funções:           574
+Componentes:       133
+Média Linhas/Arq:  190
+
+❌ PROBLEMAS CRÍTICOS
+---------------------
+• Testes: 1 testes falhando
+
+⚠️ AVISOS
+---------
+• Cobertura de testes: 0% (meta: 70%)
+
+💡 RECOMENDAÇÕES
+----------------
+• Adicione mais testes para melhorar a cobertura
+
+Relatório gerado em: 24/08/2025, 16:35:23

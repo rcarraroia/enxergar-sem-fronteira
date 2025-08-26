@@ -42,6 +42,22 @@ jobs:
     - name: Build check
       run: npm run build
 
+    - name: Quality metrics collection
+      if: matrix.node-version == '20.x'
+      run: npm run quality:metrics
+
+    - name: Quality alerts check
+      if: matrix.node-version == '20.x'
+      run: npm run quality:alerts
+
+    - name: Upload quality reports
+      if: matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-reports
+        path: quality-reports/
+        retention-days: 30
+
     - name: Upload coverage reports
       if: matrix.node-version == '20.x'
       uses: codecov/codecov-action@v3

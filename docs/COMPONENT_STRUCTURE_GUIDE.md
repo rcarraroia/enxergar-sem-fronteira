@@ -1,12 +1,13 @@
 # Guia de Estrutura de Componentes React
 
-Este documento define os padrões para estruturação de componentes React no projeto.
+Este documento define os padrões para estruturação de componentes React no
+projeto.
 
 ## 📋 Estrutura Padrão de Componente
 
 ### Template Base
 
-```typescript
+````typescript
 /**
  * ComponentName - Brief description
  *
@@ -243,54 +244,56 @@ export const ComponentName: React.FC<ComponentNameProps> = ({
 
 export default ComponentName
 export type { ComponentNameProps }
-```
+````
 
 ## 🗂️ Organização de Seções
 
 ### 1. **Imports** (Ordem específica)
+
 ```typescript
 // 1. React e tipos do React
-import React, { useState, useCallback } from 'react'
-import type { ReactNode, MouseEvent } from 'react'
+import React, { useState, useCallback } from 'react';
+import type { ReactNode, MouseEvent } from 'react';
 
 // 2. Bibliotecas externas
-import { toast } from 'sonner'
-import { z } from 'zod'
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 // 3. Componentes UI (shadcn/ui)
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // 4. Componentes customizados
-import { CustomComponent } from '@/components/custom'
+import { CustomComponent } from '@/components/custom';
 
 // 5. Hooks customizados
-import { useCustomHook } from '@/hooks/useCustomHook'
+import { useCustomHook } from '@/hooks/useCustomHook';
 
 // 6. Utilitários e tipos
-import { cn } from '@/lib/utils'
-import type { CustomType } from '@/types'
+import { cn } from '@/lib/utils';
+import type { CustomType } from '@/types';
 
 // 7. Constantes
-import { CONSTANTS } from '@/lib/constants'
+import { CONSTANTS } from '@/lib/constants';
 ```
 
 ### 2. **Types e Interfaces**
+
 ```typescript
 // Props sempre primeiro
 interface ComponentProps {
   // Props obrigatórias primeiro
-  required: string
+  required: string;
 
   // Props opcionais depois
-  optional?: number
+  optional?: number;
 
   // Callbacks
-  onAction?: () => void
+  onAction?: () => void;
 
   // Props padrão do React por último
-  children?: ReactNode
-  className?: string
+  children?: ReactNode;
+  className?: string;
 }
 
 // Interfaces internas depois
@@ -300,53 +303,63 @@ interface InternalState {
 ```
 
 ### 3. **Estado** (Ordem específica)
+
 ```typescript
 // 1. Estado complexo primeiro
 const [complexState, setComplexState] = useState<ComplexType>({
   // estado inicial
-})
+});
 
 // 2. Estados simples depois
-const [isLoading, setIsLoading] = useState(false)
-const [error, setError] = useState<string | null>(null)
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 ```
 
 ### 4. **Hooks Customizados**
+
 ```typescript
 const { data, loading, error } = useCustomHook({
   // configurações
-})
+});
 ```
 
 ### 5. **Valores Computados**
+
 ```typescript
 const computedValue = useMemo(() => {
   // cálculo
-}, [dependencies])
+}, [dependencies]);
 ```
 
 ### 6. **Handlers**
+
 ```typescript
-const handleAction = useCallback((param: Type) => {
-  // lógica do handler
-}, [dependencies])
+const handleAction = useCallback(
+  (param: Type) => {
+    // lógica do handler
+  },
+  [dependencies]
+);
 ```
 
 ### 7. **Effects**
+
 ```typescript
 useEffect(() => {
   // lógica do effect
-}, [dependencies])
+}, [dependencies]);
 ```
 
 ### 8. **Render Helpers**
+
 ```typescript
 const renderSection = () => {
   // JSX helper
-}
+};
 ```
 
 ### 9. **Render Principal**
+
 ```typescript
 return (
   // JSX principal
@@ -360,26 +373,26 @@ return (
 ```typescript
 interface FormComponentProps {
   // Dados
-  value?: string
-  defaultValue?: string
+  value?: string;
+  defaultValue?: string;
 
   // Callbacks
-  onChange?: (value: string) => void
-  onBlur?: () => void
-  onFocus?: () => void
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+  onFocus?: () => void;
 
   // Validação
-  error?: string
-  required?: boolean
-  disabled?: boolean
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
 
   // UI
-  label?: string
-  placeholder?: string
-  helperText?: string
+  label?: string;
+  placeholder?: string;
+  helperText?: string;
 
   // Padrão
-  className?: string
+  className?: string;
 }
 ```
 
@@ -388,23 +401,23 @@ interface FormComponentProps {
 ```typescript
 interface ListComponentProps<T> {
   // Dados
-  items: T[]
+  items: T[];
 
   // Renderização
-  renderItem: (item: T, index: number) => ReactNode
-  keyExtractor?: (item: T) => string
+  renderItem: (item: T, index: number) => ReactNode;
+  keyExtractor?: (item: T) => string;
 
   // Estados
-  loading?: boolean
-  error?: string
+  loading?: boolean;
+  error?: string;
 
   // Callbacks
-  onItemClick?: (item: T) => void
-  onLoadMore?: () => void
+  onItemClick?: (item: T) => void;
+  onLoadMore?: () => void;
 
   // UI
-  emptyMessage?: string
-  className?: string
+  emptyMessage?: string;
+  className?: string;
 }
 ```
 
@@ -413,27 +426,27 @@ interface ListComponentProps<T> {
 ```typescript
 interface ModalComponentProps {
   // Estado
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 
   // Conteúdo
-  title?: string
-  description?: string
-  children?: ReactNode
+  title?: string;
+  description?: string;
+  children?: ReactNode;
 
   // Ações
-  onConfirm?: () => void
-  onCancel?: () => void
-  confirmText?: string
-  cancelText?: string
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  confirmText?: string;
+  cancelText?: string;
 
   // Comportamento
-  closeOnOverlayClick?: boolean
-  closeOnEscape?: boolean
+  closeOnOverlayClick?: boolean;
+  closeOnEscape?: boolean;
 
   // UI
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  className?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
 }
 ```
 
@@ -452,67 +465,71 @@ interface ModalComponentProps {
  */
 
 interface UseCustomHookOptions {
-  param1: string
-  param2?: number
-  enabled?: boolean
+  param1: string;
+  param2?: number;
+  enabled?: boolean;
 }
 
 interface UseCustomHookReturn {
-  data: DataType[]
-  loading: boolean
-  error: string | null
-  refetch: () => void
+  data: DataType[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
 }
 
 export function useCustomHook({
   param1,
   param2 = 0,
-  enabled = true
+  enabled = true,
 }: UseCustomHookOptions): UseCustomHookReturn {
   // Estado
-  const [data, setData] = useState<DataType[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<DataType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Métodos
   const refetch = useCallback(() => {
     // lógica de refetch
-  }, [param1, param2])
+  }, [param1, param2]);
 
   // Effects
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) return;
     // lógica principal
-  }, [enabled, param1, param2])
+  }, [enabled, param1, param2]);
 
   return {
     data,
     loading,
     error,
-    refetch
-  }
+    refetch,
+  };
 }
 ```
 
 ## 📝 Convenções de Nomenclatura
 
 ### Componentes
+
 - **PascalCase**: `UserProfile`, `PatientForm`
 - **Descritivo**: Nome deve indicar função
 - **Específico**: Evitar nomes genéricos como `Component`, `Item`
 
 ### Props
+
 - **camelCase**: `userName`, `isLoading`
 - **Booleanos**: Prefixo `is`, `has`, `can`, `should`
 - **Callbacks**: Prefixo `on` + verbo: `onClick`, `onSubmit`
 - **Handlers**: Prefixo `handle` + ação: `handleClick`, `handleSubmit`
 
 ### Estados
+
 - **camelCase**: `isLoading`, `userData`
 - **Descritivo**: `selectedItems` ao invés de `items`
 - **Específico**: `isSubmitting` ao invés de `loading`
 
 ### Funções
+
 - **camelCase**: `calculateTotal`, `validateForm`
 - **Verbos**: Começar com verbo de ação
 - **Específico**: `submitForm` ao invés de `submit`
@@ -520,6 +537,7 @@ export function useCustomHook({
 ## 🎨 Padrões de Estilo
 
 ### Classes CSS
+
 ```typescript
 // ✅ Bom - usar cn() para combinar classes
 <div className={cn(
@@ -537,6 +555,7 @@ export function useCustomHook({
 ```
 
 ### Conditional Rendering
+
 ```typescript
 // ✅ Bom - early returns para casos simples
 if (loading) return <LoadingSpinner />
@@ -560,6 +579,7 @@ if (!data) return <EmptyState />
 ## 🧪 Padrões de Teste
 
 ### Estrutura de Teste
+
 ```typescript
 describe('ComponentName', () => {
   // Setup

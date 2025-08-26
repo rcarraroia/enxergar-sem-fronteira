@@ -1,0 +1,14 @@
+[
+  {
+    "id": "eslint_errors_1756063822943",
+    "type": "regression",
+    "severity": "high",
+    "metric": "ESLint Erros",
+    "message": "Aumento de 1 erros de ESLint",
+    "current": 0,
+    "baseline": -1,
+    "difference": 1,
+    "timestamp": "2025-08-24T19:30:22.932Z",
+    "status": "active"
+  }
+]

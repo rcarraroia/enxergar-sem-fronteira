@@ -1,6 +1,7 @@
 # Sistema de Validação
 
-Este diretório contém o sistema completo de validação de dados da aplicação, implementado com Zod para garantir segurança e consistência dos dados.
+Este diretório contém o sistema completo de validação de dados da aplicação,
+implementado com Zod para garantir segurança e consistência dos dados.
 
 ## 📋 Visão Geral
 
@@ -30,16 +31,21 @@ src/lib/validation/
 Define a estrutura e validações para todas as entidades:
 
 ```typescript
-import { PatientSchema, CPFSchema, EmailSchema } from '@/lib/validation/schemas'
+import {
+  PatientSchema,
+  CPFSchema,
+  EmailSchema,
+} from '@/lib/validation/schemas';
 
 // Validar dados de paciente
-const result = PatientSchema.safeParse(formData)
+const result = PatientSchema.safeParse(formData);
 if (result.success) {
-  console.log('Dados válidos:', result.data)
+  console.log('Dados válidos:', result.data);
 }
 ```
 
 **Schemas disponíveis:**
+
 - `PatientSchema` - Dados de pacientes
 - `CPFSchema` - CPF brasileiro
 - `EmailSchema` - Email com validações rigorosas
@@ -51,22 +57,22 @@ if (result.success) {
 Funções auxiliares para validação e formatação:
 
 ```typescript
-import { 
-  validateData, 
-  sanitizeString, 
-  validateAndFormatCPF 
-} from '@/lib/validation/utils'
+import {
+  validateData,
+  sanitizeString,
+  validateAndFormatCPF,
+} from '@/lib/validation/utils';
 
 // Validação com resultado estruturado
-const result = validateData(PatientSchema, userData)
+const result = validateData(PatientSchema, userData);
 
 // Sanitização de strings
 const clean = sanitizeString('<script>alert("xss")</script>João', {
-  allowHtml: false
-})
+  allowHtml: false,
+});
 
 // Formatação de CPF
-const { valid, formatted } = validateAndFormatCPF('12345678909')
+const { valid, formatted } = validateAndFormatCPF('12345678909');
 ```
 
 ### 3. Middleware (`middleware.ts`)
@@ -74,14 +80,14 @@ const { valid, formatted } = validateAndFormatCPF('12345678909')
 Middleware para validação automática em APIs:
 
 ```typescript
-import { validateRequest } from '@/lib/validation/middleware'
+import { validateRequest } from '@/lib/validation/middleware';
 
 // Em uma Edge Function
 export default validateRequest(PatientSchema, async (req, validatedData) => {
   // validatedData já está validado e sanitizado
-  const patient = await createPatient(validatedData)
-  return Response.json(patient)
-})
+  const patient = await createPatient(validatedData);
+  return Response.json(patient);
+});
 ```
 
 ## 🎯 Uso em Formulários
@@ -134,14 +140,14 @@ const PatientForm = () => (
       schema={z.string().min(2)}
       required
     />
-    
+
     <CPFInput
       label="CPF"
       value={cpf}
       onChange={setCpf}
       autoFormat
     />
-    
+
     <PhoneInput
       label="Telefone"
       value={telefone}
@@ -160,13 +166,13 @@ Todos os dados são automaticamente sanitizados para prevenir ataques XSS:
 
 ```typescript
 // Remove HTML perigoso
-const safe = sanitizeString('<script>alert("xss")</script>João')
+const safe = sanitizeString('<script>alert("xss")</script>João');
 // Resultado: "João"
 
 // Permite HTML seguro
 const safe = sanitizeString('<b>João</b><script>alert("xss")</script>', {
-  allowHtml: true
-})
+  allowHtml: true,
+});
 // Resultado: "<b>João</b>"
 ```
 
@@ -180,20 +186,23 @@ const safe = sanitizeString('<b>João</b><script>alert("xss")</script>', {
 ## 📱 Formatação Automática
 
 ### CPF
+
 ```typescript
-validateAndFormatCPF('12345678909')
+validateAndFormatCPF('12345678909');
 // { valid: true, formatted: '123.456.789-09' }
 ```
 
 ### Telefone
+
 ```typescript
-validateAndFormatPhone('11999999999')
+validateAndFormatPhone('11999999999');
 // { valid: true, formatted: '(11) 99999-9999' }
 ```
 
 ### CEP
+
 ```typescript
-validateAndFormatCEP('01234567')
+validateAndFormatCEP('01234567');
 // { valid: true, formatted: '01234-567' }
 ```
 
@@ -202,14 +211,15 @@ validateAndFormatCEP('01234567')
 Para validações que dependem de APIs externas:
 
 ```typescript
-const AsyncEmailSchema = z.string()
+const AsyncEmailSchema = z
+  .string()
   .email()
-  .refine(async (email) => {
-    const exists = await checkEmailExists(email)
-    return !exists
-  }, 'Email já está em uso')
+  .refine(async email => {
+    const exists = await checkEmailExists(email);
+    return !exists;
+  }, 'Email já está em uso');
 
-const result = await validateDataAsync(AsyncEmailSchema, 'test@email.com')
+const result = await validateDataAsync(AsyncEmailSchema, 'test@email.com');
 ```
 
 ## 🎨 Personalização
@@ -218,26 +228,28 @@ const result = await validateDataAsync(AsyncEmailSchema, 'test@email.com')
 
 ```typescript
 const CustomPatientSchema = z.object({
-  nome: z.string()
+  nome: z
+    .string()
     .min(2, 'O nome deve ter pelo menos 2 caracteres')
     .max(100, 'O nome não pode ter mais de 100 caracteres'),
-  
-  idade: z.number()
+
+  idade: z
+    .number()
     .min(0, 'Idade não pode ser negativa')
-    .max(120, 'Idade deve ser realista')
-})
+    .max(120, 'Idade deve ser realista'),
+});
 ```
 
 ### Transformações Automáticas
 
 ```typescript
-const NormalizedNameSchema = z.string()
-  .transform(name => 
-    name.trim()
-        .replace(/\s+/g, ' ')
-        .toLowerCase()
-        .replace(/\b\w/g, l => l.toUpperCase())
-  )
+const NormalizedNameSchema = z.string().transform(name =>
+  name
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, l => l.toUpperCase())
+);
 ```
 
 ## 🧪 Testes
@@ -251,26 +263,26 @@ describe('PatientSchema', () => {
       nome: 'João Silva',
       email: 'joao@email.com',
       telefone: '(11) 99999-9999',
-      data_nascimento: '1990-05-15'
-    }
-    
-    const result = PatientSchema.safeParse(validData)
-    expect(result.success).toBe(true)
-  })
-  
+      data_nascimento: '1990-05-15',
+    };
+
+    const result = PatientSchema.safeParse(validData);
+    expect(result.success).toBe(true);
+  });
+
   it('should reject invalid email', () => {
     const invalidData = {
       nome: 'João Silva',
       email: 'email-inválido',
       telefone: '(11) 99999-9999',
-      data_nascimento: '1990-05-15'
-    }
-    
-    const result = PatientSchema.safeParse(invalidData)
-    expect(result.success).toBe(false)
-    expect(result.error?.errors[0].path).toEqual(['email'])
-  })
-})
+      data_nascimento: '1990-05-15',
+    };
+
+    const result = PatientSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+    expect(result.error?.errors[0].path).toEqual(['email']);
+  });
+});
 ```
 
 ### Testando Formatação
@@ -278,16 +290,16 @@ describe('PatientSchema', () => {
 ```typescript
 describe('validateAndFormatCPF', () => {
   it('should format valid CPF', () => {
-    const result = validateAndFormatCPF('12345678909')
-    expect(result.valid).toBe(true)
-    expect(result.formatted).toBe('123.456.789-09')
-  })
-  
+    const result = validateAndFormatCPF('12345678909');
+    expect(result.valid).toBe(true);
+    expect(result.formatted).toBe('123.456.789-09');
+  });
+
   it('should reject invalid CPF', () => {
-    const result = validateAndFormatCPF('11111111111')
-    expect(result.valid).toBe(false)
-  })
-})
+    const result = validateAndFormatCPF('11111111111');
+    expect(result.valid).toBe(false);
+  });
+});
 ```
 
 ## 🚀 Performance
@@ -315,15 +327,15 @@ const defaultSanitizationOptions: SanitizationOptions = {
   allowHtml: false,
   trimWhitespace: true,
   removeExtraSpaces: true,
-  maxLength: 1000
-}
+  maxLength: 1000,
+};
 
 // Configurar validação de formulários
 const defaultFormOptions = {
   validateOnChange: true,
   validateOnBlur: true,
-  sanitize: true
-}
+  sanitize: true,
+};
 ```
 
 ## 📚 Referências

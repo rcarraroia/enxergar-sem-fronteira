@@ -1,6 +1,7 @@
 # Troubleshooting do Sistema de Roles
 
-Este documento fornece soluções para problemas comuns relacionados ao sistema de roles baseado em metadados.
+Este documento fornece soluções para problemas comuns relacionados ao sistema de
+roles baseado em metadados.
 
 ## 🚨 Problemas Críticos
 
@@ -9,6 +10,7 @@ Este documento fornece soluções para problemas comuns relacionados ao sistema 
 **Causa**: Muitas políticas RLS dependem da função `is_admin_user()`.
 
 **Solução**:
+
 ```sql
 -- NÃO tente fazer DROP da função
 -- Em vez disso, apenas atualize a implementação:
@@ -35,6 +37,7 @@ $$;
 **Causa**: Role não foi atribuído corretamente durante a migração.
 
 **Solução**:
+
 ```sql
 -- Verificar se usuário existe na tabela organizers
 SELECT id, name, email, role, status
@@ -56,6 +59,7 @@ WHERE email = 'seu-email@admin.enxergar';
 **Causa**: Usuário não está na tabela organizers ou auth.uid() não corresponde.
 
 **Diagnóstico**:
+
 ```sql
 -- Verificar auth.uid() atual
 SELECT auth.uid() as current_user_id;
@@ -68,6 +72,7 @@ SELECT is_admin_user() as is_admin;
 ```
 
 **Solução**:
+
 ```sql
 -- Vincular usuário autenticado à tabela organizers
 UPDATE public.organizers
@@ -80,6 +85,7 @@ WHERE email = 'seu-email@admin.enxergar';
 ### 4. **Políticas RLS ainda usam verificação de email**
 
 **Diagnóstico**:
+
 ```sql
 -- Encontrar políticas que ainda usam email
 SELECT schemaname, tablename, policyname, qual::text as policy_definition
@@ -89,6 +95,7 @@ OR qual::text LIKE '%admin.%';
 ```
 
 **Solução**:
+
 ```sql
 -- Exemplo: Atualizar política para usar is_admin_user()
 DROP POLICY IF EXISTS "Old email policy" ON table_name;
@@ -101,13 +108,14 @@ FOR ALL USING (is_admin_user());
 **Causa**: Hook useAuth ainda usa verificação antiga.
 
 **Solução**: Verificar se o hook foi atualizado:
+
 ```typescript
 // Deve usar ID em vez de email
 const { data: organizerData } = await supabase
   .from('organizers')
   .select('role, status')
   .eq('id', user.id) // ✅ Correto
-  .eq('status', 'active')
+  .eq('status', 'active');
 ```
 
 ### 6. **Edge Functions retornam erro de permissão**
@@ -115,10 +123,11 @@ const { data: organizerData } = await supabase
 **Causa**: Edge Function ainda usa verificação de email.
 
 **Solução**: Atualizar para usar sistema de roles:
+
 ```typescript
 // Antes (inseguro)
 if (!user.email?.includes('@admin.enxergar')) {
-  throw new Error('Access denied')
+  throw new Error('Access denied');
 }
 
 // Depois (seguro)
@@ -127,10 +136,10 @@ const { data: organizerData } = await supabase
   .select('role, status')
   .eq('id', user.id)
   .eq('status', 'active')
-  .single()
+  .single();
 
 if (!organizerData || organizerData.role !== 'admin') {
-  throw new Error('Access denied')
+  throw new Error('Access denied');
 }
 ```
 
@@ -241,15 +250,17 @@ END $$;
 ### 1. **useAuth não atualiza role**
 
 **Solução**:
+
 ```typescript
 // Forçar refresh do role
-const { refreshRole } = useRoles()
-await refreshRole()
+const { refreshRole } = useRoles();
+await refreshRole();
 ```
 
 ### 2. **ProtectedRoute não funciona**
 
 **Verificar**:
+
 - Hook useRoles está sendo usado
 - Roles estão sendo verificados corretamente
 - Loading states estão sendo tratados
@@ -257,6 +268,7 @@ await refreshRole()
 ### 3. **Componente RoleManagement não carrega**
 
 **Verificar**:
+
 - Usuário tem role admin
 - Políticas RLS permitem acesso à tabela organizers
 - Função assign_user_role existe e tem permissões
@@ -294,6 +306,7 @@ LIMIT 10;
 ### Se perdeu acesso admin completamente:
 
 1. **Acesso direto ao banco**:
+
 ```sql
 -- Conectar como superuser do banco
 UPDATE public.organizers
@@ -302,6 +315,7 @@ WHERE email = 'seu-email@admin.enxergar';
 ```
 
 2. **Recriar função is_admin_user**:
+
 ```sql
 CREATE OR REPLACE FUNCTION is_admin_user()
 RETURNS BOOLEAN
@@ -320,6 +334,7 @@ $$;
 ```
 
 3. **Verificar auth.uid()**:
+
 ```sql
 -- Se auth.uid() não corresponde, atualizar
 UPDATE public.organizers

@@ -1,0 +1,94 @@
+[
+  {
+    "metrics": {
+      "timestamp": "2025-08-24T18:38:58.957Z",
+      "eslint": {
+        "errors": -1,
+        "warnings": -1,
+        "files": 0
+      },
+      "typescript": {
+        "errors": 0,
+        "hasErrors": false,
+        "output": ""
+      },
+      "tests": {
+        "coverage": 0,
+        "tests": 0,
+        "passed": 0,
+        "failed": 0
+      },
+      "bundle": {
+        "size": -1,
+        "gzipSize": -1
+      },
+      "complexity": {
+        "files": 261,
+        "lines": 49634,
+        "functions": 574,
+        "components": 133,
+        "avgLinesPerFile": 190
+      }
+    },
+    "analysis": {
+      "overall": "warning",
+      "issues": [],
+      "warnings": [
+        "Cobertura de testes: 0% (meta: 70%)"
+      ],
+      "recommendations": [
+        "Adicione mais testes para melhorar a cobertura"
+      ]
+    },
+    "regressions": 0,
+    "improvements": 0
+  },
+  {
+    "metrics": {
+      "timestamp": "2025-08-24T19:02:55.381Z",
+      "eslint": {
+        "errors": 0,
+        "warnings": 0,
+        "files": 0,
+        "filesWithIssues": 0
+      },
+      "typescript": {
+        "errors": 0,
+        "hasErrors": false,
+        "output": ""
+      },
+      "tests": {
+        "coverage": 0,
+        "tests": 78,
+        "passed": 77,
+        "failed": 1
+      },
+      "bundle": {
+        "size": -1,
+        "gzipSize": -1,
+        "files": 0
+      },
+      "complexity": {
+        "files": 261,
+        "lines": 49634,
+        "functions": 574,
+        "components": 133,
+        "avgLinesPerFile": 190
+      }
+    },
+    "analysis": {
+      "overall": "error",
+      "issues": [
+        "Testes: 1 testes falhando"
+      ],
+      "warnings": [
+        "Cobertura de testes: 0% (meta: 70%)"
+      ],
+      "recommendations": [
+        "Adicione mais testes para melhorar a cobertura"
+      ]
+    },
+    "regressions": 1,
+    "improvements": 0
+  }
+]

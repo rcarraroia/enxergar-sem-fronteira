@@ -1,10 +1,12 @@
 # Sistema de Controle de Acesso Baseado em Roles (RBAC)
 
-Este documento descreve o sistema de controle de acesso baseado em roles implementado para substituir a verificação insegura baseada em padrões de email.
+Este documento descreve o sistema de controle de acesso baseado em roles
+implementado para substituir a verificação insegura baseada em padrões de email.
 
 ## 🎯 Objetivo
 
 Implementar um sistema seguro de controle de acesso que:
+
 - Elimina vulnerabilidades de segurança baseadas em padrões de email
 - Fornece controle granular de permissões
 - Permite auditoria completa de mudanças de roles
@@ -15,10 +17,11 @@ Implementar um sistema seguro de controle de acesso que:
 ### 1. **Estrutura de Roles**
 
 ```typescript
-type UserRole = 'admin' | 'organizer' | 'viewer' | 'user'
+type UserRole = 'admin' | 'organizer' | 'viewer' | 'user';
 ```
 
 #### **Admin**
+
 - **Descrição**: Acesso completo ao sistema
 - **Permissões**:
   - Gerenciar usuários e roles
@@ -29,6 +32,7 @@ type UserRole = 'admin' | 'organizer' | 'viewer' | 'user'
   - Atribuir roles a outros usuários
 
 #### **Organizer**
+
 - **Descrição**: Organizador de eventos
 - **Permissões**:
   - Gerenciar seus próprios eventos
@@ -36,12 +40,14 @@ type UserRole = 'admin' | 'organizer' | 'viewer' | 'user'
   - Gerenciar registros de pacientes de seus eventos
 
 #### **Viewer**
+
 - **Descrição**: Visualizador de dados
 - **Permissões**:
   - Visualizar relatórios (somente leitura)
   - Visualizar eventos públicos
 
 #### **User**
+
 - **Descrição**: Usuário comum do sistema
 - **Permissões**:
   - Acesso básico ao sistema
@@ -50,6 +56,7 @@ type UserRole = 'admin' | 'organizer' | 'viewer' | 'user'
 ### 2. **Estrutura do Banco de Dados**
 
 #### **Tabela `organizers`**
+
 ```sql
 CREATE TABLE public.organizers (
   id uuid PRIMARY KEY,
@@ -64,6 +71,7 @@ CREATE TABLE public.organizers (
 ```
 
 #### **Tabela `role_audit_log`**
+
 ```sql
 CREATE TABLE public.role_audit_log (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -81,6 +89,7 @@ CREATE TABLE public.role_audit_log (
 ### 1. **Funções de Segurança**
 
 #### **`is_admin_user()`**
+
 ```sql
 CREATE OR REPLACE FUNCTION is_admin_user()
 RETURNS BOOLEAN
@@ -100,6 +109,7 @@ $$;
 ```
 
 #### **`has_role(required_role text)`**
+
 ```sql
 CREATE OR REPLACE FUNCTION has_role(required_role text)
 RETURNS BOOLEAN
@@ -119,6 +129,7 @@ $$;
 ```
 
 #### **`assign_user_role(user_id uuid, new_role text)`**
+
 ```sql
 CREATE OR REPLACE FUNCTION assign_user_role(
   user_id uuid,
@@ -153,6 +164,7 @@ $$;
 ### 2. **Políticas RLS (Row Level Security)**
 
 #### **Organizers Table**
+
 ```sql
 -- Organizers can manage their own data
 CREATE POLICY "Organizers can manage their own data" ON public.organizers
@@ -168,6 +180,7 @@ FOR ALL USING (has_role('admin'));
 ```
 
 #### **Events Table**
+
 ```sql
 -- Organizers can manage their own events
 CREATE POLICY "Organizers can manage their own events" ON public.events
@@ -185,30 +198,38 @@ FOR SELECT USING (status = 'active');
 ### 3. **Frontend Implementation**
 
 #### **Hook `useRoles`**
+
 ```typescript
 export function useRoles(): UseRolesReturn {
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const hasRole = useCallback((role: UserRole | UserRole[]): boolean => {
-    if (!userRole) return false
+  const hasRole = useCallback(
+    (role: UserRole | UserRole[]): boolean => {
+      if (!userRole) return false;
 
-    if (Array.isArray(role)) {
-      return role.includes(userRole)
-    }
+      if (Array.isArray(role)) {
+        return role.includes(userRole);
+      }
 
-    return userRole === role
-  }, [userRole])
+      return userRole === role;
+    },
+    [userRole]
+  );
 
-  const hasPermission = useCallback((permission: keyof RolePermissions): boolean => {
-    return permissions[permission]
-  }, [permissions])
+  const hasPermission = useCallback(
+    (permission: keyof RolePermissions): boolean => {
+      return permissions[permission];
+    },
+    [permissions]
+  );
 
   // ... implementation
 }
 ```
 
 #### **Componente `ProtectedRoute`**
+
 ```typescript
 export const ProtectedRoute = ({
   children,
@@ -238,12 +259,14 @@ export const ProtectedRoute = ({
 ### 1. **Eliminação de Vulnerabilidades**
 
 #### **Antes (Inseguro)**
+
 ```sql
 -- VULNERÁVEL: Qualquer pessoa pode criar email com padrão @admin.*
 auth.jwt() ->> 'email' LIKE '%@admin.%'
 ```
 
 #### **Depois (Seguro)**
+
 ```sql
 -- SEGURO: Verificação baseada em role na tabela organizers
 EXISTS (
@@ -258,6 +281,7 @@ EXISTS (
 ### 2. **Auditoria Completa**
 
 Todas as mudanças de roles são registradas na tabela `role_audit_log`:
+
 - Quem mudou o role
 - Quando foi mudado
 - Role anterior e novo
@@ -345,11 +369,13 @@ function AdminSettings() {
 
 ### 2. **Scripts de Migração**
 
-- `20250823_implement_role_based_system.sql` - Implementa sistema completo (versão inicial)
+- `20250823_implement_role_based_system.sql` - Implementa sistema completo
+  (versão inicial)
 - `20250823_fix_role_system_simple.sql` - Correção simplificada (recomendado)
 - `20250823_migrate_existing_users_to_roles.sql` - Migra usuários existentes
 - `validate_role_system.sql` - Script de validação completa pós-migração
-- `quick_role_validation.sql` - Validação rápida e simples (recomendado para testes)
+- `quick_role_validation.sql` - Validação rápida e simples (recomendado para
+  testes)
 
 ### 3. **Validação Pós-Migração**
 
@@ -430,6 +456,7 @@ Ao modificar o sistema de roles:
 ## 📝 Changelog
 
 ### v1.0.0 - 2025-08-23
+
 - ✅ Implementação inicial do sistema RBAC
 - ✅ Migração de verificações baseadas em email
 - ✅ Criação de funções de segurança
@@ -438,6 +465,7 @@ Ao modificar o sistema de roles:
 - ✅ Criação de componentes de gerenciamento
 
 ### Próximas Versões
+
 - 🔄 Implementação de roles temporários
 - 🔄 Sistema de aprovação para mudanças de role
 - 🔄 Integração com sistemas externos de autenticação

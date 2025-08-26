@@ -5,7 +5,7 @@
  * com diferentes níveis e destinos de log.
  */
 
-import { AppError, ErrorSeverity, ErrorLoggingConfig } from './types'
+import { AppError, ErrorLoggingConfig, ErrorSeverity } from './types'
 
 // ============================================================================
 // CONFIGURAÇÃO PADRÃO
@@ -150,7 +150,7 @@ class ErrorLoggerImpl implements ErrorLogger {
       return context
     }
 
-    const sanitized = { ...con
+    const sanitized = { ...context };
 
     for (const field of this.config.sensitiveFields || []) {
       if (field in sanitized) {

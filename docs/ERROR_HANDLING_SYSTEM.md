@@ -1,10 +1,13 @@
 # Sistema de Tratamento de Erros
 
-Este documento descreve o sistema completo de tratamento de erros implementado na aplicação, fornecendo uma abordagem estruturada e user-friendly para capturar, processar e exibir erros.
+Este documento descreve o sistema completo de tratamento de erros implementado
+na aplicação, fornecendo uma abordagem estruturada e user-friendly para
+capturar, processar e exibir erros.
 
 ## 🎯 Objetivos
 
 O sistema de tratamento de erros foi projetado para:
+
 - **Capturar erros** de forma consistente em toda a aplicação
 - **Processar erros** com informações estruturadas e contextuais
 - **Exibir erros** de forma amigável ao usuário
@@ -18,16 +21,16 @@ O sistema de tratamento de erros foi projetado para:
 
 ```typescript
 interface AppError {
-  code: string              // Código único do erro
-  message: string           // Mensagem técnica
-  userMessage?: string      // Mensagem amigável
-  severity: ErrorSeverity   // Nível de severidade
-  category: ErrorCategory   // Categoria do erro
-  timestamp: Date           // Quando ocorreu
-  actionable: boolean       // Se usuário pode resolver
-  retryable: boolean        // Se pode tentar novamente
-  context?: ErrorContext    // Contexto adicional
-  originalError?: Error     // Erro original
+  code: string; // Código único do erro
+  message: string; // Mensagem técnica
+  userMessage?: string; // Mensagem amigável
+  severity: ErrorSeverity; // Nível de severidade
+  category: ErrorCategory; // Categoria do erro
+  timestamp: Date; // Quando ocorreu
+  actionable: boolean; // Se usuário pode resolver
+  retryable: boolean; // Se pode tentar novamente
+  context?: ErrorContext; // Contexto adicional
+  originalError?: Error; // Erro original
 }
 ```
 
@@ -58,16 +61,20 @@ interface AppError {
 Funções para criar erros estruturados:
 
 ```typescript
-import { createError, createValidationError, createNetworkError } from '@/lib/errors'
+import {
+  createError,
+  createValidationError,
+  createNetworkError,
+} from '@/lib/errors';
 
 // Erro genérico
-const error = createError('CUSTOM_ERROR', 'Algo deu errado')
+const error = createError('CUSTOM_ERROR', 'Algo deu errado');
 
 // Erro de validação
-const validationError = createValidationError('Email é obrigatório', 'email')
+const validationError = createValidationError('Email é obrigatório', 'email');
 
 // Erro de rede
-const networkError = createNetworkError(500, '/api/users', 'GET')
+const networkError = createNetworkError(500, '/api/users', 'GET');
 ```
 
 ### 2. **Sistema de Logging** (`src/lib/errors/logger.ts`)
@@ -75,16 +82,20 @@ const networkError = createNetworkError(500, '/api/users', 'GET')
 Logging estruturado com diferentes níveis:
 
 ```typescript
-import { logError, logCriticalError, setupGlobalErrorHandling } from '@/lib/errors'
+import {
+  logError,
+  logCriticalError,
+  setupGlobalErrorHandling,
+} from '@/lib/errors';
 
 // Configurar tratamento global
-setupGlobalErrorHandling()
+setupGlobalErrorHandling();
 
 // Logar erro
-logError(appError)
+logError(appError);
 
 // Logar erro crítico (envia para serviços externos)
-logCriticalError(criticalError)
+logCriticalError(criticalError);
 ```
 
 ### 3. **Hook de Tratamento** (`src/hooks/useErrorHandler.ts`)
@@ -92,22 +103,23 @@ logCriticalError(criticalError)
 Hook React para tratamento de erros:
 
 ```typescript
-import { useErrorHandler } from '@/lib/errors'
+import { useErrorHandler } from '@/lib/errors';
 
 function MyComponent() {
-  const { handleError, withErrorHandling, errors, clearErrors } = useErrorHandler()
+  const { handleError, withErrorHandling, errors, clearErrors } =
+    useErrorHandler();
 
   const handleSubmit = async () => {
     const result = await withErrorHandling(async () => {
-      return await api.createUser(userData)
-    })
+      return await api.createUser(userData);
+    });
 
     if (result.success) {
       // Sucesso
     } else {
       // Erro já foi tratado automaticamente
     }
-  }
+  };
 }
 ```
 
@@ -144,74 +156,74 @@ import { ErrorDisplay, ErrorList, ErrorBoundary } from '@/lib/errors'
 ### 1. **Validação de Formulários**
 
 ```typescript
-import { useFormErrorHandler } from '@/lib/errors'
+import { useFormErrorHandler } from '@/lib/errors';
 
 function UserForm() {
-  const { handleValidationError, clearErrors } = useFormErrorHandler()
+  const { handleValidationError, clearErrors } = useFormErrorHandler();
 
   const validateForm = (data: UserData) => {
-    clearErrors()
+    clearErrors();
 
     if (!data.name) {
-      handleValidationError('Nome é obrigatório', 'name')
-      return false
+      handleValidationError('Nome é obrigatório', 'name');
+      return false;
     }
 
     if (!data.email.includes('@')) {
-      handleValidationError('Email inválido', 'email')
-      return false
+      handleValidationError('Email inválido', 'email');
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 }
 ```
 
 ### 2. **Chamadas de API**
 
 ```typescript
-import { useApiErrorHandler } from '@/lib/errors'
+import { useApiErrorHandler } from '@/lib/errors';
 
 function UserService() {
-  const { withErrorHandling, withRetry } = useApiErrorHandler()
+  const { withErrorHandling, withRetry } = useApiErrorHandler();
 
   const createUser = async (userData: UserData) => {
     // Com tratamento básico
     const result = await withErrorHandling(() =>
       supabase.from('users').insert(userData)
-    )
+    );
 
     // Com retry automático
-    const resultWithRetry = await withRetry(() =>
-      supabase.from('users').insert(userData),
+    const resultWithRetry = await withRetry(
+      () => supabase.from('users').insert(userData),
       3 // máximo 3 tentativas
-    )
+    );
 
-    return result
-  }
+    return result;
+  };
 }
 ```
 
 ### 3. **Tratamento de Erros do Supabase**
 
 ```typescript
-import { handleSupabaseError, safeSelect, safeMutation } from '@/lib/errors'
+import { handleSupabaseError, safeSelect, safeMutation } from '@/lib/errors';
 
 // Tratamento manual
 try {
-  const { data, error } = await supabase.from('users').select('*')
+  const { data, error } = await supabase.from('users').select('*');
   if (error) {
-    const appError = handleSupabaseError(error)
+    const appError = handleSupabaseError(error);
     // Tratar erro estruturado
   }
 } catch (error) {
-  const appError = handleSupabaseError(error)
+  const appError = handleSupabaseError(error);
 }
 
 // Tratamento automático
 const { data, error } = await safeSelect(() =>
   supabase.from('users').select('*')
-)
+);
 
 if (error) {
   // Erro já é um AppError estruturado
@@ -269,6 +281,7 @@ Componente principal para exibir erros:
 ```
 
 **Variantes:**
+
 - **`alert`**: Estilo de alerta (padrão)
 - **`card`**: Estilo de card com mais informações
 - **`inline`**: Estilo inline compacto
@@ -300,35 +313,35 @@ Erro específico para campos de formulário:
 ### 1. **Setup Inicial**
 
 ```typescript
-import { setupErrorSystem } from '@/lib/errors'
+import { setupErrorSystem } from '@/lib/errors';
 
 // Configurar sistema completo
 setupErrorSystem({
   logLevel: 'medium',
   enableGlobalHandling: true,
-  enableVerboseLogging: process.env.NODE_ENV === 'development'
-})
+  enableVerboseLogging: process.env.NODE_ENV === 'development',
+});
 ```
 
 ### 2. **Configuração do Logger**
 
 ```typescript
-import { configureErrorLogger } from '@/lib/errors'
+import { configureErrorLogger } from '@/lib/errors';
 
 configureErrorLogger({
   logLevel: 'medium',
   includeStack: true,
   includeContext: true,
-  sensitiveFields: ['password', 'token', 'apiKey']
-})
+  sensitiveFields: ['password', 'token', 'apiKey'],
+});
 ```
 
 ### 3. **Integração com Serviços Externos**
 
 ```typescript
 // Configurar variáveis de ambiente
-VITE_SENTRY_DSN=your_sentry_dsn
-VITE_LOGROCKET_APP_ID=your_logrocket_id
+VITE_SENTRY_DSN = your_sentry_dsn;
+VITE_LOGROCKET_APP_ID = your_logrocket_id;
 
 // O sistema automaticamente enviará erros críticos
 ```
@@ -358,6 +371,7 @@ Todos os erros são logados com informações estruturadas:
 ### 2. **Métricas Automáticas**
 
 O sistema coleta métricas automaticamente:
+
 - Contadores de erro por categoria
 - Contadores de erro por severidade
 - Tempo de resposta de operações
@@ -366,6 +380,7 @@ O sistema coleta métricas automaticamente:
 ### 3. **Alertas**
 
 Erros críticos geram alertas automáticos:
+
 - Envio para Sentry/LogRocket
 - Notificações para equipe de desenvolvimento
 - Métricas para dashboards de monitoramento
@@ -375,27 +390,27 @@ Erros críticos geram alertas automáticos:
 ### 1. **Testando Tratamento de Erros**
 
 ```typescript
-import { createValidationError, isAppError } from '@/lib/errors'
+import { createValidationError, isAppError } from '@/lib/errors';
 
 describe('Error Handling', () => {
   it('should create validation error', () => {
-    const error = createValidationError('Required field', 'email')
+    const error = createValidationError('Required field', 'email');
 
-    expect(isAppError(error)).toBe(true)
-    expect(error.category).toBe('validation')
-    expect(error.actionable).toBe(true)
-  })
+    expect(isAppError(error)).toBe(true);
+    expect(error.category).toBe('validation');
+    expect(error.actionable).toBe(true);
+  });
 
   it('should handle component errors', () => {
-    const { result } = renderHook(() => useErrorHandler())
+    const { result } = renderHook(() => useErrorHandler());
 
     act(() => {
-      result.current.handleValidationError('Test error')
-    })
+      result.current.handleValidationError('Test error');
+    });
 
-    expect(result.current.errors).toHaveLength(1)
-  })
-})
+    expect(result.current.errors).toHaveLength(1);
+  });
+});
 ```
 
 ### 2. **Testando Error Boundaries**
@@ -427,10 +442,10 @@ test('should catch component errors', () => {
 Em desenvolvimento, habilite logs verbosos:
 
 ```typescript
-import { enableVerboseLogging } from '@/lib/errors'
+import { enableVerboseLogging } from '@/lib/errors';
 
 if (process.env.NODE_ENV === 'development') {
-  enableVerboseLogging()
+  enableVerboseLogging();
 }
 ```
 
@@ -443,7 +458,7 @@ const error = withUserContext(
   withActionContext(baseError, 'user_registration', 'users'),
   user.id,
   user.role
-)
+);
 ```
 
 ### 3. **Stack Traces**
@@ -452,7 +467,7 @@ Stack traces são incluídos automaticamente em desenvolvimento:
 
 ```typescript
 // Erro incluirá stack trace completo em dev
-const error = createError('CUSTOM_ERROR', 'Something went wrong')
+const error = createError('CUSTOM_ERROR', 'Something went wrong');
 ```
 
 ## 📚 Exemplos Completos
@@ -505,10 +520,10 @@ function UserRegistrationForm() {
 ### 2. **Serviço de API com Retry**
 
 ```typescript
-import { useApiErrorHandler, handleSupabaseError } from '@/lib/errors'
+import { useApiErrorHandler, handleSupabaseError } from '@/lib/errors';
 
 function useUserService() {
-  const { withRetry, withErrorHandling } = useApiErrorHandler()
+  const { withRetry, withErrorHandling } = useApiErrorHandler();
 
   const createUser = async (userData: UserData) => {
     return await withRetry(async () => {
@@ -516,15 +531,15 @@ function useUserService() {
         .from('users')
         .insert(userData)
         .select()
-        .single()
+        .single();
 
       if (error) {
-        throw handleSupabaseError(error)
+        throw handleSupabaseError(error);
       }
 
-      return data
-    }, 3)
-  }
+      return data;
+    }, 3);
+  };
 
   const getUser = async (id: string) => {
     return await withErrorHandling(async () => {
@@ -532,17 +547,17 @@ function useUserService() {
         .from('users')
         .select('*')
         .eq('id', id)
-        .single()
+        .single();
 
       if (error) {
-        throw handleSupabaseError(error)
+        throw handleSupabaseError(error);
       }
 
-      return data
-    })
-  }
+      return data;
+    });
+  };
 
-  return { createUser, getUser }
+  return { createUser, getUser };
 }
 ```
 
@@ -552,10 +567,10 @@ function useUserService() {
 
 ```typescript
 // ✅ Bom
-throw createValidationError('Email é obrigatório', 'email')
+throw createValidationError('Email é obrigatório', 'email');
 
 // ❌ Evitar
-throw new Error('Email é obrigatório')
+throw new Error('Email é obrigatório');
 ```
 
 ### 2. **Forneça Contexto Útil**
@@ -566,10 +581,10 @@ const error = withActionContext(
   createError('OPERATION_FAILED', 'Falha na operação'),
   'user_creation',
   'users'
-)
+);
 
 // ❌ Evitar
-const error = createError('ERROR', 'Erro')
+const error = createError('ERROR', 'Erro');
 ```
 
 ### 3. **Use Mensagens User-Friendly**
@@ -577,11 +592,12 @@ const error = createError('ERROR', 'Erro')
 ```typescript
 // ✅ Bom
 createError('DB_CONNECTION_FAILED', 'Database connection failed', {
-  userMessage: 'Problema temporário de conexão. Tente novamente em alguns minutos.'
-})
+  userMessage:
+    'Problema temporário de conexão. Tente novamente em alguns minutos.',
+});
 
 // ❌ Evitar
-createError('DB_CONNECTION_FAILED', 'ECONNREFUSED 127.0.0.1:5432')
+createError('DB_CONNECTION_FAILED', 'ECONNREFUSED 127.0.0.1:5432');
 ```
 
 ### 4. **Implemente Error Boundaries**
@@ -602,13 +618,13 @@ createError('DB_CONNECTION_FAILED', 'ECONNREFUSED 127.0.0.1:5432')
 
 ```typescript
 // ✅ Bom - Para formulários
-const { handleValidationError } = useFormErrorHandler()
+const { handleValidationError } = useFormErrorHandler();
 
 // ✅ Bom - Para APIs
-const { withRetry, handleSupabaseError } = useApiErrorHandler()
+const { withRetry, handleSupabaseError } = useApiErrorHandler();
 
 // ✅ Bom - Para casos simples
-const handleError = useSimpleErrorHandler()
+const handleError = useSimpleErrorHandler();
 ```
 
 ## 📝 Checklist de Implementação

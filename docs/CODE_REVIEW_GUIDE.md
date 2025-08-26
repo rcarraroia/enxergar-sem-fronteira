@@ -1,6 +1,7 @@
 # Guia de Revisão de Código
 
-Este documento estabelece as diretrizes para revisão de código no projeto Enxergar Sem Fronteira.
+Este documento estabelece as diretrizes para revisão de código no projeto
+Enxergar Sem Fronteira.
 
 ## 🎯 Objetivos da Revisão
 
@@ -66,6 +67,7 @@ Este documento estabelece as diretrizes para revisão de código no projeto Enxe
 ### 1. Preparação
 
 **Autor do PR:**
+
 - [ ] Código está completo e testado
 - [ ] Descrição do PR é clara e detalhada
 - [ ] Testes passam localmente
@@ -73,6 +75,7 @@ Este documento estabelece as diretrizes para revisão de código no projeto Enxe
 - [ ] Auto-revisão foi feita
 
 **Revisor:**
+
 - [ ] Entender o contexto e objetivos
 - [ ] Verificar se há documentação relacionada
 - [ ] Preparar ambiente se necessário
@@ -80,6 +83,7 @@ Este documento estabelece as diretrizes para revisão de código no projeto Enxe
 ### 2. Revisão Técnica
 
 #### Análise Estática
+
 ```bash
 # Executar verificações automáticas
 npm run lint
@@ -89,6 +93,7 @@ npm run build
 ```
 
 #### Análise Manual
+
 - Ler código linha por linha
 - Verificar lógica de negócio
 - Avaliar arquitetura e design
@@ -98,18 +103,21 @@ npm run build
 
 #### ✅ Comentários Construtivos
 
-```markdown
+````markdown
 # ✅ Bom
+
 Considere usar `useMemo` aqui para otimizar o cálculo:
+
 ```typescript
-const expensiveValue = useMemo(() => 
-  heavyCalculation(data), [data]
-)
+const expensiveValue = useMemo(() => heavyCalculation(data), [data]);
 ```
+````
 
 # ❌ Evitar
+
 Este código está ruim.
-```
+
+````
 
 #### 🏷️ Categorias de Comentários
 
@@ -136,13 +144,14 @@ Este código está ruim.
 
 ### Problemas de Segurança
 ```markdown
-🚨 **Segurança**: Este código pode ser vulnerável a XSS. 
+🚨 **Segurança**: Este código pode ser vulnerável a XSS.
 Considere sanitizar a entrada usando DOMPurify:
 
 ```typescript
 const sanitized = DOMPurify.sanitize(userInput)
-```
-```
+````
+
+````
 
 ### Problemas de Performance
 ```markdown
@@ -153,8 +162,9 @@ Considere adicionar dependências específicas:
 useEffect(() => {
   // lógica
 }, [specificDependency]) // ao invés de []
-```
-```
+````
+
+````
 
 ### Sugestões de Melhoria
 ```markdown
@@ -167,36 +177,41 @@ const email = user.email
 
 // Considere
 const { name, email } = user
-```
-```
+````
+
+````
 
 ### Questões de Arquitetura
 ```markdown
 ❓ **Arquitetura**: Por que esta lógica está no componente ao invés de um hook customizado?
 Isso facilitaria reutilização e testabilidade.
-```
+````
 
 ## 🎯 Foco por Tipo de Mudança
 
 ### 🆕 Novas Funcionalidades
+
 - Requisitos foram atendidos?
 - Integração com código existente?
 - Testes adequados?
 - Documentação atualizada?
 
 ### 🐛 Correções de Bug
+
 - Root cause foi identificado?
 - Correção não introduz novos bugs?
 - Testes previnem regressão?
 - Casos similares foram considerados?
 
 ### 🔧 Refatoração
+
 - Funcionalidade permanece inalterada?
 - Melhoria é significativa?
 - Testes cobrem mudanças?
 - Não há breaking changes?
 
 ### 📚 Documentação
+
 - Informação está correta e atualizada?
 - Exemplos funcionam?
 - Linguagem está clara?
@@ -264,18 +279,21 @@ Isso facilitaria reutilização e testabilidade.
 ## 📊 Métricas de Qualidade
 
 ### Métricas de PR
+
 - Tempo médio de revisão
 - Número de iterações por PR
 - Taxa de aprovação na primeira revisão
 - Tamanho médio dos PRs
 
 ### Métricas de Código
+
 - Cobertura de testes
 - Complexidade ciclomática
 - Duplicação de código
 - Violações de linting
 
 ### Métricas de Bugs
+
 - Bugs encontrados em revisão vs produção
 - Tempo para correção
 - Taxa de regressão
@@ -283,6 +301,7 @@ Isso facilitaria reutilização e testabilidade.
 ## 🛠️ Ferramentas de Apoio
 
 ### Automação
+
 - **ESLint**: Verificação de qualidade
 - **Prettier**: Formatação consistente
 - **TypeScript**: Verificação de tipos
@@ -290,6 +309,7 @@ Isso facilitaria reutilização e testabilidade.
 - **SonarQube**: Análise de qualidade
 
 ### Integração
+
 - **GitHub Actions**: CI/CD pipeline
 - **Codecov**: Cobertura de testes
 - **Dependabot**: Atualizações de dependências
@@ -304,10 +324,10 @@ Isso facilitaria reutilização e testabilidade.
 ## 🔄 Processo de Melhoria
 
 Este guia deve ser revisado e atualizado regularmente baseado em:
+
 - Feedback da equipe
 - Lições aprendidas
 - Mudanças na tecnologia
 - Evolução dos padrões da indústria
 
-**Última atualização**: [Data atual]
-**Próxima revisão**: [Data + 3 meses]
+**Última atualização**: [Data atual] **Próxima revisão**: [Data + 3 meses]

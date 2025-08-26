@@ -5,19 +5,24 @@
 ### 1. **Políticas Públicas Excessivamente Permissivas**
 
 #### Events Table
+
 ```sql
 -- PROBLEMA: Acesso público total para leitura
 CREATE POLICY "Events are public for reading" ON public.events
     FOR SELECT USING (true);
 ```
-**Risco**: Qualquer pessoa pode acessar todos os eventos, incluindo informações sensíveis.
+
+**Risco**: Qualquer pessoa pode acessar todos os eventos, incluindo informações
+sensíveis.
 
 #### Registrations Table
+
 ```sql
 -- PROBLEMA: Acesso público total para leitura
 CREATE POLICY "Registrations are public for reading" ON public.registrations
     FOR SELECT USING (true);
 ```
+
 **Risco**: Dados de inscrições de pacientes expostos publicamente.
 
 ### 2. **Autenticação Baseada em Padrão de Email (Vulnerável)**
@@ -26,11 +31,14 @@ CREATE POLICY "Registrations are public for reading" ON public.registrations
 -- PROBLEMA: Verificação de admin baseada em padrão de email
 auth.jwt() ->> 'email' LIKE '%@admin.%'
 ```
-**Risco**: Qualquer pessoa pode criar um email com padrão @admin.* e obter acesso administrativo.
+
+**Risco**: Qualquer pessoa pode criar um email com padrão @admin.\* e obter
+acesso administrativo.
 
 ### 3. **Chaves de API Armazenadas no Banco**
 
 Na tabela `organizers`:
+
 - `asaas_api_key` - Chave da API de pagamentos
 - `whatsapp_api_key` - Chave da API do WhatsApp
 
@@ -38,20 +46,22 @@ Na tabela `organizers`:
 
 ### 4. **Falta de Coluna `role` na Tabela Organizers**
 
-Analisando o schema TypeScript, a tabela `organizers` não possui a coluna `role` que foi adicionada nas migrações.
+Analisando o schema TypeScript, a tabela `organizers` não possui a coluna `role`
+que foi adicionada nas migrações.
 
 ## 🔧 Correções Necessárias
 
 ### 1. **Implementar Políticas RLS Restritivas**
 
 #### Para Events:
+
 ```sql
 -- Substituir política pública por política baseada em contexto
 DROP POLICY "Events are public for reading" ON public.events;
 
 CREATE POLICY "Public can view active events basic info" ON public.events
     FOR SELECT USING (
-        status = 'active' AND 
+        status = 'active' AND
         -- Apenas campos não sensíveis
         true
     );
@@ -60,13 +70,14 @@ CREATE POLICY "Organizers can view own events" ON public.events
     FOR SELECT USING (
         organizer_id = auth.uid() OR
         EXISTS (
-            SELECT 1 FROM public.organizers 
+            SELECT 1 FROM public.organizers
             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 ```
 
 #### Para Registrations:
+
 ```sql
 -- Remover acesso público total
 DROP POLICY "Registrations are public for reading" ON public.registrations;
@@ -75,11 +86,11 @@ CREATE POLICY "Organizers can view own event registrations" ON public.registrati
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM public.events e
-            WHERE e.id = event_date_id 
+            WHERE e.id = event_date_id
             AND (
                 e.organizer_id = auth.uid() OR
                 EXISTS (
-                    SELECT 1 FROM public.organizers 
+                    SELECT 1 FROM public.organizers
                     WHERE id = auth.uid() AND role = 'admin'
                 )
             )
@@ -91,13 +102,13 @@ CREATE POLICY "Organizers can view own event registrations" ON public.registrati
 
 ```sql
 -- Adicionar coluna role se não existir
-ALTER TABLE public.organizers 
-ADD COLUMN IF NOT EXISTS role text DEFAULT 'organizer' 
+ALTER TABLE public.organizers
+ADD COLUMN IF NOT EXISTS role text DEFAULT 'organizer'
 CHECK (role IN ('admin', 'organizer', 'viewer'));
 
 -- Atualizar usuários admin existentes
-UPDATE public.organizers 
-SET role = 'admin' 
+UPDATE public.organizers
+SET role = 'admin'
 WHERE email IN ('rcarraro@admin.enxergar');
 ```
 
@@ -105,7 +116,7 @@ WHERE email IN ('rcarraro@admin.enxergar');
 
 ```sql
 -- Remover chaves sensíveis do banco
-ALTER TABLE public.organizers 
+ALTER TABLE public.organizers
 DROP COLUMN IF EXISTS asaas_api_key,
 DROP COLUMN IF EXISTS whatsapp_api_key;
 
@@ -130,9 +141,9 @@ SECURITY DEFINER
 AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM public.organizers 
-        WHERE id = auth.uid() 
-        AND role = 'admin' 
+        SELECT 1 FROM public.organizers
+        WHERE id = auth.uid()
+        AND role = 'admin'
         AND status = 'active'
     );
 END;
@@ -142,16 +153,19 @@ $$;
 ## 📋 Plano de Implementação
 
 ### Fase 1: Correções Críticas Imediatas
+
 1. ✅ Adicionar coluna `role` à tabela organizers
 2. ✅ Atualizar usuários admin existentes
 3. ✅ Implementar função `is_admin_user()` segura
 
 ### Fase 2: Políticas RLS Restritivas
+
 1. 🔄 Substituir políticas públicas por políticas baseadas em roles
 2. 🔄 Implementar políticas granulares para cada tabela
 3. 🔄 Testar acesso com diferentes tipos de usuário
 
 ### Fase 3: Segurança de Dados Sensíveis
+
 1. ⏳ Mover chaves de API para variáveis de ambiente
 2. ⏳ Implementar criptografia para dados sensíveis restantes
 3. ⏳ Criar sistema de auditoria de acesso
@@ -159,12 +173,14 @@ $$;
 ## 🧪 Testes de Validação
 
 ### Cenários de Teste:
+
 1. **Usuário não autenticado**: Deve ter acesso mínimo apenas a eventos públicos
 2. **Organizador comum**: Deve acessar apenas seus próprios dados
 3. **Admin**: Deve ter acesso completo conforme necessário
 4. **Tentativa de escalação**: Verificar se padrões de email não funcionam mais
 
 ### Comandos de Teste:
+
 ```sql
 -- Testar acesso não autenticado
 SET ROLE anon;
@@ -190,6 +206,6 @@ SELECT * FROM events; -- Deve retornar todos os eventos
 
 ---
 
-**Status**: 🔴 CRÍTICO - Implementação imediata necessária
-**Prioridade**: ALTA - Vulnerabilidades de segurança ativas
-**Impacto**: Sistema de produção exposto a riscos de segurança
+**Status**: 🔴 CRÍTICO - Implementação imediata necessária **Prioridade**:
+ALTA - Vulnerabilidades de segurança ativas **Impacto**: Sistema de produção
+exposto a riscos de segurança

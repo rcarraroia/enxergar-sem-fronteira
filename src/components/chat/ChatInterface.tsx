@@ -4,27 +4,29 @@
  * Componente principal que orquestra toda a funcionalidade de chat
  */
 
-import { useChatHistory } from '@/hooks/useChatHistory';
-import { useN8nChat } from '@/hooks/useN8nChat';
-import {
+import { useChatHistory } from "@/hooks/useChatHistory";
+import { useN8nChat } from "@/hooks/useN8nChat";
+import type {
   ChatError,
-  ChatErrorType,
   ChatInterfaceProps,
   N8nWebhookConfig
-} from '@/lib/chat/chatTypes';
-import { validateAndSanitizeMessage } from '@/lib/chat/chatValidation';
-import { createDefaultN8nConfig } from '@/lib/chat/n8nClient';
-import { cn } from '@/lib/utils';
-import React, { lazy, useCallback, useEffect, useRef, useState } from 'react';
-import ChatHistory from './ChatHistory';
-import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
+} from "@/lib/chat/chatTypes";
+import {
+  ChatErrorType
+} from "@/lib/chat/chatTypes";
+import { validateAndSanitizeMessage } from "@/lib/chat/chatValidation";
+import { createDefaultN8nConfig } from "@/lib/chat/n8nClient";
+import { cn } from "@/lib/utils";
+import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
+import ChatHistory from "./ChatHistory";
+import MessageInput from "./MessageInput";
+import TypingIndicator from "./TypingIndicator";
 
 // Lazy load do componente de performance monitor
-const ChatPerformanceMonitor = lazy(() => import('./ChatPerformanceMonitor'));
+const ChatPerformanceMonitor = lazy(() => import("./ChatPerformanceMonitor"));
 
 // Lazy load da lista virtualizada
-const VirtualizedMessageList = lazy(() => import('./VirtualizedMessageList'));
+const VirtualizedMessageList = lazy(() => import("./VirtualizedMessageList"));
 
 // ============================================================================
 // COMPONENT
@@ -44,7 +46,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onError,
   onMetrics,
   className,
-  theme = 'light'
+  theme = "light"
 }) => {
   // Estados locais
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -57,8 +59,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Configuração n8n
   const n8nConfig: N8nWebhookConfig = createDefaultN8nConfig(
-    type === 'public' ? webhookUrl : '',
-    type === 'admin' ? webhookUrl : '',
+    type === "public" ? webhookUrl : "",
+    type === "admin" ? webhookUrl : "",
     process.env.VITE_N8N_API_KEY
   );
 
@@ -102,7 +104,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       onSessionStart?.(newSessionId);
 
       // Métricas
-      onMetrics?.('session_started', { type, sessionId: newSessionId });
+      onMetrics?.("session_started", { type, sessionId: newSessionId });
     }
   }, [isInitialized, type, webhookUrl, chatHistory, onSessionStart, onMetrics]);
 
@@ -121,8 +123,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end'
+        behavior: "smooth",
+        block: "end"
       });
     }
   }, [messages.length, n8nChat.state.isTyping]);
@@ -133,7 +135,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     if (n8nChat.state.error) {
       onError?.(n8nChat.state.error);
-      onMetrics?.('error_occurred', {
+      onMetrics?.("error_occurred", {
         type: n8nChat.state.error.type,
         message: n8nChat.state.error.message,
         sessionId
@@ -149,7 +151,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       if (sessionId) {
         chatHistory.endSession(sessionId);
         onSessionEnd?.(sessionId);
-        onMetrics?.('session_ended', { sessionId });
+        onMetrics?.("session_ended", { sessionId });
       }
     };
   }, [sessionId, chatHistory, onSessionEnd, onMetrics]);
@@ -162,14 +164,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
    * Envia mensagem do usuário
    */
   const handleSendMessage = useCallback(async (content: string, isVoice = false) => {
-    if (!sessionId) return;
+    if (!sessionId) {return;}
 
     // Validar e sanitizar mensagem
     const validation = validateAndSanitizeMessage(content);
     if (!validation.success) {
       const error: ChatError = {
         type: ChatErrorType.VALIDATION_ERROR,
-        message: validation.error || 'Mensagem inválida',
+        message: validation.error || "Mensagem inválida",
         retryable: false,
         sessionId
       };
@@ -184,10 +186,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const messageId = chatHistory.addMessage(
         sessionId,
         sanitizedContent,
-        'user',
+        "user",
         {
           onAdded: (message) => {
-            onMetrics?.('message_sent', {
+            onMetrics?.("message_sent", {
               sessionId,
               messageId: message.id,
               voiceInput: isVoice,
@@ -198,7 +200,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       );
 
       // Atualizar status para "enviando"
-      chatHistory.updateMessageStatus(sessionId, messageId, 'sending');
+      chatHistory.updateMessageStatus(sessionId, messageId, "sending");
 
       // Verificar se está online
       if (!offlineChat.isOnline) {
@@ -210,16 +212,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         );
 
         // Atualizar status para "offline"
-        chatHistory.updateMessageStatus(sessionId, messageId, 'sent');
+        chatHistory.updateMessageStatus(sessionId, messageId, "sent");
 
         // Adicionar resposta offline
         chatHistory.addMessage(
           sessionId,
           offlineResponse.response,
-          'agent',
+          "agent",
           {
             onAdded: (message) => {
-              onMetrics?.('offline_response', {
+              onMetrics?.("offline_response", {
                 sessionId,
                 messageId: message.id,
                 fallbackType: offlineResponse.type
@@ -240,7 +242,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         {
           metadata: { voiceInput: isVoice },
           onProgress: (stage) => {
-            if (stage === 'processing') {
+            if (stage === "processing") {
               chatHistory.setTyping(sessionId, true);
             }
           }
@@ -250,7 +252,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const responseTime = Date.now() - startTime;
 
       // Atualizar status para "enviado"
-      chatHistory.updateMessageStatus(sessionId, messageId, 'sent');
+      chatHistory.updateMessageStatus(sessionId, messageId, "sent");
 
       // Parar indicador de digitação
       chatHistory.setTyping(sessionId, false);
@@ -260,10 +262,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         chatHistory.addMessage(
           sessionId,
           response.data.response,
-          'agent',
+          "agent",
           {
             onAdded: (message) => {
-              onMetrics?.('message_received', {
+              onMetrics?.("message_received", {
                 sessionId,
                 messageId: message.id,
                 responseTime,
@@ -276,14 +278,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       // Processar ações se houver
       if (response.data?.actions) {
-        console.log('Ações recebidas:', response.data.actions);
+        console.log("Ações recebidas:", response.data.actions);
       }
 
       // Verificar se sessão deve ser encerrada
       if (response.data?.sessionComplete) {
         chatHistory.endSession(sessionId);
         onSessionEnd?.(sessionId);
-        onMetrics?.('session_completed', { sessionId });
+        onMetrics?.("session_completed", { sessionId });
       }
 
     } catch (error) {
@@ -297,19 +299,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           );
 
           // Atualizar status para "fallback"
-          chatHistory.updateMessageStatus(sessionId, messageId, 'sent');
+          chatHistory.updateMessageStatus(sessionId, messageId, "sent");
 
           // Adicionar resposta de fallback
           chatHistory.addMessage(
             sessionId,
             offlineResponse.response,
-            'agent',
+            "agent",
             {
               onAdded: (message) => {
-                onMetrics?.('fallback_response', {
+                onMetrics?.("fallback_response", {
                   sessionId,
                   messageId: message.id,
-                  originalError: error instanceof Error ? error.message : 'Unknown error'
+                  originalError: error instanceof Error ? error.message : "Unknown error"
                 });
               }
             }
@@ -319,8 +321,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           chatHistory.updateMessageStatus(
             sessionId,
             messageId,
-            'error',
-            'Erro de conexão. Tente novamente.'
+            "error",
+            "Erro de conexão. Tente novamente."
           );
         }
       } else {
@@ -328,8 +330,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         chatHistory.updateMessageStatus(
           sessionId,
           messageId,
-          'error',
-          error instanceof Error ? error.message : 'Erro ao enviar mensagem'
+          "error",
+          error instanceof Error ? error.message : "Erro ao enviar mensagem"
         );
       }
 
@@ -342,10 +344,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
    * Tenta reenviar mensagem com erro
    */
   const handleRetryMessage = useCallback(async (messageId: string) => {
-    if (!sessionId) return;
+    if (!sessionId) {return;}
 
     const message = messages.find(m => m.id === messageId);
-    if (!message || message.sender !== 'user') return;
+    if (!message || message.sender !== "user") {return;}
 
     // Reenviar mensagem
     await handleSendMessage(message.content, message.metadata?.voiceInput);
@@ -386,7 +388,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       className={cn(
         "flex flex-col bg-background border rounded-lg shadow-sm",
         "transition-all duration-200",
-        theme === 'dark' && "dark",
+        theme === "dark" && "dark",
         className
       )}
       style={{ maxHeight }}
@@ -401,7 +403,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               : "bg-orange-500"
           )}></div>
           <span className="text-sm font-medium">
-            {type === 'public' ? 'Assistente Virtual' : 'Suporte Técnico'}
+            {type === "public" ? "Assistente Virtual" : "Suporte Técnico"}
           </span>
           {!offlineChat.isOnline && (
             <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
@@ -444,7 +446,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {currentSession?.isTyping && (
         <div className="px-3 py-2 border-t bg-muted/30">
           <TypingIndicator
-            agentName={type === 'public' ? 'Assistente' : 'Suporte'}
+            agentName={type === "public" ? "Assistente" : "Suporte"}
           />
         </div>
       )}

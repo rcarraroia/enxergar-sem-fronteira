@@ -5,6 +5,6 @@
 		}
 	],
 	"settings": {
-		"typescript.autoClosingTags": false
+    "typescript.autoClosingTags": false
 	}
 }
