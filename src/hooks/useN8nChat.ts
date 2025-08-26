@@ -18,7 +18,16 @@ import {
     createN8nRequest,
     logN8nError,
     processN8nResponse
-} from '@/lib/chat/n8nClient';\nimport { secureValidateMessage } from '@/lib/chat/securityMiddleware';\nimport { useChatConfig, useChatPerformanceConfig } from '@/hooks/useChatConfig';\nimport { \n  createChatError,\n  fromChatError,\n  CHAT_ERROR_CODES,\n  type ChatAppError \n} from '@/lib/chat/chatErrorFactory';\nimport { logChatError, logSessionActivity } from '@/lib/chat/chatLogger';
+} from '@/lib/chat/n8nClient';
+import { secureValidateMessage } from '@/lib/chat/securityMiddleware';
+import { useChatConfig, useChatPerformanceConfig } from '@/hooks/useChatConfig';
+import {
+  createChatError,
+  fromChatError,
+  CHAT_ERROR_CODES,
+  type ChatAppError
+} from '@/lib/chat/chatErrorFactory';
+import { logChatError, logSessionActivity } from '@/lib/chat/chatLogger';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ============================================================================
