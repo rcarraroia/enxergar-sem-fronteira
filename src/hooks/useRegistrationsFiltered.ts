@@ -1,7 +1,7 @@
 
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import type { Registration } from '@/hooks/useRegistrations'
+import { supabase } from '@/integrations/supabase/client'
+import { useQuery } from '@tanstack/react-query'
 
 interface FilterOptions {
   searchTerm?: string
@@ -16,7 +16,7 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
     queryKey: ['registrations-filtered', filters],
     queryFn: async () => {
       console.log('🔍 Buscando inscrições com filtros:', filters)
-      
+
       try {
         let query = supabase
           .from('registrations')
@@ -89,11 +89,11 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
         // Filtro de busca por texto
         if (filters.searchTerm) {
           const searchLower = filters.searchTerm.toLowerCase()
-          const matchesSearch = 
+          const matchesSearch =
             patient.nome.toLowerCase().includes(searchLower) ||
             patient.email.toLowerCase().includes(searchLower) ||
             event.title.toLowerCase().includes(searchLower)
-          
+
           if (!matchesSearch) return false
         }
 
@@ -113,7 +113,7 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
         if (filters.eventStatus && filters.eventStatus !== 'all') {
           const now = new Date()
           const eventDateTime = new Date(`${eventDate.date}T${eventDate.start_time}`)
-          
+
           if (filters.eventStatus === 'active' && eventDateTime <= now) {
             return false
           }
@@ -153,16 +153,20 @@ export const useRegistrationsFiltered = (filters: FilterOptions = {}) => {
       }))
 
       // Aplicar ordenação alfabética por nome do paciente
-      transformedRegistrations.sort((a, b) => 
-        a.patient.nome.localeCompare(b.patient.nome, 'pt-BR', { 
+      transformedRegistrations.sort((a, b) =>
+        a.patient.nome.localeCompare(b.patient.nome, 'pt-BR', {
           sensitivity: 'base',
-          ignorePunctuation: true 
+          ignorePunctuation: true
         })
       )
 
       console.log(`✅ Encontradas ${transformedRegistrations.length} inscrições após filtros`)
       return transformedRegistrations
+    } catch (error) {
+      console.error('❌ Erro ao buscar inscrições filtradas:', error)
+      throw error
     }
+  },
   })
 }
 
