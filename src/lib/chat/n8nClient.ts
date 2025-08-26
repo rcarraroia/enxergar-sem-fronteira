@@ -6,6 +6,10 @@
 
 import { createError, ErrorType } from '@/lib/errors/factory';
 import { logError } from '@/lib/errors/logger';
+import { getChatConfig, isFeatureEnabled } from './chatConfig';
+import {
+    createChatError
+} from './chatErrorFactory';
 import {
     ChatError,
     ChatErrorType,
@@ -13,7 +17,7 @@ import {
     N8nChatResponse,
     N8nWebhookConfig
 } from './chatTypes';
-import { validateN8nRequest, validateN8nResponse } from './chatValidation';\nimport { getChatConfig, isFeatureEnabled } from './chatConfig';\nimport {\n  createWebhookError,\n  createChatError,\n  fromChatFetchError,\n  withRequestData,\n  withResponseData,\n  CHAT_ERROR_CODES,\n  type ChatAppError\n} from './chatErrorFactory';\nimport { logChatError, logChatPerformance } from './chatLogger';
+import { validateN8nRequest, validateN8nResponse } from './chatValidation';
 
 // ============================================================================
 // CONFIGURATION

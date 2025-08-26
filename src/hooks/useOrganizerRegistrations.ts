@@ -244,7 +244,8 @@ export const useOrganizerRegistrations = () => {
             reg.event_date.date,
             reg.status
           ].join(","))
-        ].join("\n");
+        ].join("
+");
 
         const blob = new Blob([csvContent], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);

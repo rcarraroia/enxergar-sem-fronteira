@@ -8,7 +8,14 @@ import DOMPurify from 'isomorphic-dompurify';
 import { z } from 'zod';
 import {
     N8nChatResponse
-} from './chatTypes';\nimport { \n  createSecurityError,\n  createChatError,\n  CHAT_ERROR_CODES,\n  type ChatAppError\n} from './chatErrorFactory';\nimport { logChatError, logSecurityThreat } from './chatLogger';
+} from './chatTypes';
+import { 
+  createSecurityError,
+  createChatError,
+  CHAT_ERROR_CODES,
+  type ChatAppError
+} from './chatErrorFactory';
+import { logChatError, logSecurityThreat } from './chatLogger';
 
 // ============================================================================
 // SECURITY CONFIGURATION
@@ -165,7 +172,10 @@ export const sanitizeMessageContent = (content: string): string => {
     // Remover espaços no início e fim
     .trim()
     // Limitar quebras de linha consecutivas
-    .replace(/\n{3,}/g, '\n\n')
+    .replace(/
+{3,}/g, '
+
+')
     // Remover URLs suspeitas (opcional, pode ser configurado)
     .replace(/https?:\/\/[^\s<>"']+/gi, '[URL removida]');
 
@@ -368,7 +378,8 @@ function hasExcessiveRepetition(content: string): boolean {
  * Verifica se excede limite de linhas
  */
 function exceedsLineLimit(content: string): boolean {
-  const lines = content.split('\n').length;
+  const lines = content.split('
+').length;
   return lines > SECURITY_LIMITS.MAX_LINES;
 }
 

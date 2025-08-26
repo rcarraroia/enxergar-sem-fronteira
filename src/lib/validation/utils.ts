@@ -535,7 +535,8 @@ export function formatValidationErrors(errors: ValidationError[]): string {
     return errors[0].message;
   }
   
-  return errors.map(error => `• ${error.message}`).join("\n");
+  return errors.map(error => `• ${error.message}`).join("
+");
 }
 
 /**

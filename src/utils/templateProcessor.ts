@@ -307,7 +307,8 @@ export function sanitizeTemplateContent(content: string): string {
 export function formatTemplateForDisplay(content: string): string {
   // Convert line breaks to HTML breaks for display
   return content
-    .replace(/\n/g, "<br>")
+    .replace(/
+/g, "<br>")
     .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
 }
 

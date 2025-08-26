@@ -38,7 +38,10 @@ describe('Chat Security System', () => {
     });
 
     it('should normalize whitespace', () => {
-      const input = 'Hello    \n\n\n   World';
+      const input = 'Hello    
+
+
+   World';
       const result = sanitizeMessageContent(input);
 
       expect(result).toBe('Hello World');

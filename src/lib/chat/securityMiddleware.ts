@@ -399,4 +399,160 @@ export class ChatSecurityMiddleware {
    * Verifica rate limiting
    */
   private checkRateLimit(context: SecurityContext): MiddlewareResult<void> {
-    const identifier = `${context.sessionId}_${context.userType}`;\n    const rateLimitResult = checkRateLimit(\n      identifier,\n      this.options.maxRequestsPerMinute,\n      60000 // 1 minuto\n    );\n\n    if (!rateLimitResult.allowed) {\n      this.recordSuspiciousActivity(context, 'rate_limit_exceeded');\n      \n      const error = createSecurityError(\n        'rate_limit',\n        'Rate limit exceeded',\n        context.sessionId,\n        {\n          remaining: rateLimitResult.remaining,\n          resetTime: new Date(rateLimitResult.resetTime).toISOString(),\n          userType: context.userType\n        }\n      );\n\n      if (this.options.enableLogging) {\n        logSecurityThreat('rate_limit', 'Rate limit exceeded', context.sessionId, {\n          userType: context.userType,\n          remaining: rateLimitResult.remaining,\n          resetTime: new Date(rateLimitResult.resetTime).toISOString()\n        });\n      }\n\n      return {\n        success: false,\n        error\n      };\n    }\n\n    return { success: true };\n  }\n\n  /**\n   * Registra atividade suspeita\n   */\n  private recordSuspiciousActivity(\n    context: SecurityContext,\n    type: string\n  ): void {\n    const current = this.suspiciousActivity.get(context.sessionId) || 0;\n    const newCount = current + 1;\n    \n    this.suspiciousActivity.set(context.sessionId, newCount);\n\n    // Bloquear sessão após muitas atividades suspeitas\n    if (newCount >= 5) {\n      this.blockSession(\n        context.sessionId,\n        `Múltiplas violações de segurança (${newCount}): ${type}`\n      );\n    }\n\n    // Limpar atividades antigas\n    setTimeout(() => {\n      const currentCount = this.suspiciousActivity.get(context.sessionId) || 0;\n      if (currentCount > 0) {\n        this.suspiciousActivity.set(context.sessionId, currentCount - 1);\n      }\n    }, 10 * 60 * 1000); // 10 minutos\n  }\n\n  /**\n   * Obtém total de validações (mock)\n   */\n  private getTotalValidations(): number {\n    // Em uma implementação real, isso seria persistido\n    return Array.from(this.suspiciousActivity.values()).reduce((a, b) => a + b, 0);\n  }\n}\n\n// ============================================================================\n// SINGLETON INSTANCE\n// ============================================================================\n\n/**\n * Instância singleton do middleware de segurança\n */\nexport const chatSecurityMiddleware = new ChatSecurityMiddleware({\n  enableRateLimit: true,\n  maxRequestsPerMinute: 20,\n  enableContentValidation: true,\n  enableLogging: true,\n  strictMode: process.env.NODE_ENV === 'production'\n});\n\n// ============================================================================\n// UTILITY FUNCTIONS\n// ============================================================================\n\n/**\n * Cria contexto de segurança\n */\nexport function createSecurityContext(\n  sessionId: string,\n  userType: 'public' | 'admin'\n): SecurityContext {\n  return {\n    sessionId,\n    userType,\n    userAgent: navigator.userAgent,\n    timestamp: new Date()\n  };\n}\n\n/**\n * Wrapper para validação de mensagem\n */\nexport function secureValidateMessage(\n  content: string,\n  sessionId: string,\n  userType: 'public' | 'admin'\n): MiddlewareResult<string> {\n  const context = createSecurityContext(sessionId, userType);\n  return chatSecurityMiddleware.validateIncomingMessage(content, context);\n}\n\n/**\n * Wrapper para validação de requisição\n */\nexport function secureValidateRequest(\n  request: N8nChatRequest,\n  sessionId: string,\n  userType: 'public' | 'admin'\n): MiddlewareResult<N8nChatRequest> {\n  const context = createSecurityContext(sessionId, userType);\n  return chatSecurityMiddleware.validateOutgoingRequest(request, context);\n}\n\n/**\n * Wrapper para validação de resposta\n */\nexport function secureValidateResponse(\n  response: unknown,\n  sessionId: string,\n  userType: 'public' | 'admin'\n): MiddlewareResult<N8nChatResponse> {\n  const context = createSecurityContext(sessionId, userType);\n  return chatSecurityMiddleware.validateIncomingResponse(response, context);\n}\n\n// ============================================================================\n// EXPORTS\n// ============================================================================\n\nexport default ChatSecurityMiddleware;\n\nexport type {\n  SecurityContext,\n  SecurityMiddlewareOptions,\n  MiddlewareResult\n};
+    const identifier = `${context.sessionId}_${context.userType}`;
+    const rateLimitResult = checkRateLimit(
+      identifier,
+      this.options.maxRequestsPerMinute,
+      60000 // 1 minuto
+    );
+
+    if (!rateLimitResult.allowed) {
+      this.recordSuspiciousActivity(context, 'rate_limit_exceeded');
+
+      const error = createSecurityError(
+        'rate_limit',
+        'Rate limit exceeded',
+        context.sessionId,
+        {
+          remaining: rateLimitResult.remaining,
+          resetTime: new Date(rateLimitResult.resetTime).toISOString(),
+          userType: context.userType
+        }
+      );
+
+      if (this.options.enableLogging) {
+        logSecurityThreat('rate_limit', 'Rate limit exceeded', context.sessionId, {
+          userType: context.userType,
+          remaining: rateLimitResult.remaining,
+          resetTime: new Date(rateLimitResult.resetTime).toISOString()
+        });
+      }
+
+      return {
+        success: false,
+        error
+      };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Registra atividade suspeita
+   */
+  private recordSuspiciousActivity(
+    context: SecurityContext,
+    type: string
+  ): void {
+    const current = this.suspiciousActivity.get(context.sessionId) || 0;
+    const newCount = current + 1;
+    
+    this.suspiciousActivity.set(context.sessionId, newCount);
+
+    // Bloquear sessão após muitas atividades suspeitas
+    if (newCount >= 5) {
+      this.blockSession(
+        context.sessionId,
+        `Múltiplas violações de segurança (${newCount}): ${type}`
+      );
+    }
+
+    // Limpar atividades antigas
+    setTimeout(() => {
+      const currentCount = this.suspiciousActivity.get(context.sessionId) || 0;
+      if (currentCount > 0) {
+        this.suspiciousActivity.set(context.sessionId, currentCount - 1);
+      }
+    }, 10 * 60 * 1000); // 10 minutos
+  }
+
+  /**
+   * Obtém total de validações (mock)
+   */
+  private getTotalValidations(): number {
+    // Em uma implementação real, isso seria persistido
+    return Array.from(this.suspiciousActivity.values()).reduce((a, b) => a + b, 0);
+  }
+}
+
+// ============================================================================
+// SINGLETON INSTANCE
+// ============================================================================
+
+/**
+ * Instância singleton do middleware de segurança
+ */
+export const chatSecurityMiddleware = new ChatSecurityMiddleware({
+  enableRateLimit: true,
+  maxRequestsPerMinute: 20,
+  enableContentValidation: true,
+  enableLogging: true,
+  strictMode: process.env.NODE_ENV === 'production'
+});
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Cria contexto de segurança
+ */
+export function createSecurityContext(
+  sessionId: string,
+  userType: 'public' | 'admin'
+): SecurityContext {
+  return {
+    sessionId,
+    userType,
+    userAgent: navigator.userAgent,
+    timestamp: new Date()
+  };
+}
+
+/**
+ * Wrapper para validação de mensagem
+ */
+export function secureValidateMessage(
+  content: string,
+  sessionId: string,
+  userType: 'public' | 'admin'
+): MiddlewareResult<string> {
+  const context = createSecurityContext(sessionId, userType);
+  return chatSecurityMiddleware.validateIncomingMessage(content, context);
+}
+
+/**
+ * Wrapper para validação de requisição
+ */
+export function secureValidateRequest(
+  request: N8nChatRequest,
+  sessionId: string,
+  userType: 'public' | 'admin'
+): MiddlewareResult<N8nChatRequest> {
+  const context = createSecurityContext(sessionId, userType);
+  return chatSecurityMiddleware.validateOutgoingRequest(request, context);
+}
+
+/**
+ * Wrapper para validação de resposta
+ */
+export function secureValidateResponse(
+  response: unknown,
+  sessionId: string,
+  userType: 'public' | 'admin'
+): MiddlewareResult<N8nChatResponse> {
+  const context = createSecurityContext(sessionId, userType);
+  return chatSecurityMiddleware.validateIncomingResponse(response, context);
+}
+
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+export default ChatSecurityMiddleware;
+
+export type {
+  SecurityContext,
+  SecurityMiddlewareOptions,
+  MiddlewareResult
+};
