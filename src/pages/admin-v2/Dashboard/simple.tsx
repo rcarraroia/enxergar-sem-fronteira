@@ -79,7 +79,7 @@ const SimpleDashboard = () => {
       </div>
 
       {/* Ações Rápidas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Ações Rápidas</CardTitle>
@@ -103,6 +103,14 @@ const SimpleDashboard = () => {
             </Button>
 
             <Button
+              onClick={() => navigate("/admin/chat")}
+              className="w-full justify-start bg-green-600 hover:bg-green-700 text-white"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Sistema de Chat
+            </Button>
+
+            <Button
               onClick={() => navigate("/admin/bulk-messaging")}
               className="w-full justify-start"
               variant="outline"
@@ -113,7 +121,36 @@ const SimpleDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Card de Mensagens em Massa Destacado */}
+        {/* Card de Sistema de Chat - NOVO */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-900">
+              <MessageSquare className="h-5 w-5" />
+              Sistema de Chat
+              <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full">NOVO</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-green-800 mb-4">
+              Chat integrado com n8n para atendimento e captação de leads
+            </p>
+            <div className="space-y-2 text-sm text-green-700 mb-4">
+              <div>• Chat público para leads</div>
+              <div>• Chat administrativo</div>
+              <div>• Integração com n8n</div>
+              <div>• Entrada por voz</div>
+              <div>• Sistema offline</div>
+            </div>
+            <Button
+              onClick={() => navigate("/admin/chat")}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              Acessar Chat
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Card de Mensagens em Massa */}
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-900">

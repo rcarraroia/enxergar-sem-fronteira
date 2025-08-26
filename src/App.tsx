@@ -188,6 +188,11 @@ function App() {
                   <BulkMessagingPage />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/chat" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminChatV2 />
+                </ProtectedRoute>
+              } />
               <Route path="/admin/campaigns" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminCampaignsV2 />

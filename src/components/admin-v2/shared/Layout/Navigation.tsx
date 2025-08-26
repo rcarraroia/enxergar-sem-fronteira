@@ -2,12 +2,9 @@
  * ADMIN NAVIGATION V2 - Navegação lateral do painel
  */
 
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { 
+import {
   Calendar,
-  CreditCard,
   Heart,
   LayoutDashboard,
   MessageSquare,
@@ -17,6 +14,8 @@ import {
   UserCog,
   Users
 } from "lucide-react";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
 interface NavigationItem {
   id: string
@@ -64,6 +63,13 @@ const navigationItems: NavigationItem[] = [
     icon: MessageSquare
   },
   {
+    id: "chat",
+    label: "Chat",
+    path: "/admin/chat",
+    icon: MessageSquare,
+    badge: "Novo"
+  },
+  {
     id: "campaigns",
     label: "Campanhas",
     path: "/admin/campaigns",
@@ -103,7 +109,7 @@ export const AdminNavigation: React.FC = () => {
 
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -137,7 +143,7 @@ export const AdminNavigation: React.FC = () => {
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Link
                   key={item.id}

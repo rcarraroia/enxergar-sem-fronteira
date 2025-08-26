@@ -1,454 +1,170 @@
 /**
  * PublicChatWidget Component
  *
- * Widget de chat para site público com botão flutuante
+ * Widget de chat flutuante para o site público
+ * Integrado com n8n para captação de leads
  */
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { PublicChatWidgetProps } from '@/lib/chat/chatTypes';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import {
-  ArrowsPointingOutIcon,
-  ChatBubbleLeftRightIcon,
-  MinusIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Maximize2, MessageSquare, Minimize2, X } from 'lucide-react';
+import React, { useState } from 'react';
 import ChatInterface from './ChatInterface';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface PublicChatWidgetState {
-  isOpen: boolean;
-  isMinimized: boolean;
-  hasNewMessages: boolean;
-  unreadCount: number;
+interface PublicChatWidgetProps {
+  /** URL do webhook n8n para chat público */
+  webhookUrl?: string;
+  /** Posição do widget na tela */
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  /** Tema do widget */
+  theme?: 'light' | 'dark';
+  /** Habilitar entrada por voz */
+  enableVoice?: boolean;
+  /** Texto de boas-vindas */
+  welcomeMessage?: string;
+  /** Placeholder do input */
+  placeholder?: string;
+  /** Mostrar badge "Novo" */
+  showNewBadge?: boolean;
 }
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const WIDGET_POSITIONS = {
-  'bottom-right': 'bottom-4 right-4',
-  'bottom-left': 'bottom-4 left-4',
-  'inline': 'relative'
-};
-
-const ANIMATION_DURATION = 300;
-
-// ============================================================================
-// COMPONENT
-// ============================================================================
-
-/**
- * Widget de chat público flutuante
- */
-const PublicChatWidget: React.FC<PublicChatWidgetProps> = ({
-  isVisible,
-  onToggle,
+export const PublicChatWidget: React.FC<PublicChatWidgetProps> = ({
+  webhookUrl = process.env.VITE_N8N_PUBLIC_WEBHOOK_URL || 'https://demo.n8n.com/webhook/public-chat',
   position = 'bottom-right',
   theme = 'light',
-  className
+  enableVoice = false,
+  welcomeMessage = 'Olá! Como posso ajudar você hoje?',
+  placeholder = 'Digite sua mensagem...',
+  showNewBadge = true
 }) => {
-  // Estados
-  const [widgetState, setWidgetState] = useState<PublicChatWidgetState>({
-    isOpen: false,
-    isMinimized: false,
-    hasNewMessages: false,
-    unreadCount: 0
-  });
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
-  // Refs
-  const widgetRef = useRef<HTMLDivElement>(null);
-  const chatRef = useRef<HTMLDivElement>(null);
-
-  // Configuração do webhook (deve vir de variáveis de ambiente)
-  const webhookUrl = process.env.VITE_N8N_PUBLIC_WEBHOOK_URL || '';
-
-  // ============================================================================
-  // EFFECTS
-  // ============================================================================
-
-  /**
-   * Controla visibilidade baseada na prop
-   */
-  useEffect(() => {
-    if (!isVisible && widgetState.isOpen) {
-      setWidgetState(prev => ({ ...prev, isOpen: false }));
-    }
-  }, [isVisible, widgetState.isOpen]);
-
-  /**
-   * Detecta cliques fora do widget
-   */
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        widgetRef.current &&
-        !widgetRef.current.contains(event.target as Node) &&
-        widgetState.isOpen &&
-        position !== 'inline'
-      ) {
-        handleMinimize();
-      }
-    };
-
-    if (widgetState.isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [widgetState.isOpen, position]);
-
-  /**
-   * Keyboard shortcuts
-   */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // ESC para fechar
-      if (event.key === 'Escape' && widgetState.isOpen) {
-        handleClose();
-      }
-    };
-
-    if (widgetState.isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [widgetState.isOpen]);
-
-  // ============================================================================
-  // HANDLERS
-  // ============================================================================
-
-  /**
-   * Abre o chat
-   */
-  const handleOpen = useCallback(() => {
-    setWidgetState(prev => ({
-      ...prev,
-      isOpen: true,
-      isMinimized: false,
-      hasNewMessages: false,
-      unreadCount: 0
-    }));
-    onToggle?.();
-  }, [onToggle]);
-
-  /**
-   * Fecha o chat
-   */
-  const handleClose = useCallback(() => {
-    setWidgetState(prev => ({
-      ...prev,
-      isOpen: false,
-      isMinimized: false
-    }));
-    onToggle?.();
-  }, [onToggle]);
-
-  /**
-   * Minimiza o chat
-   */
-  const handleMinimize = useCallback(() => {
-    setWidgetState(prev => ({
-      ...prev,
-      isMinimized: true
-    }));
-  }, []);
-
-  /**
-   * Restaura o chat minimizado
-   */
-  const handleRestore = useCallback(() => {
-    setWidgetState(prev => ({
-      ...prev,
-      isMinimized: false
-    }));
-  }, []);
-
-  /**
-   * Toggle do widget
-   */
-  const handleToggle = useCallback(() => {
-    if (widgetState.isOpen) {
-      if (widgetState.isMinimized) {
-        handleRestore();
-      } else {
-        handleClose();
-      }
-    } else {
-      handleOpen();
-    }
-  }, [widgetState.isOpen, widgetState.isMinimized, handleOpen, handleClose, handleRestore]);
-
-  /**
-   * Callback quando sessão inicia
-   */
-  const handleSessionStart = useCallback((sessionId: string) => {
-    console.log('Chat público iniciado:', sessionId);
-  }, []);
-
-  /**
-   * Callback quando sessão termina
-   */
-  const handleSessionEnd = useCallback((sessionId: string) => {
-    console.log('Chat público finalizado:', sessionId);
-  }, []);
-
-  /**
-   * Callback para erros
-   */
-  const handleError = useCallback((error: any) => {
-    console.error('Erro no chat público:', error);
-  }, []);
-
-  /**
-   * Callback para métricas
-   */
-  const handleMetrics = useCallback((event: string, data: Record<string, unknown>) => {
-    console.log('Métrica do chat público:', event, data);
-
-    // Atualizar contador de mensagens não lidas se minimizado
-    if (event === 'message_received' && widgetState.isMinimized) {
-      setWidgetState(prev => ({
-        ...prev,
-        hasNewMessages: true,
-        unreadCount: prev.unreadCount + 1
-      }));
-    }
-  }, [widgetState.isMinimized]);
-
-  // ============================================================================
-  // RENDER HELPERS
-  // ============================================================================
-
-  /**
-   * Renderiza botão flutuante
-   */
-  const renderFloatingButton = () => {
-    if (position === 'inline') return null;
-
-    return (
-      <Button
-        onClick={handleToggle}
-        className={cn(
-          "h-14 w-14 rounded-full shadow-lg hover:shadow-xl",
-          "transition-all duration-300 transform hover:scale-105",
-          "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "relative overflow-hidden"
-        )}
-        title="Abrir chat de suporte"
-      >
-        {/* Icon */}
-        <div className={cn(
-          "transition-transform duration-300",
-          widgetState.isOpen ? "rotate-180" : "rotate-0"
-        )}>
-          {widgetState.isOpen ? (
-            <XMarkIcon className="h-6 w-6" />
-          ) : (
-            <ChatBubbleLeftRightIcon className="h-6 w-6" />
-          )}
-        </div>
-
-        {/* Notification Badge */}
-        {widgetState.hasNewMessages && widgetState.unreadCount > 0 && (
-          <Badge
-            variant="destructive"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs"
-          >
-            {widgetState.unreadCount > 9 ? '9+' : widgetState.unreadCount}
-          </Badge>
-        )}
-
-        {/* Pulse animation for new messages */}
-        {widgetState.hasNewMessages && (
-          <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
-        )}
-      </Button>
-    );
+  // Posicionamento do widget
+  const positionClasses = {
+    'bottom-right': 'bottom-4 right-4',
+    'bottom-left': 'bottom-4 left-4',
+    'top-right': 'top-4 right-4',
+    'top-left': 'top-4 left-4'
   };
 
-  /**
-   * Renderiza header do chat
-   */
-  const renderChatHeader = () => {
-    return (
-      <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-            <ChatBubbleLeftRightIcon className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm">Assistente Virtual</h3>
-            <p className="text-xs opacity-90">Como posso ajudar?</p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-1">
-          {/* Minimize Button */}
-          {position !== 'inline' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleMinimize}
-              className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary-foreground/20"
-              title="Minimizar"
-            >
-              <MinusIcon className="h-4 w-4" />
-            </Button>
-          )}
-
-          {/* Close Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary-foreground/20"
-            title="Fechar"
-          >
-            <XMarkIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
+  // Tema do widget
+  const themeClasses = {
+    light: 'bg-white border-gray-200 text-gray-900',
+    dark: 'bg-gray-900 border-gray-700 text-white'
   };
 
-  /**
-   * Renderiza chat minimizado
-   */
-  const renderMinimizedChat = () => {
-    return (
-      <Card className="w-80 shadow-xl border-primary/20">
-        <div
-          className="flex items-center justify-between p-3 bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90 transition-colors"
-          onClick={handleRestore}
-        >
-          <div className="flex items-center space-x-2">
-            <ChatBubbleLeftRightIcon className="h-4 w-4" />
-            <span className="text-sm font-medium">Assistente Virtual</span>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* Unread Badge */}
-            {widgetState.unreadCount > 0 && (
-              <Badge variant="secondary" className="h-5 text-xs">
-                {widgetState.unreadCount}
-              </Badge>
-            )}
-
-            {/* Restore Icon */}
-            <ArrowsPointingOutIcon className="h-4 w-4" />
-          </div>
-        </div>
-      </Card>
-    );
-  };
-
-  /**
-   * Renderiza chat completo
-   */
-  const renderFullChat = () => {
-    return (
-      <Card className="w-80 h-96 shadow-xl border-primary/20 flex flex-col overflow-hidden">
-        {/* Header */}
-        {renderChatHeader()}
-
-        {/* Chat Interface */}
-        <div className="flex-1 overflow-hidden">
-          <ChatInterface
-            type="public"
-            webhookUrl={webhookUrl}
-            placeholder="Digite sua mensagem..."
-            maxHeight={320}
-            enableVoice={true}
-            onSessionStart={handleSessionStart}
-            onSessionEnd={handleSessionEnd}
-            onError={handleError}
-            onMetrics={handleMetrics}
-            theme={theme}
-            className="h-full border-0 shadow-none rounded-none"
-          />
-        </div>
-      </Card>
-    );
-  };
-
-  // ============================================================================
-  // RENDER
-  // ============================================================================
-
-  if (!isVisible) {
-    return null;
-  }
-
-  // Render inline
-  if (position === 'inline') {
-    return (
-      <div ref={widgetRef} className={cn("w-full", className)}>
-        {renderFullChat()}
-      </div>
-    );
-  }
-
-  // Render floating widget
   return (
-    <div
-      ref={widgetRef}
-      className={cn(
-        "fixed z-50 transition-all duration-300",
-        WIDGET_POSITIONS[position],
-        className
-      )}
-      style={{
-        transform: `translateY(${widgetState.isOpen ? '0' : '10px'})`,
-        opacity: isVisible ? 1 : 0
-      }}
-    >
-      {/* Chat Window */}
-      {widgetState.isOpen && (
-        <div
-          ref={chatRef}
+    <div className={cn('fixed z-50', positionClasses[position])}>
+      {/* Widget Fechado - Botão Flutuante */}
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
           className={cn(
-            "mb-4 transition-all duration-300 transform origin-bottom-right",
-            widgetState.isMinimized ? "scale-95 opacity-90" : "scale-100 opacity-100"
+            'h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300',
+            'bg-blue-600 hover:bg-blue-700 text-white',
+            'flex items-center justify-center relative'
+          )}
+          size="lg"
+        >
+          <MessageSquare className="h-6 w-6" />
+
+          {/* Badge "Novo" */}
+          {showNewBadge && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+            >
+              !
+            </Badge>
+          )}
+
+          {/* Indicador de pulsação */}
+          <div className="absolute inset-0 rounded-full bg-blue-600 animate-ping opacity-20" />
+        </Button>
+      )}
+
+      {/* Widget Aberto - Painel de Chat */}
+      {isOpen && (
+        <Card
+          className={cn(
+            'w-80 h-96 shadow-2xl transition-all duration-300',
+            themeClasses[theme],
+            isMinimized ? 'h-12' : 'h-96'
           )}
         >
-          {widgetState.isMinimized ? renderMinimizedChat() : renderFullChat()}
-        </div>
-      )}
+          {/* Header do Chat */}
+          <CardHeader className="pb-2 px-4 py-3 border-b">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-blue-600" />
+                Chat de Atendimento
+                {showNewBadge && (
+                  <Badge variant="secondary" className="text-xs">
+                    Novo
+                  </Badge>
+                )}
+              </CardTitle>
 
-      {/* Floating Button */}
-      {renderFloatingButton()}
+              <div className="flex items-center gap-1">
+                {/* Botão Minimizar/Maximizar */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  className="h-6 w-6 p-0"
+                >
+                  {isMinimized ? (
+                    <Maximize2 className="h-3 w-3" />
+                  ) : (
+                    <Minimize2 className="h-3 w-3" />
+                  )}
+                </Button>
 
-      {/* Welcome Message (when closed) */}
-      {!widgetState.isOpen && (
-        <div className="absolute bottom-16 right-0 mb-2 mr-2">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 max-w-xs border animate-bounce">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              👋 Precisa de ajuda? Clique aqui para conversar!
-            </p>
-            <div className="absolute bottom-0 right-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-white dark:bg-gray-800 border-r border-b"></div>
-          </div>
-        </div>
+                {/* Botão Fechar */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          {/* Conteúdo do Chat */}
+          {!isMinimized && (
+            <CardContent className="p-0 h-full">
+              <div className="h-full flex flex-col">
+                {/* Mensagem de Boas-vindas */}
+                <div className="p-4 bg-blue-50 border-b">
+                  <p className="text-sm text-blue-800">
+                    {welcomeMessage}
+                  </p>
+                </div>
+
+                {/* Interface de Chat */}
+                <div className="flex-1 min-h-0">
+                  <ChatInterface
+                    type="public"
+                    webhookUrl={webhookUrl}
+                    enableVoice={enableVoice}
+                    placeholder={placeholder}
+                    theme={theme}
+                    compact={true}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
       )}
     </div>
   );
 };
-
-// ============================================================================
-// EXPORT
-// ============================================================================
 
 export default PublicChatWidget;
