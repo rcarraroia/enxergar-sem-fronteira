@@ -1,0 +1,620 @@
+name: Chat System CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/components/chat/**'
+      - 'src/hooks/useChat*'
+      - 'src/lib/chat/**'
+      - 'src/test/**/*chat*'
+      - 'src/test/accessibility/**'
+      - 'src/examples/chat/**'
+      - '.github/workflows/chat-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/components/chat/**'
+      - 'src/hooks/useChat*'
+      - 'src/lib/chat/**'
+      - 'src/test/**/*chat*'
+      - 'src/test/accessibility/**'
+      - 'src/examples/chat/**'
+
+env:
+  NODE_VERSION: '18'
+  CACHE_KEY: 'chat-system-v1'
+
+jobs:
+  # ============================================================================
+  # QUALITY CHECKS
+  # ============================================================================
+
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type checking
+        run: npm run type-check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Quality metrics
+        run: npm run quality:metrics
+
+      - name: Upload quality report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-report
+          path: |
+            quality-report.json
+            scripts/quality-dashboard.html
+          retention-days: 30
+
+  # ============================================================================
+  # UNIT TESTS
+  # ============================================================================
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    strategy:
+      matrix:
+        test-group: [chat-components, chat-hooks, chat-lib, chat-utils]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: |
+          case "${{ matrix.test-group }}" in
+            "chat-components")
+              npm test -- src/components/chat/__tests__/
+              ;;
+            "chat-hooks")
+              npm test -- src/hooks/__tests__/useChat*
+              ;;
+            "chat-lib")
+              npm test -- src/lib/chat/__tests__/
+              ;;
+            "chat-utils")
+              npm test -- src/test/utils/chat*
+              ;;
+          esac
+        env:
+          VITEST_REPORTER: json
+          VITEST_OUTPUT_FILE: test-results-${{ matrix.test-group }}.json
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.test-group }}
+          path: test-results-${{ matrix.test-group }}.json
+          retention-days: 30
+
+  # ============================================================================
+  # INTEGRATION TESTS
+  # ============================================================================
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test database
+        run: |
+          npm run db:setup:test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+
+      - name: Run chat integration tests
+        run: npm run test:integration -- src/test/integration/chat/
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          VITE_N8N_PUBLIC_WEBHOOK_URL: https://mock-n8n.test/webhook/public
+          VITE_N8N_ADMIN_WEBHOOK_URL: https://mock-n8n.test/webhook/admin
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            coverage/
+            test-results.json
+          retention-days: 30
+
+  # ============================================================================
+  # ACCESSIBILITY TESTS
+  # ============================================================================
+
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run accessibility tests
+        run: npm run test:a11y:coverage
+
+      - name: Generate accessibility report
+        run: |
+          echo "# Accessibility Test Report" > accessibility-report.md
+          echo "Generated on: $(date)" >> accessibility-report.md
+          echo "" >> accessibility-report.md
+
+          if [ -f "coverage/accessibility/summary.json" ]; then
+            echo "## Test Summary" >> accessibility-report.md
+            cat coverage/accessibility/summary.json >> accessibility-report.md
+          fi
+
+      - name: Upload accessibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-report
+          path: |
+            coverage/accessibility/
+            accessibility-report.md
+          retention-days: 30
+
+      - name: Comment accessibility results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('accessibility-report.md')) {
+              const report = fs.readFileSync('accessibility-report.md', 'utf8');
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔍 Accessibility Test Results\n\n${report}`
+              });
+            }
+
+  # ============================================================================
+  # E2E TESTS
+  # ============================================================================
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install ${{ matrix.browser }} --with-deps
+
+      - name: Build application
+        run: npm run build:dev
+        env:
+          VITE_N8N_PUBLIC_WEBHOOK_URL: https://mock-n8n.test/webhook/public
+          VITE_N8N_ADMIN_WEBHOOK_URL: https://mock-n8n.test/webhook/admin
+
+      - name: Start mock n8n server
+        run: |
+          node scripts/mock-n8n-server.js &
+          echo $! > mock-server.pid
+        env:
+          PORT: 3001
+
+      - name: Wait for servers
+        run: |
+          npx wait-on http://localhost:4173 http://localhost:3001
+          sleep 5
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --project=${{ matrix.browser }}
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:4173
+
+      - name: Stop mock server
+        if: always()
+        run: |
+          if [ -f mock-server.pid ]; then
+            kill $(cat mock-server.pid) || true
+            rm mock-server.pid
+          fi
+
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+
+  # ============================================================================
+  # PERFORMANCE TESTS
+  # ============================================================================
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Run bundle analysis
+        run: |
+          npm run build -- --analyze
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: |
+            .lighthouseci/
+            dist/stats.html
+          retention-days: 30
+
+  # ============================================================================
+  # SECURITY SCAN
+  # ============================================================================
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=medium
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          languages: javascript
+
+  # ============================================================================
+  # BUILD AND DEPLOY
+  # ============================================================================
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [quality, unit-tests, accessibility-tests]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+        exclude:
+          - environment: production
+            ref: refs/heads/develop
+          - environment: development
+            ref: refs/heads/main
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Load environment variables
+        run: |
+          case "${{ matrix.environment }}" in
+            "development")
+              echo "VITE_N8N_PUBLIC_WEBHOOK_URL=${{ secrets.DEV_N8N_PUBLIC_WEBHOOK_URL }}" >> $GITHUB_ENV
+              echo "VITE_N8N_ADMIN_WEBHOOK_URL=${{ secrets.DEV_N8N_ADMIN_WEBHOOK_URL }}" >> $GITHUB_ENV
+              ;;
+            "staging")
+              echo "VITE_N8N_PUBLIC_WEBHOOK_URL=${{ secrets.STAGING_N8N_PUBLIC_WEBHOOK_URL }}" >> $GITHUB_ENV
+              echo "VITE_N8N_ADMIN_WEBHOOK_URL=${{ secrets.STAGING_N8N_ADMIN_WEBHOOK_URL }}" >> $GITHUB_ENV
+              ;;
+            "production")
+              echo "VITE_N8N_PUBLIC_WEBHOOK_URL=${{ secrets.PROD_N8N_PUBLIC_WEBHOOK_URL }}" >> $GITHUB_ENV
+              echo "VITE_N8N_ADMIN_WEBHOOK_URL=${{ secrets.PROD_N8N_ADMIN_WEBHOOK_URL }}" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Build application
+        run: |
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            npm run build
+          else
+            npm run build:dev
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.environment }}
+          path: dist/
+          retention-days: 30
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, integration-tests, e2e-tests]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-staging
+          path: dist/
+
+      - name: Deploy to staging
+        run: |
+          # Implementar deploy para staging
+          echo "Deploying to staging environment..."
+          # Exemplo com Vercel, Netlify, ou servidor próprio
+
+      - name: Run smoke tests
+        run: |
+          # Testes básicos pós-deploy
+          curl -f ${{ secrets.STAGING_URL }}/health || exit 1
+
+      - name: Notify deployment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const message = `${status} Staging deployment ${context.sha.substring(0, 7)} - ${{ job.status }}`;
+
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: '${{ job.status }}' === 'success' ? 'success' : 'failure',
+              description: message,
+              context: 'deployment/staging'
+            });
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, integration-tests, e2e-tests, performance-tests, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-production
+          path: dist/
+
+      - name: Deploy to production
+        run: |
+          # Implementar deploy para produção
+          echo "Deploying to production environment..."
+
+      - name: Run production smoke tests
+        run: |
+          # Testes críticos pós-deploy
+          curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+
+      - name: Create release
+        if: success()
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: chat-v${{ github.run_number }}
+          release_name: Chat System Release v${{ github.run_number }}
+          body: |
+            ## Chat System Release
+
+            ### Changes
+            - Automated release from commit ${{ github.sha }}
+
+            ### Deployment
+            - ✅ All tests passed
+            - ✅ Security scan completed
+            - ✅ Performance tests passed
+            - ✅ Deployed to production
+
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const message = `${status} Production deployment ${context.sha.substring(0, 7)} - ${{ job.status }}`;
+
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: '${{ job.status }}' === 'success' ? 'success' : 'failure',
+              description: mess,
+              context: 'deployment/production'
+            });
+
+  # ============================================================================
+  # CLEANUP
+  # ============================================================================
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+
+    steps:
+      - name: Clean up old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+
+            // Manter apenas os últimos 5 artifacts de cada tipo
+            const artifactGroups = {};
+
+            for (const artifact of artifacts.data.artifacts) {
+              const baseName = artifact.name.replace(/-\d+$/, '');
+              if (!artifactGroups[baseName]) {
+                artifactGroups[baseName] = [];
+              }
+              artifactGroups[baseName].push(artifact);
+            }
+
+            for (const [groupName, groupArtifacts] of Object.entries(artifactGroups)) {
+              if (groupArtifacts.length > 5) {
+                const toDelete = groupArtifacts
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                  .slice(5);
+
+                for (const artifact of toDelete) {
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id
+                  });
+                }
+              }
+            }

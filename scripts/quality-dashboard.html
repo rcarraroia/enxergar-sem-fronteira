@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Qualidade - Enxergar sem Fronteira</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card.success {
+            border-left-color: #10b981;
+        }
+
+        .metric-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .metric-card.error {
+            border-left-color: #ef4444;
+        }
+
+        .metric-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .charts-section {
+            margin-top: 3rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .alerts-section {
+            margin-top: 3rem;
+        }
+
+        .alert {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .alert.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .alert.success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-message {
+            color: #6b7280;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #dc2626;
+            margin: 1rem 0;
+        }
+
+        .refresh-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 2rem;
+        }
+
+        .refresh-button:hover {
+            background: #2563eb;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Dashboard de Qualidade</h1>
+        <p>Monitoramento em tempo real da qualidade do código</p>
+    </div>
+
+    <div class="container">
+        <button class="refresh-button" onclick="loadData()">🔄 Atualizar Dados</button>
+
+        <div id="loading" class="loading">
+            <p>📊 Carregando métricas de qualidade...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;">
+            <p>❌ Erro ao carregar dados. Verifique se os relatórios de qualidade foram gerados.</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <!-- Métricas Principais -->
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Métricas serão inseridas aqui via JavaScript -->
+            </div>
+
+            <!-- Alertas -->
+            <div class="alerts-section">
+                <h2 class="section-title">🚨 Alertas Recentes</h2>
+                <div id="alertsContainer">
+                    <!-- Alertas serão inseridos aqui via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-section">
+                <h2 class="section-title">📈 Tendências</h2>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 class="chart-title">ESLint - Erros e Warnings</h3>
+                        <canvas id="eslintChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Cobertura de Testes</h3>
+                        <canvas id="coverageChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Tamanho do Bundle</h3>
+                        <canvas id="bundleChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Complexidade do Código</h3>
+                        <canvas id="complexityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-updated" id="lastUpdated">
+            <!-- Timestamp será inserido aqui -->
+        </div>
+    </div>
+
+    <script>
+        let qualityData = null;
+        let historyData = null;
+        let alertsData = null;
+
+        // Função para carregar dados
+        async function loadData() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const contentEl = document.getElementById('content');
+
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            contentEl.style.display = 'none';
+
+            try {
+                // Simular carregamento de dados (em produção, seria uma API)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Dados de exemplo (em produção, viria de arquivos JSON)
+                qualityData = generateSampleData();
+                historyData = generateSampleHistory();
+                alertsData = generateSampleAlerts();
+
+                renderMetrics();
+                renderAlerts();
+                renderCharts();
+
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+
+                document.getElementById('lastUpdated').textContent =
+                    `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Renderizar métricas principais
+        function renderMetrics() {
+            const container = document.getElementById('metricsGrid');
+            const metrics = qualityData.metrics;
+
+            const cards = [
+                {
+                    title: 'ESLint Erros',
+                    value: metrics.eslint.errors,
+                    subtitle: `${metrics.eslint.warnings} warnings`,
+                    type: metrics.eslint.errors === 0 ? 'success' : 'error'
+                },
+                {
+                    title: 'TypeScript Erros',
+                    value: metrics.typescript.errors,
+                    subtitle: 'Verificação de tipos',
+                    type: metrics.typescript.errors === 0 ? 'success' : 'error'
+                },
+                {
+                    title: 'Cobertura de Testes',
+                    value: `${metrics.tests.coverage}%`,
+                    subtitle: `${metrics.tests.passed}/${metrics.tests.tests} testes`,
+                    type: metrics.tests.coverage >= 70 ? 'success' : 'warning'
+                },
+                {
+                    title: 'Bundle Size',
+                    value: `${metrics.bundle.size}KB`,
+                    subtitle: `~${metrics.bundle.gzipSize}KB gzipped`,
+                    type: metrics.bundle.size <= 2000 ? 'success' : 'warning'
+                },
+                {
+                    title: 'Arquivos',
+                    value: metrics.complexity.files,
+                    subtitle: `${metrics.complexity.lines} linhas`,
+                    type: 'success'
+                },
+                {
+                    title: 'Componentes',
+                    value: metrics.complexity.components,
+                    subtitle: `${metrics.complexity.functions} funções`,
+                    type: 'success'
+                }
+            ];
+
+            container.innerHTML = cards.map(card => `
+                <div class="metric-card ${card.type}">
+                    <div class="metric-title">${card.title}</div>
+                    <div class="metric-value">${card.value}</div>
+                    <div class="metric-subtitle">${card.subtitle}</div>
+                </div>
+            `).join('');
+        }
+
+        // Renderizar alertas
+        function renderAlerts() {
+            const container = document.getElementById('alertsContainer');
+
+            if (!alertsData || alertsData.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">✅ Nenhum alerta ativo</p>';
+                return;
+            }
+
+            container.innerHTML = alertsData.slice(0, 5).map(alert => `
+                <div class="alert ${alert.severity === 'high' ? 'error' : alert.severity === 'medium' ? 'warning' : 'success'}">
+                    <div class="alert-title">
+                        ${alert.type === 'regression' ? '📉' : '📈'} ${alert.metric}
+                    </div>
+                    <div class="alert-message">${alert.message}</div>
+                </div>
+            `).join('');
+        }
+
+        // Renderizar gráficos
+        function renderCharts() {
+            // Gráfico ESLint
+            const eslintCtx = document.getElementById('eslintChart').getContext('2d');
+            new Chart(eslintCtx, {
+                type: 'line',
+                data: {
+                    labels: historyData.map((_, i) => `Exec ${i + 1}`),
+                    datasets: [
+                        {
+                            label: 'Erros',
+                            data: historyData.map(h => h.metrics.eslint.errors),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Warnings',
+                            data: historyData.map(h => h.metrics.eslint.warnings),
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico Cobertura
+            const coverageCtx = document.getElementById('coverageChart').getContext('2d');
+            new Chart(coverageCtx, {
+                type: 'line',
+                data: {
+                    labels: historyData.map((_, i) => `Exec ${i + 1}`),
+                    datasets: [{
+                        label: 'Cobertura (%)',
+                        data: historyData.map(h => h.metrics.tests.coverage),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            begrue,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Gráfico Bundle
+            const bundleCtx = document.getElementById('bundleChart').getContext('2d');
+            new Chart(bundleCtx, {
+                type: 'bar',
+                data: {
+                    labels: historyData.map((_, i) => `Exec ${i + 1}`),
+                    datasets: [{
+                        label: 'Tamanho (KB)',
+                        data: historyData.map(h => h.metrics.bundle.size),
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico Complexidade
+            const complexityCtx = document.getElementById('complexityChart').getContext('2d');
+            new Chart(complexityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Componentes', 'Hooks', 'Utilitários', 'Outros'],
+                    datasets: [{
+                        data: [
+                            qualityData.metrics.complexity.components,
+                            Math.round(qualityData.metrics.complexity.functions * 0.3),
+                            Math.round(qualityData.metrics.complexity.functions * 0.2),
+                            Math.round(qualityData.metrics.complexity.functions * 0.5)
+                        ],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Gerar dados de exemplo
+        function generateSampleData() {
+            return {
+                timestamp: new Date().toISOString(),
+                metrics: {
+                    eslint: {
+                        errors: Math.floor(Math.random() * 3),
+                        warnings: Math.floor(Math.random() * 20) + 5
+                    },
+                    typescript: {
+                        errors: Math.floor(Math.random() * 2)
+                    },
+                    tests: {
+                        coverage: Math.floor(Math.random() * 30) + 70,
+                        tests: 45,
+                        passed: 43,
+                        failed: 2
+                    },
+                    bundle: {
+                        size: Math.floor(Math.random() * 500) + 1500,
+                        gzipSize: Math.floor(Math.random() * 200) + 450
+                    },
+                    complexity: {
+                        files: 156,
+                        lines: 12450,
+                        functions: 234,
+                        components: 67
+                    }
+                }
+            };
+        }
+
+        function generateSampleHistory() {
+            const history = [];
+            for (let i = 0; i < 10; i++) {
+                history.push({
+                    timestamp: new Date(Date.now() - (9 - i) * 24 * 60 * 60 * 1000).toISOString(),
+                    metrics: {
+                        eslint: {
+                            errors: Math.floor(Math.random() * 5),
+                            warnings: Math.floor(Math.random() * 25) + 10
+                        },
+                        tests: {
+                            coverage: Math.floor(Math.random() * 20) + 70
+                        },
+                        bundle: {
+                            size: Math.floor(Math.random() * 400) + 1400
+                        }
+                    }
+                });
+            }
+            return history;
+        }
+
+        function generateSampleAlerts() {
+            const alerts = [
+                {
+                    type: 'regression',
+                    severity: 'high',
+                    metric: 'ESLint Erros',
+                    message: 'Aumento de 3 erros de ESLint detectado'
+                },
+                {
+                    type: 'improvement',
+                    severity: 'info',
+                    metric: 'Cobertura de Testes',
+                    message: 'Aumento de 2.5% na cobertura de testes'
+                }
+            ];
+            return Math.random() > 0.5 ? alerts : [];
+        }
+
+        // Carregar dados ao inicializar
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        // Auto-refresh a cada 5 minutos
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
