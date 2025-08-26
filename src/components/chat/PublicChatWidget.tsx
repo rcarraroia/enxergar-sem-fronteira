@@ -155,7 +155,6 @@ export const PublicChatWidget: React.FC<PublicChatWidgetProps> = ({
                     enableVoice={enableVoice}
                     placeholder={placeholder}
                     theme={theme}
-                    compact={true}
                   />
                 </div>
               </div>
