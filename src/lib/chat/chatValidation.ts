@@ -400,35 +400,8 @@ export const createValidationError = (
   };
 };
 
-/**
- * Valida e sanitiza conteúdo de mensagem
- * @deprecated Use validateAndSanitizeChatMessage from chatSecurity instead
- */
-export const validateAndSanitizeMessage = (content: unknown): {
-  success: boolean;
-  data?: string;
-  error?: string;
-} => {
-  const validation = validateMessageContent(content);
 
-  if (!validation.success) {
-    return {
-      success: false,
-      error: validation.error.errors[0]?.message || 'Conteúdo inválido'
-    };
-  }
-
-  return {
-    success: true,
-    data: sanitizeContent(validation.data)
-  };
-};
 
 // ============================================================================
 // EXPORTS
 // ============================================================================
-
-export {
-    adminChatPanelPropsSchema, chatErrorSchema, chatInterfacePropsSchema, chatMessageSchema, chatSessionSchema, createMessageSchema, createSessionSchema, featureFlagsSchema, messageContentSchema, messageIdSchema, n8nConfigSchema, n8nRequestSchema,
-    n8nResponseSchema, publicChatWidgetPropsSchema, sessionIdSchema, storageSchema, voiceConfigSchema, webhookUrlSchema
-};
