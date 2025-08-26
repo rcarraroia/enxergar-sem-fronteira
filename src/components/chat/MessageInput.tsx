@@ -8,11 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { validateAndSanitizeMessage } from '@/lib/chat/chatValidation';
 import { cn } from '@/lib/utils';
-import {
-  MicrophoneIcon,
-  PaperAirplaneIcon,
-  StopIcon
-} from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 // ============================================================================
@@ -300,9 +295,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
         {isProcessingVoice ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
         ) : isRecording ? (
-          <StopIcon className="h-4 w-4" />
+          <Square className="h-4 w-4" />
         ) : (
-          <MicrophoneIcon className="h-4 w-4" />
+          <Mic className="h-4 w-4" />
         )}
       </Button>
     );
@@ -323,7 +318,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         className="h-8 w-8 p-0"
         title="Enviar mensagem (Enter)"
       >
-        <PaperAirplaneIcon className="h-4 w-4" />
+        <Send className="h-4 w-4" />
       </Button>
     );
   };

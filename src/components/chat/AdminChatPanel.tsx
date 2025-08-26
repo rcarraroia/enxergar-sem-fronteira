@@ -12,15 +12,6 @@ import { Separator } from '@/components/ui/separator';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { AdminChatPanelProps } from '@/lib/chat/chatTypes';
 import { cn } from '@/lib/utils';
-import {
-  ChatBubbleLeftRightIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ClockIcon,
-  PlusIcon,
-  UserIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useState } from 'react';
 import ChatInterface from './ChatInterface';
 
@@ -169,7 +160,7 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
+            <MessageSquare className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">Chat de Suporte</CardTitle>
             {adminSessions.length > 0 && (
               <Badge variant="secondary" className="ml-2">
@@ -187,7 +178,7 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
               className="h-8"
               title="Nova conversa"
             >
-              <PlusIcon className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </Button>
 
             {/* Expand/Collapse Button */}
@@ -199,9 +190,9 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
               title={panelState.isExpanded ? "Recolher" : "Expandir"}
             >
               {panelState.isExpanded ? (
-                <ChevronUpIcon className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4" />
               ) : (
-                <ChevronDownIcon className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" />
               )}
             </Button>
           </div>
@@ -235,13 +226,13 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
                 onClick={() => handleSelectSession(session.id)}
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <UserIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">
                       Sessão {session.id.slice(-8)}
                     </p>
                     <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                      <ClockIcon className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                       <span>
                         {new Date(session.lastActivity).toLocaleTimeString('pt-BR', {
                           hour: '2-digit',
@@ -265,7 +256,7 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
                   className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Fechar sessão"
                 >
-                  <XMarkIcon className="h-3 w-3" />
+                  <X className="h-3 w-3" />
                 </Button>
               </div>
             ))}
@@ -283,10 +274,10 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
       return (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center text-muted-foreground">
-            <ChatBubbleLeftRightIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-sm mb-4">Nenhuma conversa ativa</p>
             <Button onClick={handleCreateSession} variant="outline">
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Iniciar Nova Conversa
             </Button>
           </div>
@@ -320,7 +311,7 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
           onClick={handleToggleExpansion}
         >
           <div className="flex items-center space-x-2">
-            <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
+            <MessageSquare className="h-5 w-5 text-primary" />
             <span className="font-medium">Chat de Suporte</span>
             {adminSessions.length > 0 && (
               <Badge variant="secondary">
@@ -328,7 +319,7 @@ const AdminChatPanel: React.FC<AdminChatPanelProps> = ({
               </Badge>
             )}
           </div>
-          <ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </div>
       </Card>
     );

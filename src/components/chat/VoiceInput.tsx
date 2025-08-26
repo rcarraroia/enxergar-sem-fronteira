@@ -9,12 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { VoiceConfig, VoiceInputState } from '@/lib/chat/chatTypes';
 import { cn } from '@/lib/utils';
-import {
-  ExclamationTriangleIcon,
-  MicrophoneIcon,
-  SpeakerWaveIcon,
-  StopIcon
-} from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 // ============================================================================
@@ -430,9 +424,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
         {voiceState.isProcessing ? (
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current" />
         ) : voiceState.isRecording ? (
-          <StopIcon className="h-6 w-6" />
+          <Square className="h-6 w-6" />
         ) : (
-          <MicrophoneIcon className="h-6 w-6" />
+          <Mic className="h-6 w-6" />
         )}
       </Button>
     );
@@ -447,7 +441,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
     return (
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
-          <SpeakerWaveIcon className="h-4 w-4 text-muted-foreground" />
+          <Volume2 className="h-4 w-4 text-muted-foreground" />
           <Progress value={audioLevel} className="flex-1" />
           <span className="text-xs text-muted-foreground w-8">
             {Math.round(audioLevel)}%
@@ -472,7 +466,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
     return (
       <div className="p-3 bg-muted rounded-md">
         <div className="flex items-start space-x-2">
-          <SpeakerWaveIcon className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+          <Volume2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm">{voiceState.transcript}</p>
             {voiceState.confidence > 0 && (
@@ -494,7 +488,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
 
     return (
       <Alert variant="destructive">
-        <ExclamationTriangleIcon className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertDescription>{voiceState.error}</AlertDescription>
       </Alert>
     );

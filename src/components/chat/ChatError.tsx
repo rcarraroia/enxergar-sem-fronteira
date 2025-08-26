@@ -8,14 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ChatError as ChatErrorType, ChatErrorType as ErrorType } from '@/lib/chat/chatTypes';
 import { cn } from '@/lib/utils';
-import {
-  ArrowPathIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  ShieldExclamationIcon,
-  WifiIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
 import React, { memo, useState } from 'react';
 
 // ============================================================================
@@ -45,37 +37,37 @@ const ERROR_MESSAGES = {
   [ErrorType.NETWORK_ERROR]: {
     title: 'Erro de Conexão',
     message: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
-    icon: WifiIcon,
+    icon: Wifi,
     color: 'text-orange-600'
   },
   [ErrorType.WEBHOOK_ERROR]: {
     title: 'Erro do Servidor',
     message: 'O servidor está temporariamente indisponível.',
-    icon: ExclamationTriangleIcon,
+    icon: AlertTriangle,
     color: 'text-red-600'
   },
   [ErrorType.VALIDATION_ERROR]: {
     title: 'Dados Inválidos',
     message: 'A mensagem contém dados inválidos.',
-    icon: ShieldExclamationIcon,
+    icon: ShieldAlert,
     color: 'text-yellow-600'
   },
   [ErrorType.TIMEOUT_ERROR]: {
     title: 'Tempo Esgotado',
     message: 'O servidor demorou muito para responder.',
-    icon: ClockIcon,
+    icon: Clock,
     color: 'text-blue-600'
   },
   [ErrorType.VOICE_ERROR]: {
     title: 'Erro de Áudio',
     message: 'Não foi possível processar o áudio.',
-    icon: ExclamationTriangleIcon,
+    icon: AlertTriangle,
     color: 'text-purple-600'
   },
   [ErrorType.SESSION_ERROR]: {
     title: 'Erro de Sessão',
     message: 'Houve um problema com sua sessão.',
-    icon: ExclamationTriangleIcon,
+    icon: AlertTriangle,
     color: 'text-gray-600'
   }
 };
@@ -167,7 +159,7 @@ const ChatError: React.FC<ChatErrorProps> = memo(({
               </>
             ) : (
               <>
-                <ArrowPathIcon className="w-3 h-3 mr-2" />
+                <RotateCcw className="w-3 h-3 mr-2" />
                 Tentar Novamente
               </>
             )}
@@ -194,7 +186,7 @@ const ChatError: React.FC<ChatErrorProps> = memo(({
             onClick={onDismiss}
             className="h-8 w-8 p-0 ml-auto"
           >
-            <XMarkIcon className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </Button>
         )}
       </div>

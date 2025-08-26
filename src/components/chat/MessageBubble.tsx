@@ -8,13 +8,6 @@ import { Button } from '@/components/ui/button';
 import { ChatMessage } from '@/lib/chat/chatTypes';
 import { formatMessageTime } from '@/lib/chat/chatUtils';
 import { cn } from '@/lib/utils';
-import {
-  ArrowPathIcon,
-  CheckIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  SpeakerWaveIcon
-} from '@heroicons/react/24/outline';
 import React, { memo } from 'react';
 
 // ============================================================================
@@ -64,22 +57,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({
     switch (message.status) {
       case 'sending':
         return (
-          <ClockIcon className="w-3 h-3 text-muted-foreground animate-pulse" />
+          <Clock className="w-3 h-3 text-muted-foreground animate-pulse" />
         );
       case 'sent':
         return (
-          <CheckIcon className="w-3 h-3 text-muted-foreground" />
+          <Check className="w-3 h-3 text-muted-foreground" />
         );
       case 'delivered':
         return (
           <div className="flex">
-            <CheckIcon className="w-3 h-3 text-primary -mr-1" />
-            <CheckIcon className="w-3 h-3 text-primary" />
+            <Check className="w-3 h-3 text-primary -mr-1" />
+            <Check className="w-3 h-3 text-primary" />
           </div>
         );
       case 'error':
         return (
-          <ExclamationTriangleIcon className="w-3 h-3 text-destructive" />
+          <AlertTriangle className="w-3 h-3 text-destructive" />
         );
       default:
         return null;
@@ -99,7 +92,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({
         onClick={() => onRetry(message.id)}
         className="h-6 px-2 text-xs text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
       >
-        <ArrowPathIcon className="w-3 h-3 mr-1" />
+        <RotateCcw className="w-3 h-3 mr-1" />
         Tentar novamente
       </Button>
     );
@@ -137,7 +130,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({
           className="flex items-center text-xs text-muted-foreground"
           title="Mensagem enviada por voz"
         >
-          <SpeakerWaveIcon className="w-3 h-3" />
+          <Volume2 className="w-3 h-3" />
         </div>
       );
     }
