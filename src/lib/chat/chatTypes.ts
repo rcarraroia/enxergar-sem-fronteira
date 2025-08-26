@@ -448,5 +448,3 @@ export type {
     N8nChatResponse, N8nWebhookConfig, PublicChatWidgetProps, VoiceConfig,
     VoiceInputState
 };
-
-    export { ChatErrorType };
