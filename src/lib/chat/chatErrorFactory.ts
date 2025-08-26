@@ -498,9 +498,6 @@ export function withResponseData(
 // EXPORTS
 // ============================================================================
 
-export {
-    CHAT_ERROR_CODES,
-    CHAT_ERROR_MESSAGES
-};
+
 
     export type { ChatAppError };

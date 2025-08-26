@@ -9,7 +9,7 @@ import { z } from 'zod';
 import {
     N8nChatResponse
 } from './chatTypes';
-import { 
+import {
   createSecurityError,
   createChatError,
   CHAT_ERROR_CODES,
@@ -172,10 +172,7 @@ export const sanitizeMessageContent = (content: string): string => {
     // Remover espaços no início e fim
     .trim()
     // Limitar quebras de linha consecutivas
-    .replace(/
-{3,}/g, '
-
-')
+    .replace(/\n{3,}/g, '\n\n')
     // Remover URLs suspeitas (opcional, pode ser configurado)
     .replace(/https?:\/\/[^\s<>"']+/gi, '[URL removida]');
 

@@ -5,8 +5,8 @@
  * Funções auxiliares para validação rigorosa e sanitização de dados
  */
 
-import { z } from "zod";
 import DOMPurify from "isomorphic-dompurify";
+import { z } from "zod";
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -14,7 +14,7 @@ import DOMPurify from "isomorphic-dompurify";
 
 /**
  * Resultado de uma operação de validação
- * 
+ *
  * @template T - Tipo dos dados validados
  */
 export interface ValidationResult<T> {
@@ -58,15 +58,15 @@ export interface SanitizationOptions {
 
 /**
  * Valida dados usando schema Zod e retorna resultado estruturado
- * 
+ *
  * Função principal para validação de dados que converte erros do Zod
  * em um formato padronizado e user-friendly.
- * 
+ *
  * @template T - Tipo dos dados esperados após validação
  * @param schema - Schema Zod para validação
  * @param data - Dados a serem validados
  * @returns Resultado estruturado com dados validados ou erros
- * 
+ *
  * @example
  * ```typescript
  * const result = validateData(PatientSchema, formData)
@@ -94,13 +94,13 @@ export function validateData<T>(
         message: err.message,
         code: err.code
       }));
-      
+
       return {
         success: false,
         errors
       };
     }
-    
+
     return {
       success: false,
       errors: [{
@@ -114,15 +114,15 @@ export function validateData<T>(
 
 /**
  * Valida dados de forma assíncrona usando schema Zod
- * 
+ *
  * Versão assíncrona da função validateData, útil para schemas que incluem
  * validações assíncronas como verificações de banco de dados.
- * 
+ *
  * @template T - Tipo dos dados esperados após validação
  * @param schema - Schema Zod para validação
  * @param data - Dados a serem validados
  * @returns Promise com resultado estruturado
- * 
+ *
  * @example
  * ```typescript
  * const result = await validateDataAsync(UserSchemaWithAsyncValidation, userData)
@@ -148,13 +148,13 @@ export async function validateDataAsync<T>(
         message: err.message,
         code: err.code
       }));
-      
+
       return {
         success: false,
         errors
       };
     }
-    
+
     return {
       success: false,
       errors: [{
@@ -168,15 +168,15 @@ export async function validateDataAsync<T>(
 
 /**
  * Valida parcialmente um objeto (útil para formulários em tempo real)
- * 
+ *
  * Permite validar objetos incompletos, onde nem todos os campos obrigatórios
  * estão presentes. Ideal para validação durante o preenchimento de formulários.
- * 
+ *
  * @template T - Tipo dos dados completos
  * @param schema - Schema Zod completo
  * @param data - Dados parciais a serem validados
  * @returns Resultado com dados parciais validados
- * 
+ *
  * @example
  * ```typescript
  * // Validar apenas os campos preenchidos
@@ -204,13 +204,13 @@ export function validatePartial<T>(
         message: err.message,
         code: err.code
       }));
-      
+
       return {
         success: false,
         errors
       };
     }
-    
+
     return {
       success: false,
       errors: [{
@@ -228,15 +228,15 @@ export function validatePartial<T>(
 
 /**
  * Sanitiza string removendo caracteres perigosos e aplicando formatação
- * 
+ *
  * Remove ou escapa conteúdo HTML perigoso, normaliza espaços em branco
  * e aplica limitações de comprimento para prevenir ataques XSS e
  * garantir consistência dos dados.
- * 
+ *
  * @param input - String a ser sanitizada
  * @param options - Opções de sanitização
  * @returns String sanitizada e segura
- * 
+ *
  * @example
  * ```typescript
  * // Remover HTML completamente
@@ -244,13 +244,13 @@ export function validatePartial<T>(
  *   allowHtml: false
  * })
  * // Resultado: "João"
- * 
+ *
  * // Permitir HTML seguro
  * const safe = sanitizeString('<b>João</b><script>alert("xss")</script>', {
  *   allowHtml: true
  * })
  * // Resultado: "<b>João</b>"
- * 
+ *
  * // Limitar comprimento
  * const limited = sanitizeString('Nome muito longo', {
  *   maxLength: 10
@@ -301,15 +301,15 @@ export function sanitizeString(
 
 /**
  * Sanitiza objeto recursivamente aplicando sanitização em todas as strings
- * 
+ *
  * Percorre recursivamente um objeto e aplica sanitização em todas as
  * propriedades do tipo string, mantendo a estrutura original do objeto.
- * 
+ *
  * @template T - Tipo do objeto a ser sanitizado
  * @param obj - Objeto a ser sanitizado
  * @param options - Opções de sanitização aplicadas a todas as strings
  * @returns Objeto sanitizado com mesma estrutura
- * 
+ *
  * @example
  * ```typescript
  * const userData = {
@@ -320,7 +320,7 @@ export function sanitizeString(
  *     telefone: '(11) 99999-9999'
  *   }
  * }
- * 
+ *
  * const clean = sanitizeObject(userData, {
  *   allowHtml: false,
  *   trimWhitespace: true
@@ -340,8 +340,8 @@ export function sanitizeObject<T extends Record<string, any>>(
     } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       sanitized[key] = sanitizeObject(value, options);
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map(item => 
-        typeof item === "string" 
+      sanitized[key] = value.map(item =>
+        typeof item === "string"
           ? sanitizeString(item, options)
           : typeof item === "object" && item !== null
           ? sanitizeObject(item, options)
@@ -381,28 +381,28 @@ export function sanitizeSearchTerm(input: string): string {
 
 /**
  * Valida e formata CPF brasileiro
- * 
+ *
  * Valida um CPF usando o algoritmo oficial dos dígitos verificadores
  * e retorna a versão formatada se válido.
- * 
+ *
  * @param cpf - CPF em qualquer formato (com ou sem pontuação)
  * @returns Objeto com status de validação e CPF formatado se válido
- * 
+ *
  * @example
  * ```typescript
  * const result1 = validateAndFormatCPF('12345678909')
  * // { valid: true, formatted: '123.456.789-09' }
- * 
+ *
  * const result2 = validateAndFormatCPF('123.456.789-09')
  * // { valid: true, formatted: '123.456.789-09' }
- * 
+ *
  * const result3 = validateAndFormatCPF('11111111111')
  * // { valid: false }
  * ```
  */
 export function validateAndFormatCPF(cpf: string): { valid: boolean; formatted?: string } {
   const cleaned = cpf.replace(/[^\d]/g, "");
-  
+
   if (cleaned.length !== 11) {
     return { valid: false };
   }
@@ -439,40 +439,40 @@ export function validateAndFormatCPF(cpf: string): { valid: boolean; formatted?:
 
 /**
  * Valida e formata telefone brasileiro
- * 
+ *
  * Valida números de telefone brasileiros em diversos formatos e
  * retorna a versão formatada padronizada.
- * 
+ *
  * Formatos aceitos:
  * - Celular: (11) 99999-9999 ou 11999999999
  * - Fixo: (11) 9999-9999 ou 1199999999
  * - Com código do país: +55 11 99999-9999
- * 
+ *
  * @param phone - Telefone em qualquer formato
  * @returns Objeto com status de validação e telefone formatado se válido
- * 
+ *
  * @example
  * ```typescript
  * const result1 = validateAndFormatPhone('11999999999')
  * // { valid: true, formatted: '(11) 99999-9999' }
- * 
+ *
  * const result2 = validateAndFormatPhone('+5511999999999')
  * // { valid: true, formatted: '(11) 99999-9999' }
- * 
+ *
  * const result3 = validateAndFormatPhone('123')
  * // { valid: false }
  * ```
  */
 export function validateAndFormatPhone(phone: string): { valid: boolean; formatted?: string } {
   const cleaned = phone.replace(/[^\d]/g, "");
-  
+
   // Aceitar formatos: 11987654321, 1187654321, 87654321
   if (cleaned.length < 8 || cleaned.length > 13) {
     return { valid: false };
   }
 
   let formatted = "";
-  
+
   if (cleaned.length === 11) {
     // Celular com DDD: (11) 98765-4321
     formatted = `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
@@ -491,28 +491,28 @@ export function validateAndFormatPhone(phone: string): { valid: boolean; formatt
 
 /**
  * Valida e formata CEP brasileiro
- * 
+ *
  * Valida se o CEP tem exatamente 8 dígitos e retorna
  * a versão formatada com hífen.
- * 
+ *
  * @param cep - CEP em qualquer formato (com ou sem hífen)
  * @returns Objeto com status de validação e CEP formatado se válido
- * 
+ *
  * @example
  * ```typescript
  * const result1 = validateAndFormatCEP('01234567')
  * // { valid: true, formatted: '01234-567' }
- * 
+ *
  * const result2 = validateAndFormatCEP('01234-567')
  * // { valid: true, formatted: '01234-567' }
- * 
+ *
  * const result3 = validateAndFormatCEP('123')
  * // { valid: false }
  * ```
  */
 export function validateAndFormatCEP(cep: string): { valid: boolean; formatted?: string } {
   const cleaned = cep.replace(/[^\d]/g, "");
-  
+
   if (cleaned.length !== 8) {
     return { valid: false };
   }
@@ -530,13 +530,12 @@ export function validateAndFormatCEP(cep: string): { valid: boolean; formatted?:
  */
 export function formatValidationErrors(errors: ValidationError[]): string {
   if (errors.length === 0) {return "";}
-  
+
   if (errors.length === 1) {
     return errors[0].message;
   }
-  
-  return errors.map(error => `• ${error.message}`).join("
-");
+
+  return errors.map(error => `• ${error.message}`).join("\n");
 }
 
 /**
@@ -544,14 +543,14 @@ export function formatValidationErrors(errors: ValidationError[]): string {
  */
 export function groupErrorsByField(errors: ValidationError[]): Record<string, string[]> {
   const grouped: Record<string, string[]> = {};
-  
+
   errors.forEach(error => {
     if (!grouped[error.field]) {
       grouped[error.field] = [];
     }
     grouped[error.field].push(error.message);
   });
-  
+
   return grouped;
 }
 
