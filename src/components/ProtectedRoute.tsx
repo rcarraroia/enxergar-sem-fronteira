@@ -89,13 +89,13 @@ export const ProtectedRoute = ({
     }
 
     // Check organizer requirement using secure role system
-    if (requireOrganizer && !hasRole(["admin", "organizer"])) {
+    if (requireOrganizer && !hasRole("organizer")) {
       console.log("⛔ ProtectedRoute: Organizador requerido, mas usuário não é organizador nem admin");
       return false;
     }
 
     // Check allowed roles using secure role system
-    if (allowedRoles && !hasRole(allowedRoles)) {
+    if (allowedRoles && !hasRole("user")) {
       console.log("⛔ ProtectedRoute: Role não permitido:", userRole, "Permitidos:", allowedRoles);
       return false;
     }

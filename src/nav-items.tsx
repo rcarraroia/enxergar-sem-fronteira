@@ -1,19 +1,9 @@
 
 import {
-  BarChart3,
-  Bell,
   Building2,
-  Calendar,
-  CreditCard,
   Download,
-  FileBarChart,
-  FileText,
-  Heart,
   HomeIcon,
-  Settings,
-  Shield,
-  User,
-  Users
+  Shield
 } from "lucide-react";
 
 export const navItems = [

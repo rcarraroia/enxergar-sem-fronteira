@@ -114,7 +114,7 @@ export const useNotificationTemplates = (filters?: TemplateFilters): UseNotifica
       // Validate template before creating
       const validationErrors = validateTemplate(template);
       if (validationErrors.length > 0) {
-        throw new Error(validationErrors[0].message);
+        throw new Error(validationErrors[0]?.message || "Erro de validação");
       }
 
       const { data, error } = await supabase
@@ -162,7 +162,7 @@ export const useNotificationTemplates = (filters?: TemplateFilters): UseNotifica
         const fullTemplate = { ...templates.find(t => t.id === id), ...template } as NotificationTemplateInput;
         const validationErrors = validateTemplate(fullTemplate);
         if (validationErrors.length > 0) {
-          throw new Error(validationErrors[0].message);
+          throw new Error(validationErrors[0]?.message || "Erro de validação");
         }
       }
 

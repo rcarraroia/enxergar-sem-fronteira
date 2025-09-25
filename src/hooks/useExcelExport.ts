@@ -58,7 +58,7 @@ export const useExcelExport = (options: UseExcelExportOptions = {}) => {
           : "todas_cidades";
         const dateStr = exportOptions.selectedDate
           ? exportOptions.selectedDate.replace(/-/g, "_")
-          : new Date().toISOString().split("T")[0].replace(/-/g, "_");
+          : new Date().toISOString().split("T")[0]?.replace(/-/g, "_");
         const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, "");
 
         filename = `agendamentos_${cityName}_${dateStr}_${timestamp}.xlsx`;
