@@ -1,5 +1,5 @@
 
-
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -84,7 +84,7 @@ const Admin = () => {
 
     } catch (error) {
       console.error("❌ Admin: Erro ao exportar relatório:", error);
-      toast.error(`Erro ao exportar relatório: ${(error as Error).message}`);
+      toast.error(`Erro ao exportar relatório: ${  error.message}`);
     }
   };
 

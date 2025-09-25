@@ -7,7 +7,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -109,11 +109,14 @@ export const BulkMessageSender: React.FC = () => {
     dateRange: undefined
   });
 
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+
   // ============================================================================
   // HOOKS
   // ============================================================================
 
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   // ============================================================================
   // EFFECTS
@@ -149,10 +152,12 @@ export const BulkMessageSender: React.FC = () => {
 
       if (eventsError) {throw eventsError;}
 
-      const processedEvents = ((eventsData as any[]) || []).map((event: any) => ({
+      // Process events data
+      const processedEvents = eventsData?.map(event => ({
         ...event,
         registrations_count: event.registrations?.[0]?.count || 0
-      }));
+      })) || [];
+
       setEvents(processedEvents);
 
       // Load templates
@@ -164,14 +169,7 @@ export const BulkMessageSender: React.FC = () => {
 
       if (templatesError) {throw templatesError;}
 
-      setTemplates(((templatesData as any[]) || []).map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        type: (t.type as "email" | "sms" | "whatsapp") || "email",
-        subject: t.subject ?? undefined,
-        content: t.content,
-        is_active: !!t.is_active,
-      })));
+      setTemplates(templatesData || []);
 
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -203,6 +201,25 @@ export const BulkMessageSender: React.FC = () => {
     }));
   };
 
+  const handlePreview = async () => {
+    try {
+      setPreviewMode(true);
+
+      // Simular preview com dados de exemplo
+      const previewResult = {
+        totalRecipients: filters.eventIds.length * 10, // Estimativa
+        selectedEvents: events.filter(e => filters.eventIds.includes(e.id)),
+        messageTypes: filters.messageTypes,
+        template: templates.find(t => t.name === filters.templateName)
+      };
+
+      setPreviewData(previewResult);
+      toast.info("Preview gerado com sucesso");
+    } catch (error) {
+      console.error("Erro no preview:", error);
+      toast.error("Erro ao gerar preview");
+    }
+  };
 
   const handleSend = async (testMode = false) => {
     if (filters.messageTypes.length === 0) {
@@ -555,7 +572,7 @@ export const BulkMessageSender: React.FC = () => {
         <CardContent>
           <div className="flex gap-4">
             <Button
-              onClick={() => {/* TODO: Implement preview */}}
+              onClick={handlePreview}
               variant="outline"
               disabled={sending || filters.eventIds.length === 0}
             >

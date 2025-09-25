@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,12 +57,12 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
     try {
       switch (section) {
         case "general":
-          updateSetting("project_name", formData.project_name || "");
-          updateSetting("project_description", formData.project_description || "");
+          updateSetting("project_name", formData.project_name);
+          updateSetting("project_description", formData.project_description);
           break;
         case "logos":
-          updateSetting("logo_header", formData.logo_header || "");
-          updateSetting("logo_footer", formData.logo_footer || "");
+          updateSetting("logo_header", formData.logo_header);
+          updateSetting("logo_footer", formData.logo_footer);
           break;
         case "social":
           const socialData = {
@@ -73,9 +73,9 @@ export const SystemSettingsForm = ({ section }: SystemSettingsFormProps) => {
           updateSetting("social_links", JSON.stringify(socialData));
           break;
         case "apikeys":
-          updateSetting("asaas_api_key", formData.asaas_api_key || "");
-          updateSetting("vonage_api_key", formData.vonage_api_key || "");
-          updateSetting("vonage_api_secret", formData.vonage_api_secret || "");
+          updateSetting("asaas_api_key", formData.asaas_api_key);
+          updateSetting("vonage_api_key", formData.vonage_api_key);
+          updateSetting("vonage_api_secret", formData.vonage_api_secret);
           break;
       }
       toast.success("Configurações salvas com sucesso!");

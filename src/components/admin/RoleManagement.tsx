@@ -13,7 +13,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -108,18 +108,7 @@ export const RoleManagement: React.FC = () => {
         throw error;
       }
 
-      const mapped = (data || []).map((o: any) => ({
-        id: o.id,
-        name: o.name || o.email,
-        email: o.email,
-        role: (o.role as "admin" | "organizer" | "viewer") || "organizer",
-        status: (o.status as "active" | "inactive" | "pending") || "active",
-        created_at: o.created_at,
-        updated_at: o.updated_at,
-        last_login: o.last_login || undefined,
-      }));
-
-      setOrganizers(mapped);
+      setOrganizers(data || []);
     } catch (error) {
       console.error("Erro ao carregar organizadores:", error);
       toast.error("Erro ao carregar lista de usuários");
@@ -131,7 +120,7 @@ export const RoleManagement: React.FC = () => {
   const loadAuditLogs = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("role_audit_log" as any)
+        .from("role_audit_log")
         .select(`
           *,
           user:organizers!role_audit_log_user_id_fkey(name),
@@ -144,7 +133,7 @@ export const RoleManagement: React.FC = () => {
         throw error;
       }
 
-      const logsWithNames = data?.map((log: any) => ({
+      const logsWithNames = data?.map(log => ({
         ...log,
         user_name: log.user?.name || "Usuário removido",
         changed_by_name: log.changed_by_user?.name || "Sistema"
@@ -167,7 +156,7 @@ export const RoleManagement: React.FC = () => {
       setUpdating(request.userId);
 
       // Call the secure function to assign role
-      const { error } = await supabase.rpc("is_admin_user" as any, {
+      const { data, error } = await supabase.rpc("assign_user_role", {
         user_id: request.userId,
         new_role: request.newRole
       });

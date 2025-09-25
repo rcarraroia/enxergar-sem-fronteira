@@ -3,13 +3,14 @@
  * ADMIN HEADER V2 - Header do painel administrativo
  */
 
-
+import React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Bell, 
   LogOut, 
+  Settings,
   User
 } from "lucide-react";
 
@@ -27,7 +28,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ title, actions }) => {
         <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-lg lg:text-xl font-semibold text-gray-900 truncate">
-              {title || "Enxergar sem Fronteiras"}
+              Enxergar sem Fronteiras
             </h1>
             <Badge variant="outline" className="hidden sm:inline-flex text-xs bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0">
               Admin V2

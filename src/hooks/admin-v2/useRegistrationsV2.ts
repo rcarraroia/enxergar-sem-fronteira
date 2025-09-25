@@ -58,28 +58,58 @@ export const useRegistrationsV2 = (filters: RegistrationFilters = {}) => {
       try {
         console.log("🔍 [Registrations V2] Buscando inscrições com filtros:", filters);
         
-        const { data: registrations, error } = await supabase
+        let query = supabase
           .from("registrations")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .select(`
+            *,
+            patients(nome, telefone, email),
+            events(title, location),
+            event_dates(date, start_time, end_time)
+          `);
+
+        // Aplicar filtros
+        if (filters.search) {
+          query = query.or(`patients.nome.ilike.%${filters.search}%,events.title.ilike.%${filters.search}%`);
+        }
+
+        if (filters.event_id) {
+          query = query.eq("event_id", filters.event_id);
+        }
+
+        if (filters.status) {
+          query = query.eq("status", filters.status);
+        }
+
+        if (filters.date_from) {
+          query = query.gte("event_dates.date", filters.date_from);
+        }
+
+        if (filters.date_to) {
+          query = query.lte("event_dates.date", filters.date_to);
+        }
+
+        // Ordenar por data de criação (mais recente primeiro)
+        query = query.order("created_at", { ascending: false });
+
+        const { data: registrations, error } = await query;
 
         if (error) {
           console.error("❌ [Registrations V2] Erro ao buscar inscrições:", error);
           throw error;
         }
 
-        // Processar dados das inscrições (simplificado)
-        const processedRegistrations: RegistrationV2[] = (registrations || []).map((registration: any) => ({
+        // Processar dados das inscrições
+        const processedRegistrations: RegistrationV2[] = (registrations || []).map(registration => ({
           id: registration.id,
           patient_id: registration.patient_id,
-          event_id: registration.event_date_id || registration.id,
+          event_id: registration.event_id,
           event_date_id: registration.event_date_id,
-          status: registration.status as "pending" | "confirmed" | "cancelled" | "attended",
+          status: registration.status,
           created_at: registration.created_at,
           updated_at: registration.updated_at,
-          patient: undefined,
-          event: undefined,
-          event_date: undefined
+          patient: registration.patients,
+          event: registration.events,
+          event_date: registration.event_dates
         }));
 
         console.log("📊 [Registrations V2] Inscrições carregadas:", processedRegistrations.length);

@@ -6,9 +6,11 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   ChevronLeft, 
   ChevronRight, 
+  Filter, 
   Loader2,
   MoreHorizontal,
   Search
@@ -151,7 +153,7 @@ export function DataTable<T extends { id: string }>({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((item, _rowIndex) => (
+                  {paginatedData.map((item, rowIndex) => (
                     <tr key={item.id} className="border-b hover:bg-muted/50">
                       {columns.map((column, colIndex) => {
                         const value = getValue(item, column.key as string);

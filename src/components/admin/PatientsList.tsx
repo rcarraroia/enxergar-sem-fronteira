@@ -273,7 +273,7 @@ export const PatientsList: React.FC = () => {
       <body>
         <div class="header">
           <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
-          <p>Gerado em: ${formatDate(new Date().toISOString().split("T")[0] || "")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+          <p>Gerado em: ${formatDate(new Date().toISOString().split("T")[0])} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
         </div>
         
         <div class="filters">
@@ -331,7 +331,7 @@ export const PatientsList: React.FC = () => {
                     ${patient.consentimento_lgpd ? "Aceito" : "Pendente"}
                   </span>
                 </td>
-                <td>${formatDate(patient.created_at?.split("T")[0] || "")}</td>
+                <td>${formatDate(patient.created_at.split("T")[0])}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -389,7 +389,7 @@ export const PatientsList: React.FC = () => {
           patient.data_nascimento ? `"${formatDate(patient.data_nascimento)}"` : '""',
           `"${patient.diagnostico || ""}"`,
           `"${patient.consentimento_lgpd ? "Sim" : "Não"}"`,
-          `"${formatDate(patient.created_at?.split("T")[0] || "")}"`,
+          `"${formatDate(patient.created_at.split("T")[0])}"`,
           `"${inscricoes}"`
         ].join(",");
       })
@@ -405,7 +405,7 @@ export const PatientsList: React.FC = () => {
     if (selectedCity !== "all") {fileName += `_${selectedCity}`;}
     if (selectedEvent !== "all") {fileName += "_evento";}
     if (selectedDate !== "all") {fileName += "_data";}
-    fileName += `_${formatDate(new Date().toISOString().split("T")[0] || "").replace(/\//g, "-")}.csv`;
+    fileName += `_${formatDate(new Date().toISOString().split("T")[0]).replace(/\//g, "-")}.csv`;
     
     link.setAttribute("download", fileName);
     link.style.visibility = "hidden";
@@ -644,7 +644,7 @@ export const PatientsList: React.FC = () => {
                         {patient.registrations.length === 0 ? (
                           <span className="text-xs text-muted-foreground">Nenhuma inscrição</span>
                         ) : (
-                          patient.registrations.slice(0, 2).map((reg, _index) => (
+                          patient.registrations.slice(0, 2).map((reg, index) => (
                             <div key={reg.id} className="text-xs space-y-1">
                               <div className="font-medium">{reg.event_date?.event?.title}</div>
                               <div className="text-muted-foreground flex items-center gap-1">
@@ -681,7 +681,7 @@ export const PatientsList: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {formatDate(patient.created_at?.split("T")[0] || "")}
+                        {formatDate(patient.created_at.split("T")[0])}
                       </div>
                     </TableCell>
                     <TableCell>
