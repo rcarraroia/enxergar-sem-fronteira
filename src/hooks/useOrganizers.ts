@@ -56,7 +56,7 @@ export const useOrganizers = () => {
 
           return {
             ...org,
-            status: ["active", "inactive", "pending"].includes(org.status) 
+            status: ["active", "inactive", "pending"].includes(org.status || "") 
               ? org.status as "active" | "inactive" | "pending"
               : "active" as const,
             events_count: count || 0
