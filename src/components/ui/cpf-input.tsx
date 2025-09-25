@@ -12,7 +12,6 @@ export const CPFInput = forwardRef<HTMLInputElement, CPFInputProps>(
   ({ value = "", onChange, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const cleanValue = cleanCPF(e.target.value);
-      const formattedValue = formatCPF(cleanValue);
       onChange?.(cleanValue); // Sempre retorna o valor limpo para o formulário
     };
 

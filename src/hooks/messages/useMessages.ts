@@ -18,8 +18,6 @@ import type {
 } from "@/types/messages";
 import { messageService } from "@/services/messages/MessageService";
 
-// Tipos temporários para contornar problema de tipos não atualizados
-type SupabaseClient = typeof supabase
 
 // =====================================================
 // HOOKS PARA MENSAGENS
@@ -314,7 +312,7 @@ export const useMessageStats = (dateRange?: { from: string, to: string }) => {
     queryKey: ["message-stats", dateRange],
     queryFn: async (): Promise<MessageStats> => {
       try {
-        const { data, error } = await (supabase as any)
+        const { error } = await (supabase as any)
           .from("messages")
           .select("channel, status, recipient_type");
 

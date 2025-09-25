@@ -30,90 +30,27 @@ export const useOrganizersV2 = (filters: OrganizerFilters = {}) => {
       try {
         console.log("🔍 [Organizers V2] Buscando organizadores com filtros:", filters);
         
-        // Buscar organizadores da tabela organizers
-        let query = supabase
+        // Buscar organizadores da tabela organizers (simplificado)
+        const { data: organizers, error } = await supabase
           .from("organizers")
-          .select(`
-            id,
-            name,
-            email,
-            phone,
-            city,
-            created_at
-          `);
-
-        // Aplicar filtros
-        if (filters.search) {
-          query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
-        }
-
-        if (filters.cidade) {
-          query = query.eq("city", filters.cidade);
-        }
-
-        // Ordenar por nome
-        query = query.order("name", { ascending: true });
-
-        const { data: organizers, error } = await query;
+          .select("id, name, email, phone, organization, created_at");
 
         if (error) {
           console.error("❌ [Organizers V2] Erro ao buscar organizadores:", error);
-          
-          // Se a tabela organizers não existir, tentar buscar da tabela events os organizadores únicos
-          console.log("🔄 [Organizers V2] Tentando buscar organizadores da tabela events...");
-          
-          const { data: events, error: eventsError } = await supabase
-            .from("events")
-            .select("organizer_id, organizer_name, organizer_email, organizer_phone, city, created_at")
-            .not("organizer_id", "is", null);
-
-          if (eventsError) {
-            console.error("❌ [Organizers V2] Erro ao buscar da tabela events:", eventsError);
-            return [];
-          }
-
-          // Extrair organizadores únicos dos eventos
-          const uniqueOrganizers = events?.reduce((acc: any[], event) => {
-            const existing = acc.find(org => org.id === event.organizer_id);
-            if (!existing && event.organizer_id) {
-              acc.push({
-                id: event.organizer_id,
-                nome: event.organizer_name || "N/A",
-                email: event.organizer_email || "N/A",
-                telefone: event.organizer_phone || "N/A",
-                cidade: event.city,
-                status: "active" as const,
-                created_at: event.created_at,
-                total_events: events.filter(e => e.organizer_id === event.organizer_id).length
-              });
-            }
-            return acc;
-          }, []) || [];
-
-          console.log("📊 [Organizers V2] Organizadores extraídos dos eventos:", uniqueOrganizers.length);
-          return uniqueOrganizers.sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+          return [];
         }
 
-        // Para cada organizador, buscar quantos eventos ele criou
-        const organizersWithStats = await Promise.all(
-          (organizers || []).map(async (organizer) => {
-            const { data: events } = await supabase
-              .from("events")
-              .select("id")
-              .eq("organizer_id", organizer.id);
-
-            return {
-              id: organizer.id,
-              nome: organizer.name || "N/A",
-              email: organizer.email || "N/A",
-              telefone: organizer.phone || "N/A",
-              cidade: organizer.city,
-              status: "active" as const,
-              created_at: organizer.created_at,
-              total_events: events?.length || 0
-            };
-          })
-        );
+        // Processar dados básicos
+        const organizersWithStats: OrganizerV2[] = (organizers || []).map((organizer: any) => ({
+          id: organizer.id,
+          nome: organizer.name || "N/A",
+          email: organizer.email || "N/A",
+          telefone: organizer.phone || "N/A",
+          cidade: organizer.organization || "N/A",
+          status: "active" as const,
+          created_at: organizer.created_at,
+          total_events: 0
+        }));
 
         console.log("📊 [Organizers V2] Organizadores carregados:", organizersWithStats.length);
         return organizersWithStats;

@@ -43,7 +43,7 @@ const determineUserRole = async (user: User): Promise<"admin" | "organizer" | "u
     }
 
     if (organizerData) {
-      const role = organizerData.role || "organizer"; // Default para organizer se role não estiver definido
+      const role = (organizerData as any).role || "organizer"; // Default para organizer se role não estiver definido
       console.log("🔐 Usuário identificado via tabela organizers - Role:", role);
 
       // Mapear roles do banco para roles do frontend

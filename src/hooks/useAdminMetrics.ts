@@ -117,7 +117,7 @@ export const useAdminMetrics = () => {
         const occupancyRate = totalSlots > 0 ? Math.round((occupiedSlots / totalSlots) * 100) : 0;
 
         // CORREÇÃO: Taxa de crescimento real baseada em dados históricos
-        const previousWeekRegistrations = totalRegistrations - (thisWeekRegistrations || 0);
+        const previousWeekRegistrations = (totalRegistrations || 0) - (thisWeekRegistrations || 0);
         const growthRate = previousWeekRegistrations > 0 
           ? Math.round(((thisWeekRegistrations || 0) / previousWeekRegistrations) * 100)
           : (thisWeekRegistrations || 0) > 0 ? 100 : 0;
@@ -133,9 +133,10 @@ export const useAdminMetrics = () => {
         const whatsappTemplates = templates?.filter(t => t.type === "whatsapp").length || 0;
         
         // Find most recent template update
-        const templatesLastUpdated = templates?.length > 0 
+        const templatesLastUpdated = templates && templates.length > 0 && templates[0]?.updated_at
           ? templates.reduce((latest, template) => {
-              return new Date(template.updated_at) > new Date(latest) ? template.updated_at : latest;
+              if (!template?.updated_at) return latest;
+              return new Date(template.updated_at) > new Date(latest || "") ? template.updated_at : latest;
             }, templates[0].updated_at)
           : undefined;
 
@@ -162,7 +163,7 @@ export const useAdminMetrics = () => {
           activeTemplates,
           emailTemplates,
           whatsappTemplates,
-          templatesLastUpdated
+          templatesLastUpdated: templatesLastUpdated || undefined
         };
 
         console.log("📊 Métricas carregadas:", metrics);

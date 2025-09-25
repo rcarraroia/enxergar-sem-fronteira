@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { 

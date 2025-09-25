@@ -133,14 +133,22 @@ export const useEventsV2 = (filters: EventFilters = {}) => {
             location: event.location,
             address: event.address,
             city: event.city,
-            status: event.status,
+            status: event.status as "open" | "closed" | "full" | "cancelled",
             organizer_id: event.organizer_id,
             created_at: event.created_at,
             updated_at: event.updated_at,
             total_slots: totalSlots,
             occupied_slots: occupiedSlots,
             occupancy_rate: occupancyRate,
-            upcoming_dates: eventDates.slice(0, 3) // Próximas 3 datas
+            upcoming_dates: eventDates.slice(0, 3).map((date: any) => ({
+              id: date.id,
+              event_id: event.id,
+              date: date.date,
+              start_time: date.start_time,
+              end_time: date.end_time,
+              total_slots: date.total_slots,
+              available_slots: date.available_slots
+            }))
           };
         });
 
@@ -251,14 +259,22 @@ export const useEventV2 = (eventId: string) => {
           location: event.location,
           address: event.address,
           city: event.city,
-          status: event.status,
+          status: event.status as "open" | "closed" | "full" | "cancelled",
           organizer_id: event.organizer_id,
           created_at: event.created_at,
           updated_at: event.updated_at,
           total_slots: totalSlots,
           occupied_slots: occupiedSlots,
           occupancy_rate: occupancyRate,
-          upcoming_dates: eventDates
+          upcoming_dates: eventDates.map(date => ({
+            id: date.id,
+            event_id: eventId,
+            date: date.date,
+            start_time: date.start_time,
+            end_time: date.end_time,
+            total_slots: date.total_slots,
+            available_slots: date.available_slots
+          }))
         };
 
         console.log("✅ [Events V2] Evento carregado:", processedEvent.title);
