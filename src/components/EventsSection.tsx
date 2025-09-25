@@ -133,7 +133,7 @@ const EventsSection = () => {
         </div>
 
         {expandedEvents && expandedEvents.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {expandedEvents.slice(0, 4).map((expandedEvent, index) => {
               // Usar a data específica do evento expandido
               const eventDate = expandedEvent.currentDate;
