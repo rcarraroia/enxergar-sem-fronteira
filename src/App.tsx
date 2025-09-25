@@ -22,7 +22,7 @@ import Registration from "./pages/Registration";
 // ADMIN V2 - Nova versão reconstruída
 import "./App.css";
 import AdminCampaignsV2 from "./pages/admin-v2/Campaigns";
-import AdminChatV2 from "./pages/admin-v2/Chat/index";
+// import AdminChatV2 from "./pages/admin-v2/Chat/index";
 import AdminDashboardV2 from "./pages/admin-v2/Dashboard/simple";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
 import AdminEventsV2 from "./pages/admin-v2/Events";
@@ -36,7 +36,7 @@ import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminSyncV2 from "./pages/admin-v2/Sync";
-import BulkMessagingPage from "./pages/BulkMessagingPage";
+// import BulkMessagingPage from "./pages/BulkMessagingPage";
 import Cookies from "./pages/Cookies";
 import LGPD from "./pages/LGPD";
 import NotFound from "./pages/NotFound";
@@ -184,16 +184,16 @@ function App() {
                   <AdminMessagesV2 />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/bulk-messaging" element={
+              {/* <Route path="/admin/bulk-messaging" element={
                 <ProtectedRoute requireAdmin={true}>
                   <BulkMessagingPage />
                 </ProtectedRoute>
-              } />
-              <Route path="/admin/chat" element={
+              } /> */}
+              {/* <Route path="/admin/chat" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminChatV2 />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/admin/campaigns" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminCampaignsV2 />
@@ -261,11 +261,11 @@ function App() {
                   <AdminMessagesV2 />
                 </ProtectedRoute>
               } />
-              <Route path="/admin-v2/bulk-messaging" element={
+              {/* <Route path="/admin-v2/bulk-messaging" element={
                 <ProtectedRoute requireAdmin={true}>
                   <BulkMessagingPage />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/admin-v2/campaigns" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminCampaignsV2 />

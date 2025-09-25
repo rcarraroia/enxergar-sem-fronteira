@@ -12,20 +12,6 @@ const EventsSection = () => {
   const { data: events, isLoading, refetch, isFetching } = useEvents();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detectar se é mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      console.log(`📱 Dispositivo detectado: ${mobile ? 'MOBILE' : 'DESKTOP'} (${window.innerWidth}px)`);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const getStatusInfo = (availableSlots: number, totalSlots: number) => {
     if (availableSlots === 0) {
@@ -161,7 +147,7 @@ const EventsSection = () => {
         </div>
 
         {expandedEvents && expandedEvents.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {expandedEvents.slice(0, 4).map((expandedEvent, index) => {
               // Usar a data específica do evento expandido
               const eventDate = expandedEvent.currentDate;
