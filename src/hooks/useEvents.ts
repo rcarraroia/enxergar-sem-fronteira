@@ -141,7 +141,6 @@ export const useEvents = () => {
           // Filtrar apenas datas futuras (>= hoje)
           const futureDates = updatedEventDates.filter(eventDate => {
             const isFuture = eventDate.date >= (today || "");
-            console.log(`🗓️ Verificando data ${eventDate.date}: ${isFuture ? 'FUTURA' : 'PASSADA'} (comparando com ${today})`);
             if (!isFuture) {
               console.log(`🗓️ Filtrado evento passado: ${eventDate.date}`);
             }
@@ -160,7 +159,6 @@ export const useEvents = () => {
       // Filtrar eventos que têm pelo menos uma data futura
       const eventsWithFutureDates = eventsWithUpdatedSlots.filter(event => {
         const hasFutureDates = event.event_dates.length > 0;
-        console.log(`🎯 Evento ${event.city}: ${event.event_dates.length} datas futuras`);
         if (!hasFutureDates) {
           console.log(`🚫 Evento ${event.city} removido - todas as datas são passadas`);
         }

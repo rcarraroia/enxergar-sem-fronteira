@@ -1,0 +1,439 @@
+/**
+ * SERVIÇO PRINCIPAL DO MÓDULO DE MENSAGENS
+ * Responsável por orquestrar o envio de mensagens multi-canal
+ */
+
+import { supabase } from "@/integrations/supabase/client";
+import type {
+  AutomationRule,
+  BulkSendData,
+  Message,
+  MessageTemplate,
+  SendMessageData,
+  TriggerEvent
+} from "@/types/messages";
+import { EmailProvider } from "./providers/EmailProvider";
+import { SMSProvider } from "./providers/SMSProvider";
+import { TemplateProcessor } from "./TemplateProcessor";
+
+export class MessageService {
+  private emailProvider: EmailProvider;
+  private smsProvider: SMSProvider;
+  private templateProcessor: TemplateProcessor;
+  private messageMemory: Map<string, any> = new Map(); // Armazenamento temporário
+
+  constructor() {
+    this.emailProvider = new EmailProvider();
+    this.smsProvider = new SMSProvider();
+    this.templateProcessor = new TemplateProcessor();
+  }
+
+  /**
+   * Envia uma mensagem individual
+   */
+  async sendMessage(data: SendMessageData): Promise<string> {
+    try {
+      console.log("📤 [MessageService] Enviando mensagem:", data.channel, data.recipient_contact);
+
+      // Processar template se fornecido
+      let processedContent = data.content || "";
+      let processedSubject = data.subject;
+
+      if (data.template_id) {
+        const template = await this.getTemplate(data.template_id);
+        if (template) {
+          processedContent = this.templateProcessor.process(template.content, data.variables || {});
+          if (template.subject) {
+            processedSubject = this.templateProcessor.process(template.subject, data.variables || {});
+          }
+        }
+      }
+
+      // Por enquanto, simular criação até tabela messages ser criada
+      console.log("⚠️ [MessageService] Simulando criação de mensagem (tabela não existe)");
+      const messageId = `msg_${Date.now()}`;
+      const message = {
+        id: messageId,
+        channel: data.channel,
+        recipient_type: data.recipient_type,
+        recipient_id: data.recipient_id,
+        recipient_contact: data.recipient_contact,
+        subject: processedSubject,
+        content: processedContent,
+        template_id: data.template_id,
+        variables: data.variables || {},
+        context: data.context || {},
+        scheduled_for: data.scheduled_for,
+        status: data.scheduled_for ? "pending" : "pending",
+        created_at: new Date().toISOString()
+      };
+
+      // Armazenar temporariamente na memória
+      this.messageMemory.set(messageId, message);
+
+      // Se não é agendada, enviar imediatamente
+      if (!data.scheduled_for) {
+        await this.processMessage(message.id);
+      }
+
+      console.log("✅ [MessageService] Mensagem criada:", message.id);
+      return message.id;
+
+    } catch (error) {
+      console.error("❌ [MessageService] Erro crítico ao enviar mensagem:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envia mensagens em massa
+   */
+  async sendBulkMessages(data: BulkSendData): Promise<string[]> {
+    try {
+      console.log("📤 [MessageService] Enviando mensagens em massa:", data.recipients.length);
+
+      let processedContent = data.content;
+      let processedSubject = data.subject;
+
+      // Se tem template, processar
+      if (data.template_id) {
+        const template = await this.getTemplate(data.template_id);
+        if (template) {
+          processedContent = template.content;
+          processedSubject = template.subject;
+        }
+      }
+
+      const messageIds: string[] = [];
+
+      // Processar cada destinatário
+      for (const recipient of data.recipients) {
+        // Processar variáveis no conteúdo
+        const finalContent = this.templateProcessor.process(
+          processedContent,
+          recipient.variables || {}
+        );
+
+        let finalSubject: string | undefined;
+        if (processedSubject) {
+          finalSubject = this.templateProcessor.process(
+            processedSubject,
+            recipient.variables || {}
+          );
+        }
+
+        // Por enquanto, simular criação até tabela messages ser criada
+        console.log("⚠️ [MessageService] Simulando criação de mensagem em massa (tabela não existe)");
+        const messageId = `bulk_msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const message = {
+          id: messageId,
+          channel: data.channel,
+          recipient_type: data.recipient_type,
+          recipient_contact: recipient.contact,
+          subject: finalSubject,
+          content: finalContent,
+          template_id: data.template_id,
+          variables: recipient.variables || {},
+          context: data.context || {},
+          scheduled_for: data.scheduled_for,
+          status: data.scheduled_for ? "pending" : "pending",
+          created_at: new Date().toISOString()
+        };
+
+        // Armazenar temporariamente na memória
+        this.messageMemory.set(messageId, message);
+        messageIds.push(messageId);
+
+        // Se não é agendada, enviar imediatamente
+        if (!data.scheduled_for) {
+          try {
+            await this.processMessage(messageId);
+          } catch (error) {
+            console.error("❌ [MessageService] Erro ao processar mensagem em massa:", messageId, error);
+            // Continua com as outras mensagens
+          }
+        }
+      }
+
+      console.log("✅ [MessageService] Mensagens em massa criadas:", messageIds.length);
+      return messageIds;
+
+    } catch (error) {
+      console.error("❌ [MessageService] Erro crítico no envio em massa:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Processa uma mensagem específica (envia efetivamente)
+   */
+  async processMessage(messageId: string): Promise<void> {
+    try {
+      console.log("🔄 [MessageService] Processando mensagem:", messageId);
+
+      // Por enquanto, simular processamento (tabela messages não existe)
+      console.log("⚠️ [MessageService] Simulando processamento de mensagem (tabela não existe)");
+
+      // Extrair dados reais da mensagem do messageId (que contém informações)
+      // Buscar na memória temporária ou usar dados do contexto
+      const messageData = this.getMessageFromMemory(messageId);
+
+      const message = {
+        id: messageId,
+        channel: messageData?.channel || "email",
+        recipient_contact: messageData?.recipient_contact || "test@example.com",
+        subject: messageData?.subject || "Teste",
+        content: messageData?.content || "Mensagem de teste",
+        status: "pending"
+      };
+
+      // Enviar através do provedor apropriado
+      let result: any;
+
+      switch (message.channel) {
+        case "email":
+          result = await this.emailProvider.send({
+            to: message.recipient_contact,
+            subject: message.subject || "Mensagem",
+            content: message.content
+          });
+          break;
+
+        case "sms":
+          result = await this.smsProvider.send({
+            to: message.recipient_contact,
+            content: message.content
+          });
+          break;
+
+        default:
+          throw new Error(`Canal não suportado: ${message.channel}`);
+      }
+
+      // Por enquanto, apenas logar o sucesso (tabela messages não existe)
+      console.log("✅ [MessageService] Simulando atualização de status para sent");
+      console.log("Resposta do provedor:", result);
+
+      // Simular criação de log
+      console.log("📝 [MessageService] Simulando criação de log");
+
+      console.log("✅ [MessageService] Mensagem enviada:", messageId);
+
+    } catch (error) {
+      console.error("❌ [MessageService] Erro ao processar mensagem:", messageId, error);
+
+      // Por enquanto, apenas logar o erro (tabela messages não existe)
+      console.log("⚠️ [MessageService] Simulando atualização de erro (tabela não existe)");
+      console.log("Erro simulado:", error instanceof Error ? error.message : "Erro desconhecido");
+
+      // Simular criação de log de erro
+      console.log("📝 [MessageService] Simulando criação de log de erro");
+
+      throw error;
+    }
+  }
+
+  /**
+   * Processa mensagens agendadas
+   */
+  async processScheduledMessages(): Promise<void> {
+    try {
+      console.log("⏰ [MessageService] Processando mensagens agendadas");
+
+      const { data: messages, error } = await supabase
+        .from("messages")
+        .select("id")
+        .eq("status", "pending")
+        .not("scheduled_for", "is", null)
+        .lte("scheduled_for", new Date().toISOString())
+        .limit(50); // Processar em lotes
+
+      if (error) {
+        console.error("❌ [MessageService] Erro ao buscar mensagens agendadas:", error);
+        return;
+      }
+
+      if (!messages || messages.length === 0) {
+        console.log("📭 [MessageService] Nenhuma mensagem agendada para processar");
+        return;
+      }
+
+      console.log(`📤 [MessageService] Processando ${messages.length} mensagens agendadas`);
+
+      // Processar cada mensagem
+      for (const message of messages) {
+        try {
+          await this.processMessage(message.id);
+        } catch (error) {
+          console.error("❌ [MessageService] Erro ao processar mensagem agendada:", message.id, error);
+          // Continua com as outras mensagens
+        }
+      }
+
+    } catch (error) {
+      console.error("❌ [MessageService] Erro crítico ao processar mensagens agendadas:", error);
+    }
+  }
+
+  /**
+   * Dispara automação baseada em evento
+   */
+  async triggerAutomation(event: TriggerEvent, context: Record<string, any>): Promise<void> {
+    try {
+      console.log("🤖 [MessageService] Disparando automação:", event, context);
+
+      // Buscar regras ativas para o evento
+      const { data: rules, error } = await supabase
+        .from("automation_rules")
+        .select(`
+          *,
+          template:message_templates(*)
+        `)
+        .eq("trigger_event", event)
+        .eq("is_active", true);
+
+      if (error) {
+        console.error("❌ [MessageService] Erro ao buscar regras de automação:", error);
+        return;
+      }
+
+      if (!rules || rules.length === 0) {
+        console.log("📭 [MessageService] Nenhuma regra de automação encontrada para:", event);
+        return;
+      }
+
+      console.log(`🤖 [MessageService] Encontradas ${rules.length} regras para o evento:`, event);
+
+      // Processar cada regra
+      for (const rule of rules) {
+        try {
+          // Verificar condições (se houver)
+          if (rule.conditions && Object.keys(rule.conditions).length > 0) {
+            const conditionsMet = this.checkConditions(rule.conditions, context);
+            if (!conditionsMet) {
+              console.log("⚠️ [MessageService] Condições não atendidas para regra:", rule.name);
+              continue;
+            }
+          }
+
+          // Calcular quando enviar (delay)
+          let scheduledFor: string | undefined;
+          if (rule.delay_minutes > 0) {
+            const sendTime = new Date();
+            sendTime.setMinutes(sendTime.getMinutes() + rule.delay_minutes);
+            scheduledFor = sendTime.toISOString();
+          }
+
+          // Determinar destinatário baseado no contexto
+          const recipientData = this.extractRecipientFromContext(context);
+          if (!recipientData) {
+            console.error("❌ [MessageService] Não foi possível extrair destinatário do contexto");
+            continue;
+          }
+
+          // Enviar mensagem
+          await this.sendMessage({
+            channel: rule.template.channel,
+            recipient_type: recipientData.type,
+            recipient_id: recipientData.id,
+            recipient_contact: recipientData.contact,
+            template_id: rule.template_id,
+            variables: context,
+            context: { ...context, automation_rule_id: rule.id },
+            scheduled_for: scheduledFor
+          });
+
+          console.log("✅ [MessageService] Automação disparada:", rule.name);
+
+        } catch (error) {
+          console.error("❌ [MessageService] Erro ao processar regra de automação:", rule.name, error);
+          // Continua com as outras regras
+        }
+      }
+
+    } catch (error) {
+      console.error("❌ [MessageService] Erro crítico na automação:", error);
+    }
+  }
+
+  /**
+   * Métodos auxiliares privados
+   */
+  private async getTemplate(templateId: string): Promise<MessageTemplate | null> {
+    try {
+      const { data, error } = await supabase
+        .from("message_templates")
+        .select("*")
+        .eq("id", templateId)
+        .eq("is_active", true)
+        .single();
+
+      if (error) {
+        console.error("❌ [MessageService] Erro ao buscar template:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("❌ [MessageService] Erro crítico ao buscar template:", error);
+      return null;
+    }
+  }
+
+  private async createLog(messageId: string, eventType: string, eventData: any): Promise<void> {
+    // Por enquanto, apenas logar (tabela message_logs não existe)
+    console.log("📝 [MessageService] Log simulado:", { messageId, eventType, eventData });
+  }
+
+  private checkConditions(conditions: Record<string, any>, context: Record<string, any>): boolean {
+    // Implementação simples de verificação de condições
+    // Pode ser expandida conforme necessário
+    for (const [key, expectedValue] of Object.entries(conditions)) {
+      if (context[key] !== expectedValue) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private getMessageFromMemory(messageId: string): any {
+    return this.messageMemory.get(messageId);
+  }
+
+  private extractRecipientFromContext(context: Record<string, any>): {
+    type: any
+    id?: string
+    contact: string
+  } | null {
+    // Extrair dados do destinatário baseado no contexto
+    if (context.patient_email) {
+      return {
+        type: "patient",
+        id: context.patient_id,
+        contact: context.patient_email
+      };
+    }
+
+    if (context.promoter_email) {
+      return {
+        type: "promoter",
+        id: context.promoter_id,
+        contact: context.promoter_email
+      };
+    }
+
+    if (context.donor_email) {
+      return {
+        type: "donor",
+        id: context.donor_id,
+        contact: context.donor_email
+      };
+    }
+
+    return null;
+  }
+}
+
+// Instância singleton
+export const messageService = new MessageService();

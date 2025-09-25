@@ -12,7 +12,7 @@ import { formatDate, formatTime } from "@/utils/timeFormat";
 const EventSelection = () => {
   const navigate = useNavigate();
   const { data: events, isLoading } = useEvents();
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(null);
 
   const handleDateSelection = (eventId: string, eventDateId: string) => {
     console.log("📅 Data selecionada:", { eventId, eventDateId });
