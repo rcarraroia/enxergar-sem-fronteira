@@ -314,5 +314,4 @@ export const useOrganizerRegistrations = () => {
     sendBulkNotification,
     getRegistrationStats
   };
->>>>>>> c5d9dbff0fd160efc8ff88bdc97ca917f2be06c1
 };
