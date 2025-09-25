@@ -13,7 +13,6 @@ import {
   AlertTriangle, 
   RefreshCw, 
   Wifi, 
-  WifiOff,
   XCircle,
   Info,
   ExternalLink
