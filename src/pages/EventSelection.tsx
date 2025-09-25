@@ -1,28 +1,24 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useEvents } from "@/hooks/useEvents";
-import Header from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, Clock, Loader2, MapPin, Users } from "lucide-react";
-import { formatDate, formatTime } from "@/utils/timeFormat";
+import { Footer } from '@/components/Footer';
+import Header from '@/components/Header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEvents } from '@/hooks/useEvents';
+import { formatDate, formatTime } from '@/utils/timeFormat';
+import { ArrowRight, Calendar, Clock, Loader2, MapPin, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const EventSelection = () => {
   const navigate = useNavigate();
   const { data: events, isLoading } = useEvents();
-  const [selectedEventDateId, setSelectedEventDateId] = useState<string | null>(null);
-
   const handleDateSelection = (eventId: string, eventDateId: string) => {
-    console.log("📅 Data selecionada:", { eventId, eventDateId });
     navigate(`/registro?eventId=${eventId}&eventDateId=${eventDateId}`);
   };
 
   const formatWeekday = (dateString: string) => {
-    const date = new Date(`${dateString  }T00:00:00`);
-    return date.toLocaleDateString("pt-BR", {
-      weekday: "long"
+    const date = new Date(`${dateString}T00:00:00`);
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long',
     });
   };
 
@@ -51,9 +47,7 @@ const EventSelection = () => {
             <p className="text-muted-foreground mb-8">
               Não há eventos abertos para inscrição no momento.
             </p>
-            <Button onClick={() => navigate("/")}>
-              Voltar ao Início
-            </Button>
+            <Button onClick={() => navigate('/')}>Voltar ao Início</Button>
           </div>
         </main>
         <Footer />
@@ -64,7 +58,7 @@ const EventSelection = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -75,7 +69,7 @@ const EventSelection = () => {
           </div>
 
           <div className="space-y-6">
-            {events.map((event) => (
+            {events.map(event => (
               <Card key={event.id} className="overflow-hidden">
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -85,70 +79,75 @@ const EventSelection = () => {
                         <MapPin className="h-4 w-4" />
                         <span>{event.location}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {event.address}
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{event.address}</p>
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent>
                   <div className="space-y-4">
                     <h3 className="font-semibold">Datas Disponíveis:</h3>
-                    
+
                     <div className="grid gap-3">
-                      {event.event_dates.map((eventDate) => {
+                      {event.event_dates.map(eventDate => {
                         const isAvailable = eventDate.available_slots > 0;
-                        const occupancyPercentage = eventDate.total_slots > 0 
-                          ? ((eventDate.total_slots - eventDate.available_slots) / eventDate.total_slots) * 100 
-                          : 0;
+                        const occupancyPercentage =
+                          eventDate.total_slots > 0
+                            ? ((eventDate.total_slots - eventDate.available_slots) /
+                                eventDate.total_slots) *
+                              100
+                            : 0;
 
                         return (
                           <div
                             key={eventDate.id}
                             className={`p-4 border rounded-lg transition-all ${
-                              isAvailable 
-                                ? "border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10" 
-                                : "border-gray-200 bg-gray-50 opacity-60"
+                              isAvailable
+                                ? 'border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10'
+                                : 'border-gray-200 bg-gray-50 opacity-60'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-4">
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">
-                                      {formatDate(eventDate.date)}
-                                    </span>
-                                    <span className="text-sm text-muted-foreground capitalize">
-                                      ({formatWeekday(eventDate.date)})
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-primary" />
-                                    <span className="text-sm">
-                                      {formatTime(eventDate.start_time)} - {formatTime(eventDate.end_time)}
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center gap-4">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-secondary" />
-                                    <span className="text-sm">
-                                      {eventDate.available_slots} vagas disponíveis
-                                    </span>
-                                  </div>
-                                  
-                                  <Badge variant={isAvailable ? "default" : "secondary"}>
-                                    {isAvailable ? "Inscrições Abertas" : "Lotado"}
-                                  </Badge>
+                            <div className="space-y-3">
+                              {/* Data e horário */}
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-primary" />
+                                  <span className="font-medium">{formatDate(eventDate.date)}</span>
+                                  <span className="text-sm text-muted-foreground capitalize">
+                                    ({formatWeekday(eventDate.date)})
+                                  </span>
                                 </div>
 
-                                {/* Progress bar */}
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-primary" />
+                                  <span className="text-sm">
+                                    {formatTime(eventDate.start_time)} -{' '}
+                                    {formatTime(eventDate.end_time)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Vagas e status */}
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-secondary" />
+                                  <span className="text-sm">
+                                    {eventDate.available_slots} vagas disponíveis
+                                  </span>
+                                </div>
+
+                                <Badge
+                                  variant={isAvailable ? 'default' : 'secondary'}
+                                  className="w-fit"
+                                >
+                                  {isAvailable ? 'Inscrições Abertas' : 'Lotado'}
+                                </Badge>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="space-y-1">
                                 <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
+                                  <div
                                     className="bg-primary h-2 rounded-full transition-all duration-500"
                                     style={{ width: `${occupancyPercentage}%` }}
                                   ></div>
@@ -157,21 +156,25 @@ const EventSelection = () => {
                                   {occupancyPercentage.toFixed(0)}% preenchido
                                 </p>
                               </div>
-                              
-                              <Button
-                                onClick={() => handleDateSelection(event.id, eventDate.id)}
-                                disabled={!isAvailable}
-                                className="ml-4"
-                              >
-                                {isAvailable ? (
-                                  <>
-                                    Inscrever-se
-                                    <ArrowRight className="h-4 w-4 ml-2" />
-                                  </>
-                                ) : (
-                                  "Lotado"
-                                )}
-                              </Button>
+
+                              {/* Botão de inscrição */}
+                              <div className="pt-2">
+                                <Button
+                                  onClick={() => handleDateSelection(event.id, eventDate.id)}
+                                  disabled={!isAvailable}
+                                  className="w-full sm:w-auto"
+                                  size="default"
+                                >
+                                  {isAvailable ? (
+                                    <>
+                                      Inscrever-se
+                                      <ArrowRight className="h-4 w-4 ml-2" />
+                                    </>
+                                  ) : (
+                                    'Lotado'
+                                  )}
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );
