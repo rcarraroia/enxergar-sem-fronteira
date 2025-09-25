@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +14,6 @@ import { useNavigate } from "react-router-dom";
 export const NotificationTemplatesCard = () => {
   const navigate = useNavigate();
   
-  // Versão simplificada para evitar erros de hooks
-  const templates: any[] = [];
-
   const handleManageAll = () => {
     navigate("/admin/settings?tab=templates");
   };

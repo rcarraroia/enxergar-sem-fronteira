@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +19,12 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-import { Copy, Edit, ExternalLink, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, MoreHorizontal, Pause, Play, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const CampaignsList = () => {
   const { campaigns, isLoading, updateCampaign, deleteCampaign } = useCampaigns();
+  const list = campaigns || [];
 
   const handleCopyLink = (slug: string) => {
     const url = `${window.location.origin}/campanha/${slug}`;
@@ -99,7 +100,7 @@ export const CampaignsList = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {campaigns.length === 0 ? (
+        {list.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             Nenhuma campanha criada ainda
           </div>
@@ -117,7 +118,7 @@ export const CampaignsList = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {campaigns.map((campaign) => (
+                {list.map((campaign) => (
                   <TableRow key={campaign.id}>
                     <TableCell>
                       <div>

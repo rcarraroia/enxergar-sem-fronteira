@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useEventsAdmin } from "@/hooks/useEventsAdmin";
 import { useAsaasPayment } from "@/hooks/useAsaasPayment";
 import { Button } from "@/components/ui/button";
@@ -60,8 +60,6 @@ export const PaymentForm = () => {
       console.error("Erro ao criar pagamento:", error);
     }
   };
-
-  const selectedEvent = events?.find(e => e.id === formData.eventId);
 
   return (
     <Card>

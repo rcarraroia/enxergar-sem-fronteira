@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Settings, User } from "lucide-react";
@@ -103,7 +103,7 @@ const Header = () => {
                 {(isAdmin || isOrganizer) && (
                   <Button variant="outline" size="sm" asChild>
                     <Link to={getDashboardLink()}>
-                      {isAdmin ? <Settings className="h-4 w-4 mr-2" /> : <User className="h-4 w-4 mr-2" />}
+                       {isAdmin ? <Settings className="h-4 w-4 mr-2" /> : <User className="h-4 w-4 mr-2" />}
                       {getDashboardLabel()}
                     </Link>
                   </Button>

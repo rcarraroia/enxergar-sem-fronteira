@@ -7,7 +7,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useBulkMessaging } from "@/hooks/useBulkMessaging";
 import { supabase } from "@/integrations/supabase/client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -100,10 +100,10 @@ export const QuickBulkSender: React.FC = () => {
 
       if (eventsError) {throw eventsError;}
 
-      const processedEvents = eventsData?.map(event => ({
+      const processedEvents = ((eventsData as any[]) || []).map((event: any) => ({
         ...event,
         registrations_count: event.registrations?.[0]?.count || 0
-      })) || [];
+      }));
 
       setEvents(processedEvents);
 
@@ -116,7 +116,7 @@ export const QuickBulkSender: React.FC = () => {
 
       if (templatesError) {throw templatesError;}
 
-      setTemplates(templatesData || []);
+      setTemplates((templatesData as any[]) || []);
 
     } catch (error) {
       console.error("Erro ao carregar dados:", error);

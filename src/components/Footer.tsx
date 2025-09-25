@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 export const Footer = () => {

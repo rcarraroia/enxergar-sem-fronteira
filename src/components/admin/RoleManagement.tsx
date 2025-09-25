@@ -13,7 +13,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -108,7 +108,18 @@ export const RoleManagement: React.FC = () => {
         throw error;
       }
 
-      setOrganizers(data || []);
+      const mapped = (data || []).map((o: any) => ({
+        id: o.id,
+        name: o.name || o.email,
+        email: o.email,
+        role: (o.role as "admin" | "organizer" | "viewer") || "organizer",
+        status: (o.status as "active" | "inactive" | "pending") || "active",
+        created_at: o.created_at,
+        updated_at: o.updated_at,
+        last_login: o.last_login || undefined,
+      }));
+
+      setOrganizers(mapped);
     } catch (error) {
       console.error("Erro ao carregar organizadores:", error);
       toast.error("Erro ao carregar lista de usuários");
@@ -120,7 +131,7 @@ export const RoleManagement: React.FC = () => {
   const loadAuditLogs = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("role_audit_log")
+        .from("role_audit_log" as any)
         .select(`
           *,
           user:organizers!role_audit_log_user_id_fkey(name),

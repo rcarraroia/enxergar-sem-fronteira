@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Award, Clock, Eye, Globe, Heart, Shield, Stethoscope, Users } from "lucide-react";
+import { Clock, Eye, Globe, Heart, Shield } from "lucide-react";
 
 const AboutSection = () => {
   const features = [

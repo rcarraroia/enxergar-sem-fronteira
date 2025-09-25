@@ -644,7 +644,7 @@ export const PatientsList: React.FC = () => {
                         {patient.registrations.length === 0 ? (
                           <span className="text-xs text-muted-foreground">Nenhuma inscrição</span>
                         ) : (
-                          patient.registrations.slice(0, 2).map((reg, index) => (
+                          patient.registrations.slice(0, 2).map((reg, _index) => (
                             <div key={reg.id} className="text-xs space-y-1">
                               <div className="font-medium">{reg.event_date?.event?.title}</div>
                               <div className="text-muted-foreground flex items-center gap-1">

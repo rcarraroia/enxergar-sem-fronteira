@@ -16,14 +16,12 @@ import {
   ArrowLeft, 
   Calendar, 
   Clock, 
-  MapPin, 
   Plus,
   Save,
-  Trash2,
-  Users
+  Trash2
 } from "lucide-react";
 import { type EventFormData, useCreateEventV2, useEventV2, useUpdateEventV2 } from "@/hooks/admin-v2/useEventsV2";
-import { format } from "date-fns";
+
 
 interface EventFormProps {
   eventId?: string
