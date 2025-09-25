@@ -162,7 +162,7 @@ export const BulkMessagingTab: React.FC = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <MessageSquare className="h-4 w-4 text-green-600" />
                     <span>WhatsApp</span>
-                    <Badge variant="outline" className="ml-auto" ge
+                    <Badge variant="outline" className="ml-auto">Ativo</Badge>
           </div>
                 </CardContent>
               </Card>

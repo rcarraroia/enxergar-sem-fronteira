@@ -31,7 +31,7 @@ interface PublicChatWidgetProps {
 }
 
 export const PublicChatWidget: React.FC<PublicChatWidgetProps> = ({
-  webhookUrl = process.env.VITE_N8N_PUBLIC_WEBHOOK_URL || 'https://demo.n8n.com/webhook/public-chat',
+  webhookUrl = import.meta.env.VITE_N8N_PUBLIC_WEBHOOK_URL || 'https://demo.n8n.com/webhook/public-chat',
   position = 'bottom-right',
   theme = 'light',
   enableVoice = false,
