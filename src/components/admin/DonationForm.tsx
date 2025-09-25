@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useEventsAdmin } from "@/hooks/useEventsAdmin";
 import { useAsaasDonation } from "@/hooks/useAsaasDonation";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,8 @@ export const DonationForm = () => {
       console.error("Erro ao criar doação:", error);
     }
   };
+
+  const selectedEvent = events?.find(e => e.id === formData.eventId);
 
   return (
     <Card>

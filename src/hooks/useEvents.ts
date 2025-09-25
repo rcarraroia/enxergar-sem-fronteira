@@ -140,7 +140,7 @@ export const useEvents = () => {
 
           // Filtrar apenas datas futuras (>= hoje)
           const futureDates = updatedEventDates.filter(eventDate => {
-            const isFuture = eventDate.date >= (today || "");
+            const isFuture = eventDate.date >= today;
             if (!isFuture) {
               console.log(`🗓️ Filtrado evento passado: ${eventDate.date}`);
             }
@@ -167,8 +167,8 @@ export const useEvents = () => {
 
       // Ordenar eventos pela data mais próxima
       const processedEvents = eventsWithFutureDates.sort((a, b) => {
-        const dateA = a.event_dates.length > 0 ? new Date(a.event_dates[0]?.date || "9999-12-31") : new Date("9999-12-31");
-        const dateB = b.event_dates.length > 0 ? new Date(b.event_dates[0]?.date || "9999-12-31") : new Date("9999-12-31");
+        const dateA = a.event_dates.length > 0 ? new Date(a.event_dates[0].date) : new Date("9999-12-31");
+        const dateB = b.event_dates.length > 0 ? new Date(b.event_dates[0].date) : new Date("9999-12-31");
         return dateA.getTime() - dateB.getTime();
       });
 
@@ -177,7 +177,7 @@ export const useEvents = () => {
       // Log do próximo evento para debug
       if (processedEvents.length > 0) {
         const nextEvent = processedEvents[0];
-        console.log(`🎯 Próximo evento: ${nextEvent?.city} em ${nextEvent?.event_dates[0]?.date}`);
+        console.log(`🎯 Próximo evento: ${nextEvent.city} em ${nextEvent.event_dates[0].date}`);
       }
 
       return processedEvents as Event[];

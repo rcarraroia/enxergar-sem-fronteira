@@ -1,31 +1,17 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useEvents } from "@/hooks/useEvents";
-import { formatDate, formatTime } from "@/utils/dateUtils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, Clock, Eye, MapPin, RefreshCw, Users } from "lucide-react";
-import { useState } from "react";
+import { useEvents } from "@/hooks/useEvents";
 import { useNavigate } from "react-router-dom";
+import { formatDate, formatTime } from "@/utils/dateUtils";
+import { useState } from "react";
 
 const EventsSection = () => {
   const { data: events, isLoading, refetch, isFetching } = useEvents();
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detectar se é mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      console.log(`📱 Dispositivo detectado: ${mobile ? 'MOBILE' : 'DESKTOP'} (${window.innerWidth}px)`);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const getStatusInfo = (availableSlots: number, totalSlots: number) => {
     if (availableSlots === 0) {
@@ -55,12 +41,12 @@ const EventsSection = () => {
   const handleEventClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
+    
     if (isNavigating) {
       console.log("⚠️ EventsSection: Navegação já em andamento, ignorando clique");
       return;
     }
-
+    
     setIsNavigating(true);
     console.log("🎯 EventsSection: Redirecionando para seleção de eventos (ÚNICO)");
     navigate("/eventos");
@@ -69,12 +55,12 @@ const EventsSection = () => {
   const handleWaitingListClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
+    
     if (isNavigating) {
       console.log("⚠️ EventsSection: Navegação já em andamento, ignorando clique da lista de espera");
       return;
     }
-
+    
     setIsNavigating(true);
     console.log("🎯 EventsSection: Redirecionando para lista de espera (ÚNICO)");
     navigate("/eventos");
@@ -86,30 +72,16 @@ const EventsSection = () => {
   };
 
   // Expandir eventos para mostrar cada data como um card separado
-  const expandedEvents = events ? events.flatMap(event =>
+  const expandedEvents = events ? events.flatMap(event => 
     event.event_dates.map(eventDate => ({
       ...event,
       currentDate: eventDate,
       // Manter apenas a data atual no array para facilitar o processamento
       event_dates: [eventDate]
     }))
-  ).sort((a, b) =>
+  ).sort((a, b) => 
     new Date(a.currentDate.date).getTime() - new Date(b.currentDate.date).getTime()
   ) : [];
-
-  // Debug: Log todos os eventos expandidos
-  console.log("🔍 DEBUG - Todos os eventos expandidos:", expandedEvents.map(e => ({
-    city: e.city,
-    date: e.currentDate.date,
-    available_slots: e.currentDate.available_slots,
-    total_slots: e.currentDate.total_slots
-  })));
-
-  // Debug: Log eventos que serão exibidos (primeiros 4)
-  console.log("📱 DEBUG - Eventos que serão exibidos (primeiros 4):", expandedEvents.slice(0, 4).map(e => ({
-    city: e.city,
-    date: e.currentDate.date
-  })));
 
   if (isLoading) {
     return (
@@ -132,7 +104,7 @@ const EventsSection = () => {
             <Calendar className="h-4 w-4 text-primary mr-2" />
             <span className="text-primary font-semibold text-sm">Agenda de Eventos</span>
           </div>
-
+          
           <div className="flex items-center justify-center gap-4 mb-4">
             <h2 className="text-4xl font-bold text-foreground">
               Próximos Atendimentos
@@ -147,12 +119,12 @@ const EventsSection = () => {
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
           </div>
-
+          
           <p className="text-subtitle text-muted-foreground max-w-2xl mx-auto">
-            Confira nossa agenda de atendimentos oftalmológicos gratuitos.
+            Confira nossa agenda de atendimentos oftalmológicos gratuitos. 
             Cadastre-se nos eventos disponíveis em sua região.
           </p>
-
+          
           {isFetching && (
             <div className="text-sm text-muted-foreground mt-2">
               Atualizando vagas disponíveis...
@@ -169,9 +141,9 @@ const EventsSection = () => {
               const totalSlots = eventDate.total_slots;
               const statusInfo = getStatusInfo(availableSlots, totalSlots);
               const occupancyPercentage = totalSlots > 0 ? ((totalSlots - availableSlots) / totalSlots) * 100 : 0;
-
+              
               console.log(`📊 Card ${expandedEvent.city} - Data ${eventDate.date}: ${availableSlots}/${totalSlots} vagas`);
-
+              
               return (
                 <Card key={`${expandedEvent.id}-${eventDate.id}`} className={`p-6 medical-card animate-slide-up stagger-${(index % 4) + 1} hover:shadow-medical transition-all duration-300`}>
                   <div className="space-y-4">
@@ -222,10 +194,10 @@ const EventsSection = () => {
                           {availableSlots} de {totalSlots}
                         </span>
                       </div>
-
+                      
                       {/* Progress bar */}
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
+                        <div 
                           className="bg-primary h-2 rounded-full transition-all duration-500"
                           style={{ width: `${occupancyPercentage}%` }}
                         ></div>
@@ -236,7 +208,7 @@ const EventsSection = () => {
                     </div>
 
                     {/* Action Button */}
-                    <Button
+                    <Button 
                       className={`w-full ${availableSlots === 0 ? "opacity-50 cursor-not-allowed" : "btn-hero group"}`}
                       disabled={availableSlots === 0 || isNavigating}
                       onClick={handleEventClick}
@@ -268,8 +240,8 @@ const EventsSection = () => {
               <p className="text-muted-foreground">
                 Cadastre-se em nossa lista de espera e seja notificado sobre novos eventos em sua região.
               </p>
-              <Button
-                className="btn-secondary-hero"
+              <Button 
+                className="btn-secondary-hero" 
                 onClick={handleWaitingListClick}
                 disabled={isNavigating}
               >

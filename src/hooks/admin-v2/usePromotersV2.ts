@@ -79,7 +79,7 @@ export const usePromotersV2 = (filters: PromoterFilters = {}) => {
           email: organizer.email || "",
           phone: organizer.phone || "",
           organization: organizer.organization || "",
-          role: "organizer" as const, // Simplified for now
+          role: (organizer.role as "admin" | "organizer") || "organizer",
           status: (organizer.status as "active" | "inactive" | "pending") || "active",
           created_at: organizer.created_at,
           last_login: organizer.last_login || "",

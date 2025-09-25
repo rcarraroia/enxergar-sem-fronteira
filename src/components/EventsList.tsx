@@ -1,5 +1,5 @@
 
-
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Event } from "@/hooks/useEvents";
 import { useEvents } from "@/hooks/useEvents";

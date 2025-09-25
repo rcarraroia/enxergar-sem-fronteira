@@ -58,7 +58,7 @@ export const useRecentActivityV2 = () => {
               id: `registration-${registration.id}`,
               type: "registration_completed",
               title: "Nova inscrição",
-              description: `${registration.patients?.nome || "Paciente"} se inscreveu`,
+              description: `${registration.patients?.nome} se inscreveu em "${registration.events?.title}"`,
               timestamp: registration.created_at
             });
           });

@@ -1,5 +1,5 @@
 
-
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,7 @@ export const OrganizerEventCard = ({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 flex-shrink-0" />
               <span>
-                {format(new Date(event.event_dates[0]?.date || new Date()), "dd/MM/yyyy", { locale: ptBR })}
+                {format(new Date(event.event_dates[0].date), "dd/MM/yyyy", { locale: ptBR })}
                 {event.event_dates.length > 1 && ` (+${event.event_dates.length - 1})`}
               </span>
             </div>

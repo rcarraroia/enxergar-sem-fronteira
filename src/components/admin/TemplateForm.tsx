@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import type { TemplateFormProps } from "@/types/notificationTemplates";
 
 export const TemplateForm: React.FC<TemplateFormProps> = ({
+  template,
+  type,
+  onSave,
   onCancel,
 }) => {
   // CORREÇÃO TEMPORÁRIA: Componente simplificado para evitar React Error #310
