@@ -273,7 +273,7 @@ export const PatientsList: React.FC = () => {
       <body>
         <div class="header">
           <h1>Lista de Pacientes - Enxergar sem Fronteiras</h1>
-          <p>Gerado em: ${formatDate(new Date().toISOString().split("T")[0])} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
+          <p>Gerado em: ${formatDate(new Date().toISOString().split("T")[0] || "")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
         </div>
         
         <div class="filters">

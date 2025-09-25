@@ -39,19 +39,16 @@ import {
 import { 
   Calendar, 
   Copy, 
-  Edit, 
-  Eye,
+  Edit,
   Loader2,
   Mail,
   MessageSquare,
   MoreHorizontal,
   Search,
-  Trash2,
-  User
+  Trash2
 } from "lucide-react";
 import type { TemplatesListProps } from "@/types/notificationTemplates";
 import { formatDate } from "@/utils/dateUtils";
-import { cn } from "@/lib/utils";
 
 export const TemplatesList: React.FC<TemplatesListProps> = ({
   type,
@@ -155,7 +152,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                         <div className="font-medium">{template.name}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          Criado em {formatDate(template.created_at.split("T")[0])}
+                          Criado em {formatDate(template.created_at?.split("T")[0] || "")}
                         </div>
                       </div>
                     </TableCell>
@@ -203,7 +200,7 @@ export const TemplatesList: React.FC<TemplatesListProps> = ({
                     
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
-                        {formatDate(template.updated_at.split("T")[0])}
+                        {formatDate(template.updated_at?.split("T")[0] || "")}
                       </div>
                     </TableCell>
                     

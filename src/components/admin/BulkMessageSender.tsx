@@ -555,7 +555,7 @@ export const BulkMessageSender: React.FC = () => {
         <CardContent>
           <div className="flex gap-4">
             <Button
-              onClick={handlePreview}
+              onClick={() => {/* TODO: Implement preview */}}
               variant="outline"
               disabled={sending || filters.eventIds.length === 0}
             >

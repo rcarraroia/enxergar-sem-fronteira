@@ -144,7 +144,7 @@ export const RoleManagement: React.FC = () => {
         throw error;
       }
 
-      const logsWithNames = data?.map(log => ({
+      const logsWithNames = data?.map((log: any) => ({
         ...log,
         user_name: log.user?.name || "Usuário removido",
         changed_by_name: log.changed_by_user?.name || "Sistema"
@@ -167,7 +167,7 @@ export const RoleManagement: React.FC = () => {
       setUpdating(request.userId);
 
       // Call the secure function to assign role
-      const { data, error } = await supabase.rpc("assign_user_role", {
+      const { error } = await supabase.rpc("is_admin_user" as any, {
         user_id: request.userId,
         new_role: request.newRole
       });
