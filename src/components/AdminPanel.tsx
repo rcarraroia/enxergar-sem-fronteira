@@ -1,4 +1,3 @@
-import React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Badge } from "@/components/ui/badge";

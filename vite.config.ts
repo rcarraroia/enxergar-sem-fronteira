@@ -25,6 +25,20 @@ export default defineConfig(({ mode }) => ({
   build: {
     commonjsOptions: {
       include: [/xlsx/, /file-saver/, /node_modules/]
+    },
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Ignorar avisos específicos do TypeScript
+        if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
+        if (warning.message.includes('is declared but its value is never read')) return;
+        warn(warning);
+      }
+    }
+  },
+  esbuild: {
+    logOverride: { 
+      'this-is-undefined-in-esm': 'silent',
+      'unused-import': 'silent'
     }
   }
 }));

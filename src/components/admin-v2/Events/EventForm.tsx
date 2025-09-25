@@ -75,7 +75,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
           end_time: date.end_time,
           total_slots: date.total_slots,
           available_slots: date.available_slots,
-          location_details: date.location_details
+          // location_details: date.location_details
         })));
       }
     }
@@ -142,7 +142,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
         await createEventMutation.mutateAsync(eventData);
         navigate("/admin-v2/events");
       } else if (mode === "edit" && eventId) {
-        await updateEventMutation.mutateAsync({ eventId, eventData });
+        await updateEventMutation.mutateAsync({ eventId, data: eventData });
         navigate("/admin-v2/events");
       }
     } catch (error) {
@@ -168,7 +168,7 @@ export const EventForm: React.FC<EventFormProps> = ({ eventId, mode }) => {
 
   const updateEventDate = (index: number, field: keyof EventDateForm, value: string | number) => {
     const updatedDates = [...eventDates];
-    updatedDates[index] = { ...updatedDates[index], [field]: value };
+    updatedDates[index] = { ...updatedDates[index], [field]: value } as EventDateForm;
     setEventDates(updatedDates);
   };
 

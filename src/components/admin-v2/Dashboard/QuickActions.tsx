@@ -105,7 +105,7 @@ export const QuickActions: React.FC = () => {
       </Card>
 
       {/* Card de Mensagens em Massa Separado */}
-      <BulkMessagingCardSimple />
+      {/* <BulkMessagingCardSimple /> */}
     </div>
   );
 };
