@@ -105,7 +105,11 @@ export const useEvents = () => {
         throw error;
       }
 
-      // Recalcular available_slots baseado nas inscrições reais
+      // Obter data atual no formato YYYY-MM-DD
+      const today = new Date().toISOString().split("T")[0];
+      console.log(`📅 Data atual: ${today}`);
+
+      // Recalcular available_slots e filtrar eventos passados
       const eventsWithUpdatedSlots = await Promise.all(
         (data || []).map(async (event) => {
           const updatedEventDates = await Promise.all(
@@ -134,23 +138,48 @@ export const useEvents = () => {
             })
           );
 
+          // Filtrar apenas datas futuras (>= hoje)
+          const futureDates = updatedEventDates.filter(eventDate => {
+            const isFuture = eventDate.date >= today;
+            if (!isFuture) {
+              console.log(`🗓️ Filtrado evento passado: ${eventDate.date}`);
+            }
+            return isFuture;
+          });
+
           return {
             ...event,
-            event_dates: updatedEventDates.sort((a, b) => 
+            event_dates: futureDates.sort((a, b) => 
               new Date(a.date).getTime() - new Date(b.date).getTime()
             )
           };
         })
       );
 
+      // Filtrar eventos que têm pelo menos uma data futura
+      const eventsWithFutureDates = eventsWithUpdatedSlots.filter(event => {
+        const hasFutureDates = event.event_dates.length > 0;
+        if (!hasFutureDates) {
+          console.log(`🚫 Evento ${event.city} removido - todas as datas são passadas`);
+        }
+        return hasFutureDates;
+      });
+
       // Ordenar eventos pela data mais próxima
-      const processedEvents = eventsWithUpdatedSlots.sort((a, b) => {
+      const processedEvents = eventsWithFutureDates.sort((a, b) => {
         const dateA = a.event_dates.length > 0 ? new Date(a.event_dates[0].date) : new Date("9999-12-31");
         const dateB = b.event_dates.length > 0 ? new Date(b.event_dates[0].date) : new Date("9999-12-31");
         return dateA.getTime() - dateB.getTime();
       });
 
-      console.log(`✅ Encontrados ${processedEvents.length} eventos públicos com vagas atualizadas`);
+      console.log(`✅ Encontrados ${processedEvents.length} eventos futuros com vagas atualizadas`);
+      
+      // Log do próximo evento para debug
+      if (processedEvents.length > 0) {
+        const nextEvent = processedEvents[0];
+        console.log(`🎯 Próximo evento: ${nextEvent.city} em ${nextEvent.event_dates[0].date}`);
+      }
+
       return processedEvents as Event[];
     },
     staleTime: 0, // Always refetch to ensure fresh data
