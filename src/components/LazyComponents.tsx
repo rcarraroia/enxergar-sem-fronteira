@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Lazy loading para componentes pesados - usando named exports
 export const LazyEventForm = lazy(() => import("@/components/admin/EventForm").then(module => ({ default: module.EventForm })));
 export const LazyRegistrationsList = lazy(() => import("@/components/admin/RegistrationsList").then(module => ({ default: module.RegistrationsList })));
-
+export const LazySystemHealthCard = lazy(() => import("@/components/admin/SystemHealthCard").then(module => ({ default: module.SystemHealthCard })));
 export const LazySystemLogsCard = lazy(() => import("@/components/admin/SystemLogsCard").then(module => ({ default: module.SystemLogsCard })));
 
 // Wrapper com loading skeleton

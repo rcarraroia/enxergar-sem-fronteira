@@ -7,6 +7,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Admin from "./pages/Admin";
 
+import AdminEventDetails from "./pages/AdminEventDetails";
+import AdminEvents from "./pages/AdminEvents";
+import AdminOrganizers from "./pages/AdminOrganizers";
+import AdminPatients from "./pages/AdminPatients";
+import AdminPayments from "./pages/AdminPayments";
+import AdminRegistrations from "./pages/AdminRegistrations";
+import AdminSettings from "./pages/AdminSettings";
+import AdminSync from "./pages/AdminSync";
 import Auth from "./pages/Auth";
 import EventSelection from "./pages/EventSelection";
 import Index from "./pages/Index";
@@ -14,7 +22,7 @@ import Registration from "./pages/Registration";
 // ADMIN V2 - Nova versão reconstruída
 import "./App.css";
 import AdminCampaignsV2 from "./pages/admin-v2/Campaigns";
-
+import AdminChatV2 from "./pages/admin-v2/Chat/index";
 import AdminDashboardV2 from "./pages/admin-v2/Dashboard/simple";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
 import AdminEventsV2 from "./pages/admin-v2/Events";
@@ -28,9 +36,15 @@ import AdminRegistrationsV2 from "./pages/admin-v2/Registrations";
 import AdminReportsV2 from "./pages/admin-v2/Reports";
 import AdminSettingsV2 from "./pages/admin-v2/Settings";
 import AdminSyncV2 from "./pages/admin-v2/Sync";
+import BulkMessagingPage from "./pages/BulkMessagingPage";
 import Cookies from "./pages/Cookies";
 import LGPD from "./pages/LGPD";
 import NotFound from "./pages/NotFound";
+import OrganizerDashboard from "./pages/OrganizerDashboard";
+import OrganizerEventForm from "./pages/OrganizerEventForm";
+import OrganizerEvents from "./pages/OrganizerEvents";
+import OrganizerProfile from "./pages/OrganizerProfile";
+import OrganizerRegistrations from "./pages/OrganizerRegistrations";
 import PatientAccess from "./pages/PatientAccess";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReportsTemp from "./pages/ReportsTemp";
@@ -62,6 +76,66 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              {/* Rotas antigas do admin v1 - redirecionamento */}
+              <Route path="/admin-old" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Admin />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/events" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminEvents />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/events/:id" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminEventDetails />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/registrations" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminRegistrations />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/organizers" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminOrganizers />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/patients" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPatients />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/donations" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminDonations />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/payments" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminPayments />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/settings" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminSettings />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin-old/sync" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminSync />
+                </ProtectedRoute>
+              } />
 
               {/* ADMIN V2 - Nova versão em produção */}
               <Route path="/admin" element={
@@ -108,6 +182,16 @@ function App() {
               <Route path="/admin/messages" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminMessagesV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/bulk-messaging" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <BulkMessagingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/chat" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminChatV2 />
                 </ProtectedRoute>
               } />
               <Route path="/admin/campaigns" element={
@@ -177,6 +261,11 @@ function App() {
                   <AdminMessagesV2 />
                 </ProtectedRoute>
               } />
+              <Route path="/admin-v2/bulk-messaging" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <BulkMessagingPage />
+                </ProtectedRoute>
+              } />
               <Route path="/admin-v2/campaigns" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminCampaignsV2 />
@@ -209,6 +298,42 @@ function App() {
               } />
               {/* Rota catch-all removida - causava conflito com rotas específicas */}
 
+              {/* Protected Organizer Routes */}
+              <Route path="/organizer" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerDashboard />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/organizer/events" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerEvents />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/organizer/registrations" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerRegistrations />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/organizer/events/new" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerEventForm />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/organizer/events/edit/:id" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerEventForm />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/organizer/profile" element={
+                <ProtectedRoute requireOrganizer={true}>
+                  <OrganizerProfile />
+                </ProtectedRoute>
+              } />
 
               {/* Catch all route - must be last */}
               <Route path="*" element={<NotFound />} />

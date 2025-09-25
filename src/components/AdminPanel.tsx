@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { ConfigurationStatus } from "@/components/admin/ConfigurationStatus";
 import { AlertTriangle, Settings, Shield, User } from "lucide-react";
 
 /**
@@ -119,9 +119,7 @@ export const AdminPanel = () => {
           </Card>
 
           {/* Status das Configurações Seguras */}
-          <div className="text-sm text-muted-foreground">
-            Configurações administrativas carregadas com sucesso.
-          </div>
+          <ConfigurationStatus />
         </div>
       )}
 

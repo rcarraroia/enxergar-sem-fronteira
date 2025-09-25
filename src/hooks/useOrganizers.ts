@@ -52,7 +52,7 @@ export const useOrganizers = () => {
           const { count } = await supabase
             .from("events")
             .select("*", { count: "exact", head: true })
-            .eq("organizer_id", org.id ?? "");
+            .eq("organizer_id", org.id);
 
           return {
             ...org,

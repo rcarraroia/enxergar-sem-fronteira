@@ -113,8 +113,8 @@ export const useRecentActivity = () => {
 
         templates?.forEach(template => {
           // Check if template was recently created (within last 24 hours)
-          const createdRecently = new Date(template.created_at || "").getTime() > Date.now() - 24 * 60 * 60 * 1000;
-          const updatedRecently = new Date(template.updated_at || "").getTime() > Date.now() - 24 * 60 * 60 * 1000;
+          const createdRecently = new Date(template.created_at).getTime() > Date.now() - 24 * 60 * 60 * 1000;
+          const updatedRecently = new Date(template.updated_at).getTime() > Date.now() - 24 * 60 * 60 * 1000;
           
           if (createdRecently) {
             activities.push({
@@ -122,7 +122,7 @@ export const useRecentActivity = () => {
               type: "template",
               title: "Template Criado",
               description: `Novo template ${template.type}: ${template.name}`,
-              timestamp: template.created_at || "",
+              timestamp: template.created_at,
               icon: "Mail"
             });
           } else if (updatedRecently && template.created_at !== template.updated_at) {
@@ -131,7 +131,7 @@ export const useRecentActivity = () => {
               type: "template",
               title: "Template Atualizado",
               description: `Template ${template.type} atualizado: ${template.name}`,
-              timestamp: template.updated_at || "",
+              timestamp: template.updated_at,
               icon: "Edit"
             });
           }
