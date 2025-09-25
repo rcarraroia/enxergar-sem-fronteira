@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 
@@ -314,5 +314,4 @@ export const useOrganizerEvents = () => {
     getEventStats,
     fetchOrganizerEvents
   };
-};
 };
