@@ -175,9 +175,9 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
       toast.success("Inscrição realizada com sucesso!");
       onSuccess(data.name);
 
-    } catch (error: any) {
-      console.error("❌ Erro no cadastro:", error);
-      toast.error(`Erro ao realizar inscrição: ${error.message || "Erro desconhecido"}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error(`Erro ao realizar inscrição: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
