@@ -1,24 +1,28 @@
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { cpfMask, validateCPF } from "@/utils/cpfUtils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const patientSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
   phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
   cpf: z.string().refine(validateCPF, "CPF inválido"),
-  birthdate: z.string().min(1, "Data de nascimento é obrigatória"),
+  birthdate: z.string().min(1, "Data de nascimento é obrigatória").refine((date) => {
+    // Aceita formato AAAA-MM-DD (desktop) ou DD/MM/AAAA (mobile)
+    const dateRegex = /^(\d{4}-\d{2}-\d{2})|(\d{2}\/\d{2}\/\d{4})$/;
+    return dateRegex.test(date);
+  }, "Data deve estar no formato DD/MM/AAAA ou ser uma data válida"),
   terms: z.boolean().refine(val => val === true, "Você deve aceitar os termos"),
   comments: z.string().optional()
 });
@@ -32,34 +36,106 @@ interface PatientRegistrationFormProps {
 
 const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ eventDateId, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema)
   });
 
   const cpfValue = watch("cpf");
+  const birthdateValue = watch("birthdate");
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const maskedValue = cpfMask(e.target.value);
     setValue("cpf", maskedValue);
   };
 
+  const handleBirthdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é dígito
+
+    // Aplica máscara DD/MM/AAAA
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + "/" + value.substring(2);
+    }
+    if (value.length >= 5) {
+      value = value.substring(0, 5) + "/" + value.substring(5, 9);
+    }
+
+    setValue("birthdate", value);
+  };
+
+  const convertDateFormat = (dateStr: string) => {
+    // Converte DD/MM/AAAA para AAAA-MM-DD (formato do input date)
+    if (dateStr && dateStr.includes("/")) {
+      const [day, month, year] = dateStr.split("/");
+      if (day && month && year && year.length === 4) {
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      }
+    }
+    return dateStr;
+  };
+
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   const onSubmit = async (data: PatientFormData) => {
     console.log("🚀 Iniciando processo de cadastro...", data);
     setIsSubmitting(true);
-    
+
     try {
-      console.log("📋 Iniciando cadastro do paciente...", data.name);
-      
-      // 1. Criar o paciente
+      const cleanCpf = data.cpf.replace(/\D/g, "");
+
+      // 1. Verificar se CPF já existe
+      console.log("🔍 Verificando se CPF já existe...", cleanCpf);
+      const { data: existingPatient, error: checkError } = await supabase
+        .from("patients")
+        .select("id, nome, email")
+        .eq("cpf", cleanCpf)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        // Erro diferente de "não encontrado"
+        console.error("❌ Erro ao verificar CPF:", checkError);
+        throw new Error("Erro ao verificar dados. Tente novamente.");
+      }
+
+      if (existingPatient) {
+        // CPF já existe - usar registro existente
+        console.log("ℹ️ CPF já cadastrado, usando registro existente:", existingPatient.id);
+        toast.info(`CPF já cadastrado para ${existingPatient.nome}. Usando dados existentes.`);
+
+        // Pular para criação da inscrição com o paciente existente
+        const { data: registrationData, error: registrationError } = await supabase
+          .from("registrations")
+          .insert({
+            patient_id: existingPatient.id,
+            event_date_id: eventDateId,
+            status: "confirmed"
+          })
+          .select()
+          .single();
+
+        if (registrationError) {
+          console.error("❌ Erro ao criar inscrição:", registrationError);
+          throw registrationError;
+        }
+
+        console.log("✅ Inscrição criada para paciente existente:", registrationData.id);
+        toast.success("Inscrição realizada com sucesso!");
+        onSuccess(existingPatient.nome);
+        return;
+      }
+
+      // 2. CPF não existe - criar novo paciente
+      console.log("📋 Criando novo paciente...", data.name);
       const { data: patientData, error: patientError } = await supabase
         .from("patients")
         .insert({
           nome: data.name,
           email: data.email,
           telefone: data.phone,
-          cpf: data.cpf.replace(/\D/g, ""),
-          data_nascimento: data.birthdate,
+          cpf: cleanCpf,
+          data_nascimento: convertDateFormat(data.birthdate),
           consentimento_lgpd: data.terms
         })
         .select()
@@ -67,12 +143,18 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
 
       if (patientError) {
         console.error("❌ Erro ao criar paciente:", patientError);
+
+        // Tratar erro de CPF duplicado especificamente
+        if (patientError.code === "23505" && patientError.details?.includes("cpf")) {
+          throw new Error("Este CPF já está cadastrado. Recarregue a página e tente novamente.");
+        }
+
         throw patientError;
       }
 
       console.log("✅ Paciente criado:", patientData.id);
 
-      // 2. Criar a inscrição
+      // 3. Criar a inscrição
       const { data: registrationData, error: registrationError } = await supabase
         .from("registrations")
         .insert({
@@ -89,13 +171,13 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
       }
 
       console.log("✅ Inscrição criada:", registrationData.id);
-      
+
       toast.success("Inscrição realizada com sucesso!");
       onSuccess(data.name);
-      
+
     } catch (error: any) {
       console.error("❌ Erro no cadastro:", error);
-      toast.error(`Erro ao realizar inscrição: ${  error.message || "Erro desconhecido"}`);
+      toast.error(`Erro ao realizar inscrição: ${error.message || "Erro desconhecido"}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -154,11 +236,22 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
 
             <div>
               <Label htmlFor="birthdate">Data de Nascimento *</Label>
-              <Input
-                id="birthdate"
-                type="date"
-                {...register("birthdate")}
-              />
+              {isMobile() ? (
+                <Input
+                  id="birthdate"
+                  type="text"
+                  value={birthdateValue || ""}
+                  onChange={handleBirthdateChange}
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                />
+              ) : (
+                <Input
+                  id="birthdate"
+                  type="date"
+                  {...register("birthdate")}
+                />
+              )}
               {errors.birthdate && <p className="text-sm text-red-500">{errors.birthdate.message}</p>}
             </div>
           </div>
@@ -184,9 +277,9 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
           </div>
           {errors.terms && <p className="text-sm text-red-500">{errors.terms.message}</p>}
 
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full"
             disabled={isSubmitting}
             onClick={(e) => {
               console.log("🖱️ Botão clicado! Submetendo formulário...");
