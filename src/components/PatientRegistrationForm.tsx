@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { webhookService } from "@/services/WebhookService";
 import { cpfMask, validateCPF } from "@/utils/cpfUtils";
+import { formatPhoneToInternational, phoneMask } from "@/utils/phoneUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -64,17 +65,11 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
   });
 
   const cpfValue = watch("cpf");
-  const phoneValue = watch("phone");
   const birthdateValue = watch("birthdate");
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const maskedValue = cpfMask(e.target.value);
     setValue("cpf", maskedValue);
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const maskedValue = phoneMask(e.target.value);
-    setValue("phone", maskedValue);
   };
 
   const handleBirthdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,10 +254,13 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Label htmlFor="phone">Telefone *</Label>
               <Input
                 id="phone"
-                value={phoneValue || ""}
-                onChange={handlePhoneChange}
+                {...register("phone")}
                 placeholder="(11) 99999-9999"
                 maxLength={20}
+                onChange={(e) => {
+                  const maskedValue = phoneMask(e.target.value);
+                  setValue("phone", maskedValue);
+                }}
               />
               {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
             </div>
