@@ -228,25 +228,96 @@ export class WebhookService {
   }
 
   /**
-   * Busca detalhes da inscrição usando a função existente do banco
+   * Busca detalhes da inscrição usando query direta (mais confiável)
    */
   private async getRegistrationDetails(registrationId: string): Promise<unknown> {
     try {
-      const { data, error } = await supabase.rpc('get_registration_details', {
-        reg_id: registrationId
-      });
+      const { data, error } = await supabase
+        .from('registrations')
+        .select(`
+          id,
+          status,
+          created_at,
+          attendance_confirmed,
+          attendance_confirmed_at,
+          purchased_glasses,
+          glasses_purchase_amount,
+          process_completed,
+          completed_at,
+          attended_by,
+          patients!inner (
+            id,
+            nome,
+            email,
+            telefone,
+            cpf,
+            data_nascimento
+          ),
+          event_dates!inner (
+            id,
+            date,
+            start_time,
+            end_time,
+            events!inner (
+              id,
+              title,
+              description,
+              location,
+              organizers (
+                id,
+                name,
+                email
+              )
+            )
+          )
+        `)
+        .eq('id', registrationId)
+        .single();
 
       if (error) {
         console.error("❌ [WebhookService] Erro ao buscar detalhes da inscrição:", error);
         return null;
       }
 
-      if (!data || data.length === 0) {
+      if (!data) {
         console.warn("⚠️ [WebhookService] Nenhum dado encontrado para a inscrição:", registrationId);
         return null;
       }
 
-      return data[0]; // A função retorna um array, pegar o primeiro item
+      // Transformar os dados para o formato esperado
+      const patient = data.patients;
+      const eventDate = data.event_dates;
+      const event = eventDate.events;
+      const organizer = event.organizers;
+
+      return {
+        registration_id: data.id,
+        patient_id: patient.id,
+        patient_name: patient.nome,
+        patient_email: patient.email,
+        patient_phone: patient.telefone,
+        patient_cpf: patient.cpf,
+        patient_birthdate: patient.data_nascimento,
+        event_id: event.id,
+        event_name: event.title,
+        event_description: event.description,
+        event_date_id: eventDate.id,
+        event_date: eventDate.date,
+        event_start_time: eventDate.start_time,
+        event_end_time: eventDate.end_time,
+        event_location: event.location,
+        registration_status: data.status,
+        registration_created_at: data.created_at,
+        attendance_confirmed: data.attendance_confirmed,
+        attendance_confirmed_at: data.attendance_confirmed_at,
+        purchased_glasses: data.purchased_glasses,
+        glasses_purchase_amount: data.glasses_purchase_amount,
+        process_completed: data.process_completed,
+        completed_at: data.completed_at,
+        attended_by: data.attended_by,
+        organizer_name: organizer?.name || null,
+        organizer_email: organizer?.email || null
+      };
 
     } catch (error) {
       console.error("❌ [WebhookService] Erro crítico ao buscar detalhes da inscrição:", error);
