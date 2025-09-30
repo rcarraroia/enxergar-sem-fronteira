@@ -1,0 +1,277 @@
+{
+  "name": "Confirmação Inscrição",
+  "nodes": [
+    {
+      "parameters": {
+        "tableId": "registration_notifications",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "=registration_id",
+              "fieldValue": "={{ $('Formatar Mensagem1').item.json.registration_id }}"
+            },
+            {
+              "fieldId": "=notification_type",
+              "fieldValue": "confirmation"
+            },
+            {
+              "fieldId": "phone_number",
+              "fieldValue": "={{ $('Formatar Mensagem1').item.json.phone }}"
+            },
+            {
+              "fieldId": "=message_content",
+              "fieldValue": "={{ $json.data.message.conversation }}"
+            },
+            {
+              "fieldId": "=status",
+              "fieldValue": "={{ $json.data.status }}"
+            }
+          ]
+        }
+      },
+      "id": "c0103490-fb3e-471b-9a31-207822a2093d",
+      "name": "Registrar Notificação Enviada",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -976
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "zChOtrEvFhV64mDZ",
+          "name": "Supabase Enxergar"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enxergar",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -864,
+        -976
+      ],
+      "id": "d1ef0386-22d3-4056-9a03-b79f97b70486",
+      "name": "Webhook - Trigger Confirmação1",
+      "webhookId": "a1888058-28d3-441f-840b-096c1e40ab00"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "=*Inscrição Confirmada!*\n\nOlá {{ $json.patient_name }}\n\nSua Consulta Oftalmoloica Gratuita, foi confirmada com sucesso!\n\n📅 *Data:* {{ $json.date }}\n⏰ *Inicio do Atendimento:{{ $('HTTP Request').item.json.start_time }}\n📍 *Local:* {{ $('HTTP Request').item.json.event_location }}\n\n\n✅ O atendimento será por ordem de chagada\n📱 Mantenha este WhatsApp para comunicações\n\n\nRealização Projeto Visão Itinerante 💙"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "registration_id",
+              "value": "={{ $('Edit Fields1').item.json.registration_id }}"
+            },
+            {
+              "name": "patient_name",
+              "value": "={{ $json.patient_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f920fab1-065f-4089-aeff-09ac69fdaeff",
+      "name": "Formatar Mensagem1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -976
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "Agente Virtual Renum",
+        "remoteJid": "={{ $json.phone }}",
+        "messageText": "=*Inscrição Confirmada!*\n\nOlá {{ $json.patient_name }}\n\nSua Consulta Oftalmológica Gratuita foi confirmada com sucesso!\n\n📅 *Data:* {{ new Date($json.date).toLocaleDateString('pt-BR') }}\n\n⏰ *Inicio do Atendimento:* {{ $('HTTP Request').item.json.start_time.slice(0,5) }}\n\n📍 *Local:* {{ $('HTTP Request').item.json.event_location }}\n\n\n✅ O atendimento será por ordem de chegada\n📱 Mantenha este WhatsApp para comunicações\n\n\nRealização: Projeto Visão Itinerante 🤓",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -976
+      ],
+      "id": "404e3a6f-dcf2-430f-a6d3-4736f92b4a2c",
+      "name": "Enviar WhatsApp1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "JAUEjcVJF1RmNPnN",
+          "name": "Evolution account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "message",
+              "value": "=Notificação enviada com sucesso para {{ $('Formatar Mensagem1').item.json.patient_name }}"
+            },
+            {
+              "name": "registration_id",
+              "value": "={{ $('Edit Fields1').item.json.registration_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3ebf66d4-e96d-4cd1-a1b6-e7444e480a30",
+      "name": "Resposta de Sucesso1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -976
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85b1b816-5fc7-4696-8c68-09195882d9ac",
+              "name": "registration_id",
+              "value": "={{ $json.body.registration_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -976
+      ],
+      "id": "e2b6a569-7fa8-4cc6-9209-3e1885f4d94a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://uoermayoxjaaomzjmuhp.supabase.co/rest/v1/rpc/get_registration_details",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"reg_id\": \"{{ $json.registration_id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -416,
+        -976
+      ],
+      "id": "6715d3bc-23b7-44d5-876b-66c1239a9d70",
+      "name": "HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zChOtrEvFhV64mDZ",
+          "name": "Supabase Enxergar"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Registrar Notificação Enviada": {
+      "main": [
+        [
+          {
+            "node": "Resposta de Sucesso1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Trigger Confirmação1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Mensagem1": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp1": {
+      "main": [
+        [
+          {
+            "node": "Registrar Notificação Enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Formatar Mensagem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bc3d4048-ea8e-4ac4-bcaa-81e60c80b56c",
+  "meta": {
+    "instanceId": "846073c5bb4a211e33d5210d9a8e5c46c7a90d00acf21bf5f3c7c8cea4f93622"
+  },
+  "id": "2sTupLwwfhiuGcGd",
+  "tags": []
+}

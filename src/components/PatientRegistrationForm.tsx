@@ -121,6 +121,12 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
         }
 
         console.log("✅ Inscrição criada para paciente existente:", registrationData.id);
+
+        // Disparar webhook de confirmação (não-bloqueante)
+        webhookService.sendConfirmationWebhook(registrationData.id).catch(error => {
+          console.warn("⚠️ Webhook de confirmação falhou (não afeta inscrição):", error);
+        });
+
         toast.success("Inscrição realizada com sucesso!");
         onSuccess(existingPatient.nome);
         return;
@@ -171,6 +177,11 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
       }
 
       console.log("✅ Inscrição criada:", registrationData.id);
+
+      // Disparar webhook de confirmação (não-bloqueante)
+      webhookService.sendConfirmationWebhook(registrationData.id).catch(error => {
+        console.warn("⚠️ Webhook de confirmação falhou (não afeta inscrição):", error);
+      });
 
       toast.success("Inscrição realizada com sucesso!");
       onSuccess(data.name);

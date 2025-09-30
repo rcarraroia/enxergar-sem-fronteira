@@ -118,6 +118,14 @@ const SimpleDashboard = () => {
               <MessageSquare className="h-4 w-4 mr-2" />
               Mensagens em Massa
             </Button>
+
+            <Button
+              onClick={() => navigate("/admin/event-control")}
+              className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Controle de Eventos
+            </Button>
           </CardContent>
         </Card>
 

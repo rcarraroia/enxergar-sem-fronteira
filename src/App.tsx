@@ -25,6 +25,7 @@ import AdminCampaignsV2 from "./pages/admin-v2/Campaigns";
 // import AdminChatV2 from "./pages/admin-v2/Chat/index";
 import AdminDashboardV2 from "./pages/admin-v2/Dashboard/simple";
 import AdminDonationsV2 from "./pages/admin-v2/Donations";
+import EventControlPage from "./pages/admin-v2/EventControl";
 import AdminEventsV2 from "./pages/admin-v2/Events";
 import CreateEventV2 from "./pages/admin-v2/Events/create";
 import EditEventV2 from "./pages/admin-v2/Events/edit";
@@ -224,6 +225,11 @@ function App() {
                   <AdminSyncV2 />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/event-control" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <EventControlPage />
+                </ProtectedRoute>
+              } />
 
               {/* Manter rotas admin-v2 para compatibilidade */}
               <Route path="/admin-v2/events" element={
@@ -294,6 +300,11 @@ function App() {
               <Route path="/admin-v2/sync" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminSyncV2 />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin-v2/event-control" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <EventControlPage />
                 </ProtectedRoute>
               } />
               {/* Rota catch-all removida - causava conflito com rotas específicas */}
