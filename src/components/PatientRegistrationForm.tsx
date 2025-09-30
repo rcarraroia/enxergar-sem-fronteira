@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { webhookService } from "@/services/WebhookService";
 import { cpfMask, validateCPF } from "@/utils/cpfUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
