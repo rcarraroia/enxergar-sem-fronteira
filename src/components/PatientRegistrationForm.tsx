@@ -14,10 +14,31 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+// Schema com tratamento automático de telefone
+const phoneSchema = z
+  .string()
+  .min(10, 'Telefone deve ter pelo menos 10 dígitos')
+  .max(20, 'Telefone inválido')
+  .transform((val) => {
+    // Remove formatação
+    const cleaned = val.replace(/\D/g, '');
+
+    // Adiciona 55 se necessário
+    if (!cleaned.startsWith('55')) {
+      const withoutLeadingZero = cleaned.startsWith('0') ? cleaned.substring(1) : cleaned;
+      return `55${withoutLeadingZero}`;
+    }
+
+    return cleaned;
+  })
+  .refine((val) => /^55[1-9]{2}9?[0-9]{8}$/.test(val), {
+    message: 'Formato de telefone brasileiro inválido'
+  });
+
 const patientSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
+  phone: phoneSchema,
   cpf: z.string().refine(validateCPF, "CPF inválido"),
   birthdate: z.string().min(1, "Data de nascimento é obrigatória").refine((date) => {
     // Aceita formato AAAA-MM-DD (desktop) ou DD/MM/AAAA (mobile)
@@ -43,11 +64,17 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
   });
 
   const cpfValue = watch("cpf");
+  const phoneValue = watch("phone");
   const birthdateValue = watch("birthdate");
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const maskedValue = cpfMask(e.target.value);
     setValue("cpf", maskedValue);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const maskedValue = phoneMask(e.target.value);
+    setValue("phone", maskedValue);
   };
 
   const handleBirthdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +112,10 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
 
     try {
       const cleanCpf = data.cpf.replace(/\D/g, "");
+
+      // Garantir que o telefone está no formato internacional
+      const formattedPhone = formatPhoneToInternational(data.phone);
+      console.log("📞 Telefone formatado:", data.phone, "→", formattedPhone);
 
       // 1. Verificar se CPF já existe
       console.log("🔍 Verificando se CPF já existe...", cleanCpf);
@@ -140,7 +171,7 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
         .insert({
           nome: data.name,
           email: data.email,
-          telefone: data.phone,
+          telefone: formattedPhone,
           cpf: cleanCpf,
           data_nascimento: convertDateFormat(data.birthdate),
           consentimento_lgpd: data.terms
@@ -228,8 +259,10 @@ const PatientRegistrationForm: React.FC<PatientRegistrationFormProps> = ({ event
               <Label htmlFor="phone">Telefone *</Label>
               <Input
                 id="phone"
-                {...register("phone")}
+                value={phoneValue || ""}
+                onChange={handlePhoneChange}
                 placeholder="(11) 99999-9999"
+                maxLength={20}
               />
               {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
             </div>
