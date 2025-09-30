@@ -233,7 +233,7 @@ export class WebhookService {
   private async getRegistrationDetails(registrationId: string): Promise<unknown> {
     try {
       const { data, error } = await supabase.rpc('get_registration_details', {
-        registration_id: registrationId
+        reg_id: registrationId
       });
 
       if (error) {
